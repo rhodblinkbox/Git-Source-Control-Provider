@@ -18,6 +18,7 @@ using System.Reflection;
 
 namespace GitScc
 {
+    /*
     /////////////////////////////////////////////////////////////////////////////
     // BasicSccProvider
     [MsVsShell.ProvideLoadKey("Standard", "0.1", "Git Source Control Provider", "Yiyisun@hotmail.com", 15261)]
@@ -47,12 +48,13 @@ namespace GitScc
     //[ProvideAutoLoad(UIContextGuids.SolutionExists)]
     // Declare the package guid
     [Guid("C4128D99-2000-41D1-A6C3-704E6C1A3DE2")]
+     */
     public class BasicSccProvider : MsVsShell.Package, IOleCommandTarget
     {
         private SccOnIdleEvent _OnIdleEvent = new SccOnIdleEvent();
 
-        private List<GitFileStatusTracker> projects;
-        private SccProviderService sccService = null;
+        protected List<GitFileStatusTracker> projects;
+        protected SccProviderService sccService = null;
 
         public BasicSccProvider()
         {
@@ -70,11 +72,20 @@ namespace GitScc
         {
             Trace.WriteLine(String.Format(CultureInfo.CurrentUICulture, "Entering Initialize() of: {0}", this.ToString()));
             base.Initialize();
+        }
 
+        /// <summary>
+        /// Registers commands and services used by the extension.
+        /// </summary>
+        protected virtual void RegisterComponents()
+        {
+            /*
+            // Moved to BlinkboxSccProvider
             projects = new List<GitFileStatusTracker>();
             sccService = new SccProviderService(this, projects);
 
             ((IServiceContainer)this).AddService(typeof(SccProviderService), sccService, true);
+            */
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
             MsVsShell.OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as MsVsShell.OleMenuCommandService;
@@ -178,17 +189,20 @@ namespace GitScc
         #endregion
 
         #region menu commands
-        int IOleCommandTarget.QueryStatus(ref Guid guidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
+
+        protected int QueryStatus(OLECMD[] prgCmds, IntPtr pCmdText, OLECMDF cmdf)
         {
+            /*
+            // Moved to blinkboxSccProvider
             Debug.Assert(cCmds == 1, "Multiple commands");
             Debug.Assert(prgCmds != null, "NULL argument");
 
-            if ((prgCmds == null))  return VSConstants.E_INVALIDARG;
+            if ((prgCmds == null)) return VSConstants.E_INVALIDARG;
 
             // Filter out commands that are not defined by this package
             if (guidCmdGroup != GuidList.guidSccProviderCmdSet)
             {
-                return (int)(Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED); 
+                return (int)(Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED);
             }
 
             OLECMDF cmdf = OLECMDF.OLECMDF_SUPPORTED;
@@ -201,7 +215,7 @@ namespace GitScc
 
                 prgCmds[0].cmdf = (uint)cmdf;
                 return VSConstants.S_OK;
-            }
+            }*/
 
             // Process our Commands
             switch (prgCmds[0].cmdID)
@@ -212,7 +226,7 @@ namespace GitScc
                     {
                         var branchName = sccService.CurrentBranchName;
                         string menuText = string.IsNullOrEmpty(branchName) ?
-                            "Git" : "Git (" + branchName + ")";
+                           "Git" : "Git (" + branchName + ")";
 
                         SetOleCmdText(pCmdText, menuText);
                     }
@@ -265,7 +279,7 @@ namespace GitScc
                 case CommandId.icmdSccCommandAbout:
                 case CommandId.icmdSccCommandRefresh:
                     //if (sccService.IsSolutionGitControlled)
-                        cmdf |= OLECMDF.OLECMDF_ENABLED;
+                    cmdf |= OLECMDF.OLECMDF_ENABLED;
                     break;
 
                 case CommandId.icmdSccCommandInit:
@@ -301,8 +315,8 @@ namespace GitScc
                         return (int)(Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED);
             }
 
-
-            prgCmds[0].cmdf = (uint) (cmdf);
+            // Moved to blinkboxSccProvider
+            prgCmds[0].cmdf = (uint)(cmdf);
             return VSConstants.S_OK;
         }
 
@@ -505,15 +519,15 @@ namespace GitScc
         internal void RunCommand(string cmd, string args)
         {
             var pinfo = new ProcessStartInfo(cmd)
-            {
-                Arguments = args,
-                CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                WorkingDirectory = sccService.CurrentGitWorkingDirectory ??
-                    Path.GetDirectoryName(sccService.GetSolutionFileName())
-            };
+                {
+                    Arguments = args,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    WorkingDirectory = sccService.CurrentGitWorkingDirectory ??
+                        Path.GetDirectoryName(sccService.GetSolutionFileName())
+                };
 
             Process.Start(pinfo);
 
@@ -543,7 +557,7 @@ namespace GitScc
                 process.StartInfo.FileName = cmd;
                 process.StartInfo.Arguments = arguments;
                 process.StartInfo.WorkingDirectory = sccService.CurrentGitWorkingDirectory ??
-                    Path.GetDirectoryName(sccService.GetSolutionFileName());
+                   Path.GetDirectoryName(sccService.GetSolutionFileName());
                 process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
                 process.StartInfo.LoadUserProfile = true;
 
@@ -561,7 +575,7 @@ namespace GitScc
         //    }
         //}
 
-        private T GetToolWindowPane<T>() where T : ToolWindowPane
+        protected T GetToolWindowPane<T>() where T : ToolWindowPane
         {
             return (T)this.FindToolWindow(typeof(T), 0, true);
         }

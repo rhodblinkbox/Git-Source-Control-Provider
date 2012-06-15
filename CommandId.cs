@@ -29,6 +29,8 @@ namespace GitScc
         public const int icmdHistoryViewRefresh = 0x115;
         public const int icmdSccCommandAbout = 0x116;
 
+        public const int icmdBlinkboxCommitAndTest = 0x117;
+
 
         // Define the list of menus (these include toolbars)
         public const int imnuHistoryToolWindowToolbarMenu = 0x200;
@@ -50,6 +52,12 @@ namespace GitScc
 
         public const int icmdGitExtCommand1 = 0x811;
         public const int icmdGitTorCommand1 = 0x911;
+        public const int icmdGitTfsCommandBase = 0x711;
 
+
+        public const int GitTfsMenu = 0x401;
+        public const int GitTfsMenuGroup = 0x402;
+        public const int cmdidGitTfsCheckinButton = 0x403;
+        public const int cmdidGitTfsGetLatestButton = 0x404;
     }
 }
