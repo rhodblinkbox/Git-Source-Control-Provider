@@ -17,6 +17,8 @@ using System.Diagnostics;
 
 namespace GitScc
 {
+    using GitScc.DataServices;
+
     /// <summary>
     /// Interaction logic for PendingChangesView.xaml
     /// </summary>
@@ -294,17 +296,19 @@ namespace GitScc
                 return true;
         }
 
-        internal void Commit()
+        internal Commit Commit()
         {
+            var commit = new Commit() { Message = Comments };
             service.NoRefresh = true;
             if (HasComments() && StageSelectedFiles())
             {
                 try
                 {
                     ShowStatusMessage("Committing ...");
-                    var id = tracker.Commit(Comments);
-                    ShowStatusMessage("Commit successfully. Commit Hash: " + id);
+                    string result = tracker.Commit(Comments);
+                    ShowStatusMessage("Commit successfully: " + result);
                     ClearUI();
+                    commit.Id = GitBash.Run("rev-parse HEAD", this.tracker.GitWorkingDirectory).Replace("\n", string.Empty); // Git bash adds a return on the end
                 }
                 catch (Exception ex)
                 {
@@ -315,6 +319,7 @@ namespace GitScc
             service.NoRefresh = false;
             //service.lastTimeRefresh = DateTime.Now;
             service.NodesGlyphsDirty = true; // force refresh
+            return commit;
         }
 
         internal void AmendCommit()

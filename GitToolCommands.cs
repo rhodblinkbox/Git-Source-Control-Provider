@@ -41,6 +41,12 @@ namespace GitScc
             new GitToolCommand("Tag", "/command:tag"), 
         };
 
+        internal static List<GitToolCommand> GitTfsCommands = new List<GitToolCommand> { 
+            new GitToolCommand("Check in", "checkintool"), // workaround to missing of the first command in menu
+            new GitToolCommand("Check in", "checkintool"), 
+            new GitToolCommand("Get Latest", "pull") 
+        };
+
         internal static List<GitToolCommand> GitExtCommands = new List<GitToolCommand> { 
             new GitToolCommand("Git Extensions", "browse"), // workaround to missing of the first command in menu
             new GitToolCommand("Add Files", "add"), 

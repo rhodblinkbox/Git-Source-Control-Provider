@@ -2,18 +2,36 @@
 <?xml-stylesheet type="text/xsl" href="c:\program files (x86)\microsoft visual studio 10.0\team tools\static analysis tools\fxcop\Xml\CodeAnalysisReport.xsl"?>
 <FxCopReport Version="10.0">
  <Targets>
-  <Target Name="E:\Users\Public\My Projects\GitScc\Source\GitUI\Resources\Microsoft.Windows.Shell.dll">
+  <Target Name="C:\dev\github\Git-Source-Control-Provider\GitUI\Resources\Microsoft.Windows.Shell.dll">
    <Modules>
     <Module Name="microsoft.windows.shell.dll">
      <Namespaces>
+      <Namespace Name="Microsoft.Windows.Shell">
+       <Types>
+        <Type Name="JumpItemsRejectedEventArgs" Kind="Class" Accessibility="Public" ExternallyVisible="True">
+         <Messages>
+          <Message Id="Args" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Active" Created="2012-06-19 16:37:00Z" FixCategory="Breaking">
+           <Issue Name="Type" Certainty="75" Level="CriticalWarning">Correct the spelling of 'Args' in type name 'JumpItemsRejectedEventArgs'.</Issue>
+          </Message>
+         </Messages>
+        </Type>
+        <Type Name="JumpItemsRemovedEventArgs" Kind="Class" Accessibility="Public" ExternallyVisible="True">
+         <Messages>
+          <Message Id="Args" TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704" Status="Active" Created="2012-06-19 16:37:00Z" FixCategory="Breaking">
+           <Issue Name="Type" Certainty="75" Level="CriticalWarning">Correct the spelling of 'Args' in type name 'JumpItemsRemovedEventArgs'.</Issue>
+          </Message>
+         </Messages>
+        </Type>
+       </Types>
+      </Namespace>
       <Namespace Name="Standard">
        <Types>
         <Type Name="SafeFindHandle" Kind="Class" Accessibility="Assembly" ExternallyVisible="False">
          <Members>
           <Member Name="#.ctor()" Kind="Method" Static="False" Accessibility="Private" ExternallyVisible="False">
            <Messages>
-            <Message TypeName="SecurityRuleSetLevel2MethodsShouldNotBeProtectedWithLinkDemandsFxCopRule" Category="Microsoft.Security" CheckId="CA2135" Status="Active" Created="2012-04-06 20:18:58Z" FixCategory="NonBreaking">
-             <Issue Certainty="50" Level="CriticalWarning" Path="E:\Users\Public\My Projects\GitScc\Source\GitUI\Microsoft.Windows.Shell\Standard" File="NativeMethods.cs" Line="1340">'SafeFindHandle.SafeFindHandle()' is protected with a LinkDemand for 'SecurityPermissionAttribute'.  In the level 2 security rule set, it should be protected by being security critical instead.  Remove the LinkDemand and mark 'SafeFindHandle.SafeFindHandle()' security critical.</Issue>
+            <Message TypeName="SecurityRuleSetLevel2MethodsShouldNotBeProtectedWithLinkDemandsFxCopRule" Category="Microsoft.Security" CheckId="CA2135" Status="Active" Created="2012-06-19 16:37:00Z" FixCategory="NonBreaking">
+             <Issue Certainty="50" Level="CriticalWarning" Path="C:\dev\github\Git-Source-Control-Provider\GitUI\Microsoft.Windows.Shell\Standard" File="NativeMethods.cs" Line="1340">'SafeFindHandle.SafeFindHandle()' is protected with a LinkDemand for 'SecurityPermissionAttribute'.  In the level 2 security rule set, it should be protected by being security critical instead.  Remove the LinkDemand and mark 'SafeFindHandle.SafeFindHandle()' security critical.</Issue>
             </Message>
            </Messages>
           </Member>
@@ -27,6 +45,17 @@
   </Target>
  </Targets>
  <Rules>
+  <Rule TypeName="IdentifiersShouldBeSpelledCorrectly" Category="Microsoft.Naming" CheckId="CA1704">
+   <Name>Identifiers should be spelled correctly</Name>
+   <Description>The individual words that make up an identifier should not be abbreviated and should be spelled correctly. If this rule generates a false positive on a term that should be recognized, add the word to the FxCop custom dictionary.</Description>
+   <Resolution Name="Member">Correct the spelling of '{0}' in member name {1} or remove it entirely if it represents any sort of Hungarian notation.</Resolution>
+   <Resolution Name="Type">Correct the spelling of '{0}' in type name {1}.</Resolution>
+   <Owner />
+   <Url>http://msdn.microsoft.com/library/bb264492(VS.100).aspx</Url>
+   <Email>[none]</Email>
+   <MessageLevel Certainty="75">CriticalWarning</MessageLevel>
+   <File Name="namingrules.dll" Version="10.0.0.0" />
+  </Rule>
   <Rule TypeName="SecurityRuleSetLevel2MethodsShouldNotBeProtectedWithLinkDemandsFxCopRule" Category="Microsoft.Security" CheckId="CA2135">
    <Name>Level 2 assemblies should not contain LinkDemands</Name>
    <Description>LinkDemands are deprecated in the level 2 security rule set.  Instead of using LinkDemands to enforce JIT time security, SecurityCritical methods, types, and fields should be used instead.</Description>

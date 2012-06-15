@@ -8,6 +8,8 @@ using System.Windows.Controls;
 
 namespace GitScc
 {
+    using GitScc.DataServices;
+
     /// <summary>
     /// Summary description for SccProviderToolWindow.
     /// </summary>
@@ -65,9 +67,9 @@ namespace GitScc
             Refresh(sccProviderService.CurrentTracker, true); // refresh when the tool window becomes visible
         }    
 
-        internal void OnCommitCommand()
+        internal Commit OnCommitCommand()
         {
-            ((PendingChangesView)control).Commit();
+            return ((PendingChangesView)control).Commit();
         }
 
         internal void OnAmendCommitCommand()

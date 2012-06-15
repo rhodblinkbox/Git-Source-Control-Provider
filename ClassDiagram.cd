@@ -8,11 +8,11 @@
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="GitScc.BasicSccProvider" Collapsed="true">
+  <Class Name="GitScc.BlinkboxSccProvider" Collapsed="true">
     <Position X="3.5" Y="1.25" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAEAAAAACCAAAQABAAAAAAAAAAAAAAAAAAAAAAAAAEA=</HashCode>
-      <FileName>BasicSccProvider.cs</FileName>
+      <FileName>BlinkboxSccProvider.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Font Name="Tahoma" Size="8.25" />
