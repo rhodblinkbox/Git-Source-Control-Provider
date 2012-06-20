@@ -12,6 +12,8 @@ namespace GitScc
     using System.Web;
     using System.Windows;
 
+    using EnvDTE;
+
     using Microsoft.Build.Execution;
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.OLE.Interop;
@@ -19,6 +21,7 @@ namespace GitScc
     using Microsoft.VisualStudio.Shell.Interop;
 
     using MsVsShell = Microsoft.VisualStudio.Shell;
+    using Process = System.Diagnostics.Process;
 
     /// <summary>
     /// Blinkbox implementation inheriting from GitSourceControlProvider. 
@@ -267,6 +270,7 @@ namespace GitScc
                     foreach (var msbuildProject in msbuildProjects.OrderBy(x => x.Item1).Select(x => x.Item2))
                     {
                         // Build it
+                        WriteToStatusBar("Build " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
                         var buildRequest = new BuildRequestData(msbuildProject, new string[] { "Build" });
                         var result = BuildManager.DefaultBuildManager.Build(new BuildParameters(projectCollection), buildRequest);
 
@@ -347,12 +351,71 @@ namespace GitScc
         /// <param name="command">The command.</param>
         private void GitTfsCommand(string command)
         {
-            var processStartInfo = new ProcessStartInfo("cmd.exe", "/k git tfs " + command);
-            processStartInfo.UseShellExecute = false;
-            processStartInfo.CreateNoWindow = false;
-            processStartInfo.WorkingDirectory = this.GetSolutionDirectory();
-            processStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
-            System.Diagnostics.Process.Start(processStartInfo);
+            var process = new Process();
+            process.StartInfo.FileName = GitSccOptions.Current.GitTfsPath;
+            process.StartInfo.Arguments = command;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = false;
+            process.StartInfo.WorkingDirectory = this.GetSolutionDirectory();
+            process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
+
+            // Write output to the output pane. 
+            var outputPane = this.GetOutputWindowPane(OutputPanes.GitTfs);
+            process.StartInfo.RedirectStandardOutput = true;
+            process.OutputDataReceived += (sender, args) => outputPane.OutputString(args.Data + Environment.NewLine);
+            process.Start();
+            process.BeginOutputReadLine();
+        }
+
+        /// <summary>
+        /// Gets the specified output window pane, craeeting a new one if it doesnt already exist.
+        /// </summary>
+        /// <param name="outputPane">The output pane.</param>
+        /// <returns>the specified output pane.</returns>
+        public IVsOutputWindowPane GetOutputWindowPane(OutputPane outputPane)
+        {
+            var dte = (DTE)GetService(typeof(DTE));
+            var serviceProvider = new ServiceProvider(dte as Microsoft.VisualStudio.OLE.Interop.IServiceProvider);
+            var outputWindow = serviceProvider.GetService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+            var generalPaneGuid = outputPane.Id;
+            IVsOutputWindowPane pane;
+            outputWindow.GetPane(ref generalPaneGuid, out pane);
+
+            if (pane == null)
+            {
+                outputWindow.CreatePane(ref generalPaneGuid, outputPane.Name, 1, 0);
+                outputWindow.GetPane(ref generalPaneGuid, out pane);
+                outputPane.Id = generalPaneGuid;
+            }
+            pane.Activate();
+            return pane;
+        }
+
+        /// <summary>
+        /// Defines a custom output pane.
+        /// </summary>
+        public struct OutputPane
+        {
+            /// <summary>
+            /// Gets or sets the id.
+            /// </summary>
+            /// <value>The id.</value>
+            public Guid Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>The name.</value>
+            public string Name { get; set; }
+        }
+
+        /// <summary>
+        /// Defines custom output panes.
+        /// </summary>
+        public struct OutputPanes
+        {
+            public static OutputPane IVsTextEditGeneral = new OutputPane() { Id = Microsoft.VisualStudio.VSConstants.OutputWindowPaneGuid.GeneralPane_guid, Name = "General" };
+            public static OutputPane GitTfs = new OutputPane() { Id = new Guid("B81AFB34-8E7C-4BAF-A567-9B3216F3B25E"), Name = "Git tfs" };
         }
 
         /// <summary>
@@ -370,6 +433,16 @@ namespace GitScc
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Shows a message in the status bar.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public static void WriteToStatusBar(string message)
+        {
+            var dte = GetServiceEx<EnvDTE.DTE>();
+            dte.StatusBar.Text = message;
         }
     }
 }
