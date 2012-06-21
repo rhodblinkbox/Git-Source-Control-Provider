@@ -18,7 +18,6 @@ using System.Reflection;
 
 namespace GitScc
 {
-    /*
     /////////////////////////////////////////////////////////////////////////////
     // BasicSccProvider
     [MsVsShell.ProvideLoadKey("Standard", "0.1", "Git Source Control Provider", "Yiyisun@hotmail.com", 15261)]
@@ -34,6 +33,9 @@ namespace GitScc
     // Register a sample options page visible as Tools/Options/SourceControl/SampleOptionsPage when the provider is active
     [MsVsShell.ProvideOptionPageAttribute(typeof(SccProviderOptions), "Source Control", "Git Source Control Provider Options", 106, 107, false)]
     [ProvideToolsOptionsPageVisibility("Source Control", "Git Source Control Provider Options", "C4128D99-0000-41D1-A6C3-704E6C1A3DE2")]
+    // blinkbox Options page
+    [MsVsShell.ProvideOptionPageAttribute(typeof(Blinkbox.Options.BlinkboxOptionsPage), "Source Control", "Blinkbox Scc options", 106, 107, false)]
+    [ProvideToolsOptionsPageVisibility("Source Control", "Blinkbox Scc options", "C4128D99-0000-41D1-A6C3-704E6C1A3DE2")]
     // Register a sample tool window visible only when the provider is active
     [MsVsShell.ProvideToolWindow(typeof(PendingChangesToolWindow), Style = VsDockStyle.Tabbed, Orientation = ToolWindowOrientation.Bottom)]
     [MsVsShell.ProvideToolWindowVisibility(typeof(PendingChangesToolWindow), "C4128D99-0000-41D1-A6C3-704E6C1A3DE2")]
@@ -48,13 +50,12 @@ namespace GitScc
     //[ProvideAutoLoad(UIContextGuids.SolutionExists)]
     // Declare the package guid
     [Guid("C4128D99-2000-41D1-A6C3-704E6C1A3DE2")]
-     */
     public class BasicSccProvider : MsVsShell.Package, IOleCommandTarget
     {
         private SccOnIdleEvent _OnIdleEvent = new SccOnIdleEvent();
 
-        protected List<GitFileStatusTracker> projects;
-        protected SccProviderService sccService = null;
+        private List<GitFileStatusTracker> projects;
+        private SccProviderService sccService = null;
 
         public BasicSccProvider()
         {
@@ -72,21 +73,14 @@ namespace GitScc
         {
             Trace.WriteLine(String.Format(CultureInfo.CurrentUICulture, "Entering Initialize() of: {0}", this.ToString()));
             base.Initialize();
-        }
 
-        /// <summary>
-        /// Registers commands and services used by the extension.
-        /// </summary>
-        protected virtual void RegisterComponents()
-        {
-            /*
-            // Moved to BlinkboxSccProvider
             projects = new List<GitFileStatusTracker>();
             sccService = new SccProviderService(this, projects);
 
             ((IServiceContainer)this).AddService(typeof(SccProviderService), sccService, true);
-            */
 
+            Blinkbox.Events.BlinkboxSccHooks.TriggerOnPackageInitialise(this, new Blinkbox.Events.OnPackageInitialiseArgs() { PackageInstance = this, SccService = this.sccService });
+            
             // Add our command handlers for menu (commands must exist in the .vsct file)
             MsVsShell.OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as MsVsShell.OleMenuCommandService;
             if (mcs != null)
@@ -161,6 +155,8 @@ namespace GitScc
                 cmd = new CommandID(GuidList.guidSccProviderCmdSet, CommandId.icmdSccCommandAbout);
                 menu = new MenuCommand(new EventHandler(OnAbout), cmd);
                 mcs.AddCommand(menu);
+
+                Blinkbox.Events.BlinkboxSccHooks.TriggerRegisterCommands(this, new Blinkbox.Events.OnRegisterCommandsArgs() { MenuService = mcs });
             }
 
 
@@ -189,20 +185,17 @@ namespace GitScc
         #endregion
 
         #region menu commands
-
-        protected int QueryStatus(OLECMD[] prgCmds, IntPtr pCmdText, OLECMDF cmdf)
+        int IOleCommandTarget.QueryStatus(ref Guid guidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
-            /*
-            // Moved to blinkboxSccProvider
             Debug.Assert(cCmds == 1, "Multiple commands");
             Debug.Assert(prgCmds != null, "NULL argument");
 
-            if ((prgCmds == null)) return VSConstants.E_INVALIDARG;
+            if ((prgCmds == null))  return VSConstants.E_INVALIDARG;
 
             // Filter out commands that are not defined by this package
             if (guidCmdGroup != GuidList.guidSccProviderCmdSet)
             {
-                return (int)(Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED);
+                return (int)(Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED); 
             }
 
             OLECMDF cmdf = OLECMDF.OLECMDF_SUPPORTED;
@@ -215,7 +208,15 @@ namespace GitScc
 
                 prgCmds[0].cmdf = (uint)cmdf;
                 return VSConstants.S_OK;
-            }*/
+            }
+
+            // Call hook to query additional commands first. 
+            var result = Blinkbox.Events.BlinkboxSccHooks.QueryCommandStatus(guidCmdGroup, prgCmds, cmdf, pCmdText);
+            if (result != (int)Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED)
+            {
+                // Handled in the hook
+                return result;
+            }
 
             // Process our Commands
             switch (prgCmds[0].cmdID)
@@ -315,8 +316,8 @@ namespace GitScc
                         return (int)(Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED);
             }
 
-            // Moved to blinkboxSccProvider
-            prgCmds[0].cmdf = (uint)(cmdf);
+
+            prgCmds[0].cmdf = (uint) (cmdf);
             return VSConstants.S_OK;
         }
 
@@ -575,7 +576,7 @@ namespace GitScc
         //    }
         //}
 
-        protected T GetToolWindowPane<T>() where T : ToolWindowPane
+        private T GetToolWindowPane<T>() where T : ToolWindowPane
         {
             return (T)this.FindToolWindow(typeof(T), 0, true);
         }

@@ -29,7 +29,7 @@ namespace GitScc
         IVsUpdateSolutionEvents2
     {
         private bool _active = false;
-        protected BasicSccProvider _sccProvider = null;
+        private BasicSccProvider _sccProvider = null;
         private List<GitFileStatusTracker> trackers;
         private uint _vsSolutionEventsCookie, _vsIVsFileChangeEventsCookie, _vsIVsUpdateSolutionEventsCookie;
 

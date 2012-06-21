@@ -95,7 +95,7 @@
     <Buttons>
 
         <Button guid="guidSccProviderCmdSet"
-                id="cmdidGitTfsCheckinButton"
+                id="GitTfsCheckinButtonId"
                 priority="0x0106"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
@@ -104,13 +104,13 @@
                   id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
-                <CommandName>cmdidGitTfsCheckinButton</CommandName>
+                <CommandName>GitTfsCheckinButtonId</CommandName>
                 <ButtonText>Check in</ButtonText>
             </Strings>
         </Button>
 
         <Button guid="guidSccProviderCmdSet"
-                id="cmdidGitTfsGetLatestButton"
+                id="GitTfsGetLatestButtonId"
                 priority="0x0107"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
@@ -119,7 +119,7 @@
                   id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
-                <CommandName>cmdidGitTfsGetLatestButton</CommandName>
+                <CommandName>GitTfsGetLatestButtonId</CommandName>
                 <ButtonText>Get Latest</ButtonText>
             </Strings>
         </Button>
@@ -277,6 +277,21 @@
         </Strings>
       </Button>
 
+
+        <Button guid="guidSccProviderCmdSet"
+                id="BlinkboxCommitAndTestId"
+                priority="0x0000"
+                type="Button">
+            <Parent guid="guidSccProviderCmdSet"
+                    id="igrpPendingChangesToolWindowToolbarGroup"/>
+            <CommandFlag>DynamicVisibility</CommandFlag>
+            <CommandFlag>DefaultInvisible</CommandFlag>
+            <CommandFlag>IconAndText</CommandFlag>
+            <Strings>
+                <ButtonText>Commit and Test</ButtonText>
+            </Strings>
+        </Button>
+        
       <Button guid="guidSccProviderCmdSet" id="icmdPendingChangesAmend" priority="0x0001" type="Button">
         <Parent guid="guidSccProviderCmdSet" id="igrpPendingChangesToolWindowToolbarGroup"/>
         <CommandFlag>DynamicVisibility</CommandFlag>
@@ -296,20 +311,6 @@
           <ButtonText>Switch Branch</ButtonText>
         </Strings>
       </Button>
-
-        <Button guid="guidSccProviderCmdSet"
-                id="icmdBlinkboxCommitAndTest"
-                priority="0x0013"
-                type="Button">
-            <Parent guid="guidSccProviderCmdSet"
-                    id="igrpPendingChangesToolWindowToolbarGroup"/>
-            <CommandFlag>DynamicVisibility</CommandFlag>
-            <CommandFlag>DefaultInvisible</CommandFlag>
-            <CommandFlag>IconAndText</CommandFlag>
-            <Strings>
-                <ButtonText>Commit and Test</ButtonText>
-            </Strings>
-        </Button>
 
       <!--<Button guid="guidSccProviderCmdSet" id="icmdPendingChangesRefresh" priority="0x0007" type="Button">
         <Parent guid="guidSccProviderCmdSet" id="igrpPendingChangesToolWindowToolbarGroup"/>
@@ -431,9 +432,9 @@
                   value="0x401"/>
         <IDSymbol name="GitTfsMenuGroup"
                   value="0x402"/>
-        <IDSymbol name="cmdidGitTfsCheckinButton"
+        <IDSymbol name="GitTfsCheckinButtonId"
                   value="0x403"/>
-        <IDSymbol name="cmdidGitTfsGetLatestButton"
+        <IDSymbol name="GitTfsGetLatestButtonId"
                   value="0x404"/>
         
       <IDSymbol name="icmdSccCommandRefresh" value="0x101"/>
@@ -463,7 +464,7 @@
       <IDSymbol name="icmdPendingChangesRefresh" value="0x114"/>
       <IDSymbol name="icmdHistoryViewRefresh" value="0x115"/>  
       <IDSymbol name="icmdSccCommandAbout" value="0x116"/>
-      <IDSymbol name="icmdBlinkboxCommitAndTest" value="0x117"/>
+      <IDSymbol name="BlinkboxCommitAndTestId" value="0x117"/>
       
       <IDSymbol name="igrpGitExtCommands" value="0x800"/>
       <IDSymbol name="imnuGitExtMenu" value="0x801"/>
