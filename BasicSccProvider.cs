@@ -33,6 +33,9 @@ namespace GitScc
     // Register a sample options page visible as Tools/Options/SourceControl/SampleOptionsPage when the provider is active
     [MsVsShell.ProvideOptionPageAttribute(typeof(SccProviderOptions), "Source Control", "Git Source Control Provider Options", 106, 107, false)]
     [ProvideToolsOptionsPageVisibility("Source Control", "Git Source Control Provider Options", "C4128D99-0000-41D1-A6C3-704E6C1A3DE2")]
+    // blinkbox Options page
+    [MsVsShell.ProvideOptionPageAttribute(typeof(Blinkbox.Options.BlinkboxOptionsPage), "Source Control", "Blinkbox Scc options", 106, 107, false)]
+    [ProvideToolsOptionsPageVisibility("Source Control", "Blinkbox Scc options", "C4128D99-0000-41D1-A6C3-704E6C1A3DE2")]
     // Register a sample tool window visible only when the provider is active
     [MsVsShell.ProvideToolWindow(typeof(PendingChangesToolWindow), Style = VsDockStyle.Tabbed, Orientation = ToolWindowOrientation.Bottom)]
     [MsVsShell.ProvideToolWindowVisibility(typeof(PendingChangesToolWindow), "C4128D99-0000-41D1-A6C3-704E6C1A3DE2")]
@@ -76,6 +79,8 @@ namespace GitScc
 
             ((IServiceContainer)this).AddService(typeof(SccProviderService), sccService, true);
 
+            Blinkbox.Events.BlinkboxSccHooks.TriggerOnPackageInitialise(this, new Blinkbox.Events.OnPackageInitialiseArgs() { PackageInstance = this, SccService = this.sccService });
+            
             // Add our command handlers for menu (commands must exist in the .vsct file)
             MsVsShell.OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as MsVsShell.OleMenuCommandService;
             if (mcs != null)
@@ -150,6 +155,8 @@ namespace GitScc
                 cmd = new CommandID(GuidList.guidSccProviderCmdSet, CommandId.icmdSccCommandAbout);
                 menu = new MenuCommand(new EventHandler(OnAbout), cmd);
                 mcs.AddCommand(menu);
+
+                Blinkbox.Events.BlinkboxSccHooks.TriggerRegisterCommands(this, new Blinkbox.Events.OnRegisterCommandsArgs() { MenuService = mcs });
             }
 
 
@@ -203,6 +210,14 @@ namespace GitScc
                 return VSConstants.S_OK;
             }
 
+            // Call hook to query additional commands first. 
+            var result = Blinkbox.Events.BlinkboxSccHooks.QueryCommandStatus(guidCmdGroup, prgCmds, cmdf, pCmdText);
+            if (result != (int)Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED)
+            {
+                // Handled in the hook
+                return result;
+            }
+
             // Process our Commands
             switch (prgCmds[0].cmdID)
             {
@@ -212,7 +227,7 @@ namespace GitScc
                     {
                         var branchName = sccService.CurrentBranchName;
                         string menuText = string.IsNullOrEmpty(branchName) ?
-                            "Git" : "Git (" + branchName + ")";
+                           "Git" : "Git (" + branchName + ")";
 
                         SetOleCmdText(pCmdText, menuText);
                     }
@@ -265,7 +280,7 @@ namespace GitScc
                 case CommandId.icmdSccCommandAbout:
                 case CommandId.icmdSccCommandRefresh:
                     //if (sccService.IsSolutionGitControlled)
-                        cmdf |= OLECMDF.OLECMDF_ENABLED;
+                    cmdf |= OLECMDF.OLECMDF_ENABLED;
                     break;
 
                 case CommandId.icmdSccCommandInit:
@@ -505,15 +520,15 @@ namespace GitScc
         internal void RunCommand(string cmd, string args)
         {
             var pinfo = new ProcessStartInfo(cmd)
-            {
-                Arguments = args,
-                CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                WorkingDirectory = sccService.CurrentGitWorkingDirectory ??
-                    Path.GetDirectoryName(sccService.GetSolutionFileName())
-            };
+                {
+                    Arguments = args,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    WorkingDirectory = sccService.CurrentGitWorkingDirectory ??
+                        Path.GetDirectoryName(sccService.GetSolutionFileName())
+                };
 
             Process.Start(pinfo);
 
@@ -543,7 +558,7 @@ namespace GitScc
                 process.StartInfo.FileName = cmd;
                 process.StartInfo.Arguments = arguments;
                 process.StartInfo.WorkingDirectory = sccService.CurrentGitWorkingDirectory ??
-                    Path.GetDirectoryName(sccService.GetSolutionFileName());
+                   Path.GetDirectoryName(sccService.GetSolutionFileName());
                 process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
                 process.StartInfo.LoadUserProfile = true;
 

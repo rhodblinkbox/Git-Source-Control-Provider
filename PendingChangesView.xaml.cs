@@ -296,6 +296,7 @@ namespace GitScc
 
         internal void Commit()
         {
+            var commitArgs = new Blinkbox.Events.OnCommitArgs { Message = this.Comments };
             service.NoRefresh = true;
             if (HasComments() && StageSelectedFiles())
             {
@@ -305,6 +306,8 @@ namespace GitScc
                     var id = tracker.Commit(Comments);
                     ShowStatusMessage("Commit successfully. Commit Hash: " + id);
                     ClearUI();
+                    commitArgs.Success = true;
+                    commitArgs.Id = id;
                 }
                 catch (Exception ex)
                 {
@@ -315,6 +318,7 @@ namespace GitScc
             service.NoRefresh = false;
             //service.lastTimeRefresh = DateTime.Now;
             service.NodesGlyphsDirty = true; // force refresh
+            Blinkbox.Events.BlinkboxSccHooks.TriggerCommit(this, commitArgs);
         }
 
         internal void AmendCommit()
