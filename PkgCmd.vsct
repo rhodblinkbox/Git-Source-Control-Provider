@@ -288,7 +288,7 @@
             <CommandFlag>DefaultInvisible</CommandFlag>
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
-                <ButtonText>Commit and Test</ButtonText>
+                <ButtonText>Commit and Deploy</ButtonText>
             </Strings>
         </Button>
         

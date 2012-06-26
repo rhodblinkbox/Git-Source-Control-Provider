@@ -15,10 +15,12 @@ namespace GitScc.Blinkbox
     using System.ComponentModel.Design;
     using System.IO;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Web;
     using System.Windows;
 
     using GitScc.Blinkbox.Events;
+    using GitScc.Blinkbox.Options;
 
     using Microsoft.Build.Execution;
     using Microsoft.VisualStudio;
@@ -95,7 +97,7 @@ namespace GitScc.Blinkbox
                 }
 
                 // Commit and test button
-                RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxCommitAndTestId, this.OnBlinkboxCommitAndTest);
+                RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxCommitAndTestId, this.OnCommitAndDeploy);
             }
         }
 
@@ -130,7 +132,7 @@ namespace GitScc.Blinkbox
             switch (commands[0].cmdID)
             {
                 case Blinkbox.CommandIds.BlinkboxCommitAndTestId:
-                    if (GitBash.Exists && this.sccService.IsSolutionGitControlled && this.SolutionIsDevDeployable())
+                    if (GitBash.Exists && this.sccService.IsSolutionGitControlled && this.CommitAndDeployAvailable())
                     {
                         commandFlags |= OLECMDF.OLECMDF_ENABLED;
                     }
@@ -170,13 +172,13 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
-        /// Checks whether the solution lists projects which are dev deployable.
+        /// Checks whether a postCommitDeploy project is available.
         /// </summary>
         /// <returns>true if the solution has devDeployable projects.</returns>
-        private bool SolutionIsDevDeployable()
+        private bool CommitAndDeployAvailable()
         {
             var solutionDir = this.GetSolutionDirectory();
-            return File.Exists(solutionDir + "\\devDeploy.proj");
+            return File.Exists(solutionDir + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName);
         }
 
         /// <summary>
@@ -190,11 +192,11 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
-        /// Handles the "Commit and Test button". Builds and deploys the projects listed in the solution file under DevBuildProjectNames. 
+        /// Handles the "Commit and Deploy button". Builds and deploys the projects listed in the solution file under DevBuildProjectNames. 
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        private void OnBlinkboxCommitAndTest(object sender, EventArgs e)
+        private void OnCommitAndDeploy(object sender, EventArgs e)
         {
             // Subscribe to successful commit event
             BlinkboxSccHooks.OnCommit += this.DeploySuccessfulCommit;
@@ -221,7 +223,7 @@ namespace GitScc.Blinkbox
                 try
                 {
                     // Look for a deploy project
-                    var buildProjectFileName = this.GetSolutionDirectory() + "\\devDeploy.proj";
+                    var buildProjectFileName = this.GetSolutionDirectory() + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName;
                     if (!File.Exists(buildProjectFileName))
                     {
                         MessageBox.Show("build project not found", "Deploy abandoned", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -229,18 +231,20 @@ namespace GitScc.Blinkbox
                     }
 
                     var projectCollection = Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection;
+                    var commitComment = Regex.Replace(commit.Message, @"\r|\n|\t", string.Empty);
+                    commitComment = HttpUtility.UrlEncode(commitComment.Substring(0, commitComment.Length > 80 ? 80 : commitComment.Length));
 
                     // Global properties need to be set before the projects are instantiated. 
                     var globalProperties = new Dictionary<string, string>
                         {
-                            { "BuildGuid", commit.Hash },
-                            { "BuildComment", HttpUtility.UrlEncode(commit.Message.Substring(0, commit.Message.Length > 80 ? 80 : commit.Message.Length).Replace("\r", string.Empty).Replace("\n", string.Empty)) }
+                            { BlinkboxSccOptions.Current.CommitGuidPropertyName, commit.Hash },
+                            { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment }
                         };
                     var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0");
 
                     // Build it
                     WriteToStatusBar("Build " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
-                    var buildRequest = new BuildRequestData(msbuildProject, new[] { "DeployProjects" });
+                    var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
                     var result = BuildManager.DefaultBuildManager.Build(new BuildParameters(projectCollection), buildRequest);
 
                     if (result.OverallResult == BuildResultCode.Failure)
@@ -251,7 +255,7 @@ namespace GitScc.Blinkbox
                     }
 
                     // Get variables required for IIS admin from the first project.
-                    string launchUrl = msbuildProject.GetPropertyValue("LaunchUrlAfterBuild");
+                    string launchUrl = msbuildProject.GetPropertyValue(BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
 
                     // Launch url in browser
                     this.LaunchBrowser(launchUrl);

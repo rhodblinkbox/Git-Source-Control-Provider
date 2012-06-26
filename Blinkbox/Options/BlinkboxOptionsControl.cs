@@ -18,6 +18,21 @@ namespace GitScc.Blinkbox.Options
     public class BlinkboxOptionsControl : System.Windows.Forms.UserControl
     {
         /// <summary>
+        /// Text template for the CommitGuidPropertyNameLabel
+        /// </summary>
+        private const string CommitGuidPropertyNameLabelText = "Name of the property in {projectName} which accepts the recent commit id";
+
+        /// <summary>
+        /// Text template for the CommitCommentPropertyNameLabel
+        /// </summary>
+        private const string CommitCommentPropertyNameLabelText = "Name of the property in {projectName} which acccepts the recent commit comment";
+
+        /// <summary>
+        /// Text template for the UrlToLaunchPropertyNameLabel
+        /// </summary>
+        private const string UrlToLaunchPropertyNameLabelText = "Name of the property in {projectName} which returns the url to launch after deployment";
+
+        /// <summary>
         /// UI components.
         /// </summary>
         private System.ComponentModel.Container components = null;
@@ -46,6 +61,15 @@ namespace GitScc.Blinkbox.Options
         /// UI Component
         /// </summary>
         private CheckBox launchInVSCheckbox;
+
+        private TextBox postCommitDeployProjectNameTextbox;
+        private Label postCommitDeployProjectNameLabel;
+        private TextBox urlToLaunchPropertyNameTextBox;
+        private Label urlToLaunchPropertyNameLabel;
+        private TextBox commitCommentPropertyNameTextBox;
+        private Label commitCommentPropertyNameLabel;
+        private TextBox commitGuidPropertyNameTextBox;
+        private Label commitGuidPropertyNameLabel;
 
         /// <summary>
         /// The parent page
@@ -84,8 +108,13 @@ namespace GitScc.Blinkbox.Options
         /// </summary>
         internal void Save()
         {
-            BlinkboxSccOptions.Current.GitTfsPath = gitTfsTextBox.Text;
-            BlinkboxSccOptions.Current.LaunchDeployedUrlsInVS = launchInVSCheckbox.Checked;
+            BlinkboxSccOptions.Current.GitTfsPath = this.gitTfsTextBox.Text;
+            BlinkboxSccOptions.Current.LaunchDeployedUrlsInVS = this.launchInVSCheckbox.Checked;
+            BlinkboxSccOptions.Current.CommitCommentPropertyName = this.commitCommentPropertyNameTextBox.Text;
+            BlinkboxSccOptions.Current.CommitGuidPropertyName = this.commitGuidPropertyNameTextBox.Text;
+            BlinkboxSccOptions.Current.UrlToLaunchPropertyName = this.urlToLaunchPropertyNameTextBox.Text;
+            BlinkboxSccOptions.Current.PostCommitDeployProjectName = this.postCommitDeployProjectNameTextbox.Text;
+
             BlinkboxSccOptions.Current.SaveConfig();
 
             var sccProviderService = (SccProviderService)GetService(typeof(SccProviderService));
@@ -128,54 +157,140 @@ namespace GitScc.Blinkbox.Options
             this.gitTfsTextBox = new System.Windows.Forms.TextBox();
             this.gitTfsBrowseButton = new System.Windows.Forms.Button();
             this.launchInVSCheckbox = new System.Windows.Forms.CheckBox();
+            this.postCommitDeployProjectNameTextbox = new System.Windows.Forms.TextBox();
+            this.postCommitDeployProjectNameLabel = new System.Windows.Forms.Label();
+            this.urlToLaunchPropertyNameTextBox = new System.Windows.Forms.TextBox();
+            this.urlToLaunchPropertyNameLabel = new System.Windows.Forms.Label();
+            this.commitCommentPropertyNameTextBox = new System.Windows.Forms.TextBox();
+            this.commitCommentPropertyNameLabel = new System.Windows.Forms.Label();
+            this.commitGuidPropertyNameTextBox = new System.Windows.Forms.TextBox();
+            this.commitGuidPropertyNameLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // openFileDialog1
+            // openFileDialog
             // 
             this.openFileDialog.FileName = "openFileDialog1";
             // 
-            // label1
+            // gitTfsLabel
             // 
             this.gitTfsLabel.AutoSize = true;
             this.gitTfsLabel.Location = new System.Drawing.Point(3, 10);
-            this.gitTfsLabel.Name = "label1";
+            this.gitTfsLabel.Name = "gitTfsLabel";
             this.gitTfsLabel.Size = new System.Drawing.Size(80, 13);
             this.gitTfsLabel.TabIndex = 11;
             this.gitTfsLabel.Text = "Path to Git TFS";
             // 
-            // textBox1
+            // gitTfsTextBox
             // 
             this.gitTfsTextBox.Location = new System.Drawing.Point(6, 26);
-            this.gitTfsTextBox.Name = "textBox1";
+            this.gitTfsTextBox.Name = "gitTfsTextBox";
             this.gitTfsTextBox.Size = new System.Drawing.Size(283, 20);
             this.gitTfsTextBox.TabIndex = 12;
             // 
-            // button1
+            // gitTfsBrowseButton
             // 
             this.gitTfsBrowseButton.Location = new System.Drawing.Point(295, 23);
-            this.gitTfsBrowseButton.Name = "button1";
+            this.gitTfsBrowseButton.Name = "gitTfsBrowseButton";
             this.gitTfsBrowseButton.Size = new System.Drawing.Size(75, 23);
             this.gitTfsBrowseButton.TabIndex = 17;
             this.gitTfsBrowseButton.Text = "Browse ...";
             this.gitTfsBrowseButton.UseVisualStyleBackColor = true;
             this.gitTfsBrowseButton.Click += new System.EventHandler(this.GitTfsPathBrowse_Click);
             // 
-            // checkBox3
+            // launchInVSCheckbox
             // 
             this.launchInVSCheckbox.AutoSize = true;
             this.launchInVSCheckbox.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.launchInVSCheckbox.Location = new System.Drawing.Point(6, 68);
-            this.launchInVSCheckbox.Name = "checkBox3";
+            this.launchInVSCheckbox.Name = "launchInVSCheckbox";
             this.launchInVSCheckbox.Size = new System.Drawing.Size(227, 17);
             this.launchInVSCheckbox.TabIndex = 25;
             this.launchInVSCheckbox.Text = "Launch deployed websites in Visual Studio";
             this.launchInVSCheckbox.UseVisualStyleBackColor = true;
+            // 
+            // postCommitDeployProjectNameTextbox
+            // 
+            this.postCommitDeployProjectNameTextbox.Location = new System.Drawing.Point(6, 121);
+            this.postCommitDeployProjectNameTextbox.Name = "postCommitDeployProjectNameTextbox";
+            this.postCommitDeployProjectNameTextbox.Size = new System.Drawing.Size(283, 20);
+            this.postCommitDeployProjectNameTextbox.TabIndex = 27;
+            this.postCommitDeployProjectNameTextbox.TextChanged += new System.EventHandler(this.PostCommitDeployProjectNameTextbox_TextChanged);
+            // 
+            // postCommitDeployProjectNameLabel
+            // 
+            this.postCommitDeployProjectNameLabel.AutoSize = true;
+            this.postCommitDeployProjectNameLabel.Location = new System.Drawing.Point(3, 105);
+            this.postCommitDeployProjectNameLabel.Name = "postCommitDeployProjectNameLabel";
+            this.postCommitDeployProjectNameLabel.Size = new System.Drawing.Size(428, 13);
+            this.postCommitDeployProjectNameLabel.TabIndex = 26;
+            this.postCommitDeployProjectNameLabel.Text = "Name of the postCommitDeploy project, called after the commit during Commit and D" +
+    "eploy";
+            // 
+            // urlToLaunchPropertyNameTextBox
+            // 
+            this.urlToLaunchPropertyNameTextBox.Location = new System.Drawing.Point(6, 160);
+            this.urlToLaunchPropertyNameTextBox.Name = "urlToLaunchPropertyNameTextBox";
+            this.urlToLaunchPropertyNameTextBox.Size = new System.Drawing.Size(283, 20);
+            this.urlToLaunchPropertyNameTextBox.TabIndex = 29;
+            // 
+            // urlToLaunchPropertyNameLabel
+            // 
+            this.urlToLaunchPropertyNameLabel.AutoSize = true;
+            this.urlToLaunchPropertyNameLabel.Enabled = false;
+            this.urlToLaunchPropertyNameLabel.Location = new System.Drawing.Point(3, 144);
+            this.urlToLaunchPropertyNameLabel.Name = "urlToLaunchPropertyNameLabel";
+            this.urlToLaunchPropertyNameLabel.Size = new System.Drawing.Size(414, 13);
+            this.urlToLaunchPropertyNameLabel.TabIndex = 28;
+            this.urlToLaunchPropertyNameLabel.Text = UrlToLaunchPropertyNameLabelText;
+            this.urlToLaunchPropertyNameLabel.Tag = UrlToLaunchPropertyNameLabelText;
+            // 
+            // commitCommentPropertyNameTextBox
+            // 
+            this.commitCommentPropertyNameTextBox.Location = new System.Drawing.Point(6, 238);
+            this.commitCommentPropertyNameTextBox.Name = "commitCommentPropertyNameTextBox";
+            this.commitCommentPropertyNameTextBox.Size = new System.Drawing.Size(283, 20);
+            this.commitCommentPropertyNameTextBox.TabIndex = 31;
+            // 
+            // commitCommentPropertyNameLabel
+            // 
+            this.commitCommentPropertyNameLabel.AutoSize = true;
+            this.commitCommentPropertyNameLabel.Enabled = false;
+            this.commitCommentPropertyNameLabel.Location = new System.Drawing.Point(3, 222);
+            this.commitCommentPropertyNameLabel.Name = "commitCommentPropertyNameLabel";
+            this.commitCommentPropertyNameLabel.Size = new System.Drawing.Size(399, 13);
+            this.commitCommentPropertyNameLabel.TabIndex = 30;
+            this.commitCommentPropertyNameLabel.Text = CommitCommentPropertyNameLabelText;
+            // 
+            // commitGuidPropertyNameTextBox
+            // 
+            this.commitGuidPropertyNameTextBox.Location = new System.Drawing.Point(6, 199);
+            this.commitGuidPropertyNameTextBox.Name = "commitGuidPropertyNameTextBox";
+            this.commitGuidPropertyNameTextBox.Size = new System.Drawing.Size(283, 20);
+            this.commitGuidPropertyNameTextBox.TabIndex = 33;
+            // 
+            // commitGuidPropertyNameLabel
+            // 
+            this.commitGuidPropertyNameLabel.AutoSize = true;
+            this.commitGuidPropertyNameLabel.Enabled = false;
+            this.commitGuidPropertyNameLabel.Location = new System.Drawing.Point(3, 183);
+            this.commitGuidPropertyNameLabel.Name = "commitGuidPropertyNameLabel";
+            this.commitGuidPropertyNameLabel.Size = new System.Drawing.Size(358, 13);
+            this.commitGuidPropertyNameLabel.TabIndex = 32;
+            this.commitGuidPropertyNameLabel.Text = CommitGuidPropertyNameLabelText;
             // 
             // BlinkboxOptionsControl
             // 
             this.AllowDrop = true;
             this.AutoScroll = true;
             this.AutoSize = true;
+            this.Controls.Add(this.commitGuidPropertyNameTextBox);
+            this.Controls.Add(this.commitGuidPropertyNameLabel);
+            this.Controls.Add(this.commitCommentPropertyNameTextBox);
+            this.Controls.Add(this.commitCommentPropertyNameLabel);
+            this.Controls.Add(this.urlToLaunchPropertyNameTextBox);
+            this.Controls.Add(this.urlToLaunchPropertyNameLabel);
+            this.Controls.Add(this.postCommitDeployProjectNameTextbox);
+            this.Controls.Add(this.postCommitDeployProjectNameLabel);
             this.Controls.Add(this.launchInVSCheckbox);
             this.Controls.Add(this.gitTfsBrowseButton);
             this.Controls.Add(this.gitTfsTextBox);
@@ -200,6 +315,12 @@ namespace GitScc.Blinkbox.Options
         private void SccProviderOptionsControl_Load(object sender, EventArgs e)
         {
             this.gitTfsTextBox.Text = BlinkboxSccOptions.Current.GitTfsPath;
+            this.commitCommentPropertyNameTextBox.Text = BlinkboxSccOptions.Current.CommitCommentPropertyName;
+            this.commitGuidPropertyNameTextBox.Text = BlinkboxSccOptions.Current.CommitGuidPropertyName;
+            this.urlToLaunchPropertyNameTextBox.Text = BlinkboxSccOptions.Current.UrlToLaunchPropertyName;
+            this.postCommitDeployProjectNameTextbox.Text = BlinkboxSccOptions.Current.PostCommitDeployProjectName;
+            PostCommitDeployProjectNameTextbox_TextChanged(null, null);
+
         }
 
         /// <summary>
@@ -225,6 +346,21 @@ namespace GitScc.Blinkbox.Options
                 textBox.Text = this.openFileDialog.FileName;
             }
         }
-    }
 
+        /// <summary>
+        /// Update labels with the name of the postCommitDeploy project.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void PostCommitDeployProjectNameTextbox_TextChanged(object sender, EventArgs e)
+        {
+            this.commitCommentPropertyNameLabel.Text = CommitCommentPropertyNameLabelText.Replace("{projectName}", this.postCommitDeployProjectNameTextbox.Text);
+            this.commitGuidPropertyNameLabel.Text = CommitGuidPropertyNameLabelText.Replace("{projectName}", this.postCommitDeployProjectNameTextbox.Text);
+            this.urlToLaunchPropertyNameLabel.Text = UrlToLaunchPropertyNameLabelText.Replace("{projectName}", this.postCommitDeployProjectNameTextbox.Text);
+        }
+    }
 }
