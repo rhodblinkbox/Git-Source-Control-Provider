@@ -38,6 +38,26 @@ namespace GitScc.Blinkbox.Options
         public bool LaunchDeployedUrlsInVS { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the project which handles the deploy part of the commit and deploy operation.
+        /// </summary>
+        public string PostCommitDeployProjectName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the property which provides the url to be launched after a commit and deploy.
+        /// </summary>
+        public string UrlToLaunchPropertyName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the property which provides the commit guid to the PostCommitDeployProject.
+        /// </summary>
+        public string CommitGuidPropertyName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the property which provides the commit comment to the PostCommitDeployProject.
+        /// </summary>
+        public string CommitCommentPropertyName { get; set; }
+
+        /// <summary>
         /// BlinkboxSccOptions.
         /// </summary>
         private static BlinkboxSccOptions sccOptions;
@@ -109,6 +129,11 @@ namespace GitScc.Blinkbox.Options
                 var possibleLocations = new string[] { @"C:\Program Files\Git-tfs\git-tfs.exe", @"C:\Program Files (x86)\Git-tfs\git-tfs.exe", };
                 this.GitTfsPath = this.TryFindFile(possibleLocations);
             }
+
+            this.PostCommitDeployProjectName = string.IsNullOrEmpty(this.PostCommitDeployProjectName) ? "postCommitDeploy.proj" : this.PostCommitDeployProjectName;
+            this.UrlToLaunchPropertyName = string.IsNullOrEmpty(this.UrlToLaunchPropertyName) ? "UrlToLaunch" : this.UrlToLaunchPropertyName;
+            this.CommitGuidPropertyName = string.IsNullOrEmpty(this.CommitGuidPropertyName) ? "CommitGuid" : this.CommitGuidPropertyName;
+            this.CommitCommentPropertyName = string.IsNullOrEmpty(this.CommitCommentPropertyName) ? "CommitComment" : this.CommitCommentPropertyName;
         }
 
         /// <summary>
