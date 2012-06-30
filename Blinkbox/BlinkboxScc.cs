@@ -22,6 +22,7 @@ namespace GitScc.Blinkbox
     using GitScc.Blinkbox.Events;
     using GitScc.Blinkbox.Options;
 
+    using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.OLE.Interop;
@@ -230,42 +231,49 @@ namespace GitScc.Blinkbox
                         return;
                     }
 
-                    var projectCollection = Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection;
-                    var commitComment = Regex.Replace(commit.Message, @"\r|\n|\t", string.Empty);
-                    commitComment = HttpUtility.UrlEncode(commitComment.Substring(0, commitComment.Length > 80 ? 80 : commitComment.Length));
-
-                    // Global properties need to be set before the projects are instantiated. 
-                    var globalProperties = new Dictionary<string, string>
-                        {
-                            { BlinkboxSccOptions.Current.CommitGuidPropertyName, commit.Hash },
-                            { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment }
-                        };
-                    var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0");
-
-                    // Build it
-                    WriteToStatusBar("Build " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
-                    var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
-                    var result = BuildManager.DefaultBuildManager.Build(new BuildParameters(projectCollection), buildRequest);
-
-                    if (result.OverallResult == BuildResultCode.Failure)
+                    // Initisalise our own project collection which can be cleaned up after the build. This is to prevent caching of the project. 
+                    using (var projectCollection = new ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection.ToolsetLocations))
                     {
-                        string message = result.Exception == null ? "Unknown error" : result.Exception.Message;
-                        MessageBox.Show(message, "Build failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
+                        var commitComment = Regex.Replace(commit.Message, @"\r|\n|\t", string.Empty);
+                        commitComment = HttpUtility.UrlEncode(commitComment.Substring(0, commitComment.Length > 80 ? 80 : commitComment.Length));
+
+                        // Global properties need to be set before the projects are instantiated. 
+                        var globalProperties = new Dictionary<string, string>
+                            {
+                                { BlinkboxSccOptions.Current.CommitGuidPropertyName, commit.Hash }, 
+                                { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment }
+                            };
+                        var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
+
+                        // Build it
+                        WriteToStatusBar("Build " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
+                        var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
+                        var result = BuildManager.DefaultBuildManager.Build(new BuildParameters(projectCollection), buildRequest);
+
+                        if (result.OverallResult == BuildResultCode.Failure)
+                        {
+                            string message = result.Exception == null ? "Unknown error" : result.Exception.Message;
+                            MessageBox.Show(message, "Build failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+
+                        // Launch urls in browser
+                        var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
+                        foreach (var launchItem in launchUrls)
+                        {
+                            this.LaunchBrowser(launchItem.EvaluatedInclude);
+                        }
+
+                        // Clean up project to prevent caching.
+                        projectCollection.UnloadAllProjects();
                     }
-
-                    // Get variables required for IIS admin from the first project.
-                    string launchUrl = msbuildProject.GetPropertyValue(BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
-
-                    // Launch url in browser
-                    this.LaunchBrowser(launchUrl);
                 }
                 catch (Exception exc)
                 {
                     MessageBox.Show(exc.Message, "Build failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
-         
+
             // Unsubscribe from successful commit event
             BlinkboxSccHooks.OnCommit -= this.DeploySuccessfulCommit;
         }
