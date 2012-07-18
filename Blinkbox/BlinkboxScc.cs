@@ -355,10 +355,10 @@ namespace GitScc.Blinkbox
         /// </returns>
         private bool IsSolutionGitTfsControlled()
         {
-            var solutionDirectory = this.GetSolutionDirectory();
-            if (!string.IsNullOrEmpty(solutionDirectory))
+            var repositoryDirectory = GitFileStatusTracker.GetRepositoryDirectory(this.GetSolutionDirectory());
+            if (!string.IsNullOrEmpty(repositoryDirectory))
             {
-                var expectedGitTfsDirectory = solutionDirectory + "\\.git\\tfs";
+                var expectedGitTfsDirectory = repositoryDirectory + "\\.git\\tfs";
                 return Directory.Exists(expectedGitTfsDirectory);
             }
 
