@@ -38,5 +38,10 @@ namespace GitScc.Blinkbox
         /// Identifies the GitTfsGetLatest command.
         /// </summary>
         public const int GitTfsGetLatestButtonId = 0x404;
+
+        /// <summary>
+        /// Identifies the GitTfs CleanWorkspaces command.
+        /// </summary>
+        public const int GitTfsCleanWorkspacesButtonId = 0x405;
     }
 }

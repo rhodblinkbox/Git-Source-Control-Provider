@@ -24,6 +24,7 @@ namespace GitScc.Blinkbox
 
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
+    using Microsoft.Build.Framework;
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.OLE.Interop;
     using Microsoft.VisualStudio.Shell;
@@ -141,6 +142,7 @@ namespace GitScc.Blinkbox
 
                 case Blinkbox.CommandIds.GitTfsCheckinButtonId:
                 case Blinkbox.CommandIds.GitTfsGetLatestButtonId:
+                case Blinkbox.CommandIds.GitTfsCleanWorkspacesButtonId:
                 case Blinkbox.CommandIds.GitTfsMenu:
                 case Blinkbox.CommandIds.GitTfsMenuGroup:
                     // Disable controls if git-tfs is not found. 
@@ -220,6 +222,9 @@ namespace GitScc.Blinkbox
             if (commit.Success)
             {
                 commit.Hash = this.GetLatestCommitHash();
+                
+                NotificationWriter.Clear();
+                NotificationWriter.Write("Commit " + commit.Hash + " successful, begin build...");
 
                 try
                 {
@@ -230,6 +235,8 @@ namespace GitScc.Blinkbox
                         MessageBox.Show("build project not found", "Deploy abandoned", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
+
+                    NotificationWriter.Write("Deploy project found at " + buildProjectFileName);
 
                     // Initisalise our own project collection which can be cleaned up after the build. This is to prevent caching of the project. 
                     using (var projectCollection = new ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection.ToolsetLocations))
@@ -246,13 +253,17 @@ namespace GitScc.Blinkbox
                         var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
 
                         // Build it
-                        WriteToStatusBar("Build " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
+                        WriteToStatusBar("Building " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
                         var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
-                        var result = BuildManager.DefaultBuildManager.Build(new BuildParameters(projectCollection), buildRequest);
+                        
+                        var buildParams = new BuildParameters(projectCollection);
+                        buildParams.Loggers = new List<ILogger>() { new BuildNotificationLogger() { Verbosity = LoggerVerbosity.Normal } };
+
+                        var result = BuildManager.DefaultBuildManager.Build(buildParams, buildRequest);
 
                         if (result.OverallResult == BuildResultCode.Failure)
                         {
-                            string message = result.Exception == null ? "Unknown error" : result.Exception.Message;
+                            string message = result.Exception == null ? "Unknown error: please see output window." : result.Exception.Message;
                             MessageBox.Show(message, "Build failed", MessageBoxButton.OK, MessageBoxImage.Error);
                             return;
                         }
@@ -266,6 +277,7 @@ namespace GitScc.Blinkbox
 
                         // Clean up project to prevent caching.
                         projectCollection.UnloadAllProjects();
+                        projectCollection.UnregisterAllLoggers();
                     }
                 }
                 catch (Exception exc)
