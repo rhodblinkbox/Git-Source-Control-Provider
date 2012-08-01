@@ -15,9 +15,14 @@ namespace GitScc.Blinkbox
     public class CommandIds
     {
         /// <summary>
-        /// Identifies the CommitAndTest command.
+        /// Identifies the CommitAndDeploy command.
         /// </summary>
-        public const int BlinkboxCommitAndTestId = 0x117;
+        public const int BlinkboxCommitAndDeployId = 0x117;
+
+        /// <summary>
+        /// Identifies the Deploy command.
+        /// </summary>
+        public const int BlinkboxDeployId = 0x118;
 
         /// <summary>
         /// Identifies the GitTfsMenu command.
