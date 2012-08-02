@@ -94,8 +94,8 @@ namespace GitScc.Blinkbox
                 // Register Git Tfs commands with menu service
                 foreach (var menuOption in GitTfs.MenuOptions)
                 {
-                    var commandText = menuOption.CommandText;
-                    Action handler = () => GitTfs.RunGitTfsCommand(commandText, this.GetSolutionDirectory());
+                    var currentMenuOption = menuOption;
+                    Action handler = () => currentMenuOption.Handler(this.GetSolutionDirectory());
                     RegisterCommandWithMenuService(menuService, menuOption.CommandId, (sender, args) => handler());
                 }
 
@@ -152,6 +152,7 @@ namespace GitScc.Blinkbox
                 case Blinkbox.CommandIds.GitTfsCheckinButtonId:
                 case Blinkbox.CommandIds.GitTfsGetLatestButtonId:
                 case Blinkbox.CommandIds.GitTfsCleanWorkspacesButtonId:
+                case Blinkbox.CommandIds.GitTfsReviewButtonId:
                 case Blinkbox.CommandIds.GitTfsMenu:
                 case Blinkbox.CommandIds.GitTfsMenuGroup:
                     // Disable controls if git-tfs is not found. 

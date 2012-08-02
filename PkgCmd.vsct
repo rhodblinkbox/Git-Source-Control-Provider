@@ -138,6 +138,21 @@
                 <ButtonText>Clean Workspaces</ButtonText>
             </Strings>
         </Button>
+
+        <Button guid="guidSccProviderCmdSet"
+                id="GitTfsReviewButtonId"
+                priority="0x0107"
+                type="Button">
+            <Parent guid="guidSccProviderCmdSet"
+                    id="GitTfsMenuGroup"/>
+            <Icon guid="guidSccProviderImages"
+                  id="iconGitBash" />
+            <CommandFlag>IconAndText</CommandFlag>
+            <Strings>
+                <CommandName>GitTfsReviewButtonId</CommandName>
+                <ButtonText>Review</ButtonText>
+            </Strings>
+        </Button>
         
       <Button guid="guidSccProviderCmdSet" id="icmdSccCommandGitBash" priority="0x0106" type="Button">
         <Parent guid="guidSccProviderCmdSet" id="igrpSourceControlCommands"/>
@@ -467,6 +482,8 @@
                   value="0x404"/>
         <IDSymbol name="GitTfsCleanWorkspacesButtonId"
                   value="0x405"/>
+        <IDSymbol name="GitTfsReviewButtonId"
+                  value="0x406"/>
         
       <IDSymbol name="icmdSccCommandRefresh" value="0x101"/>
       <IDSymbol name="icmdSccCommandGitBash" value="0x102"/>

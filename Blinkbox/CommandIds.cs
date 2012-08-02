@@ -48,5 +48,10 @@ namespace GitScc.Blinkbox
         /// Identifies the GitTfs CleanWorkspaces command.
         /// </summary>
         public const int GitTfsCleanWorkspacesButtonId = 0x405;
+
+        /// <summary>
+        /// Identifies the GitTfs CleanWorkspaces command.
+        /// </summary>
+        public const int GitTfsReviewButtonId = 0x406;
     }
 }
