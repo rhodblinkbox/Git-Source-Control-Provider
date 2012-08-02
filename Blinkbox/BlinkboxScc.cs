@@ -247,6 +247,7 @@ namespace GitScc.Blinkbox
         {
             if (commit.Success)
             {
+                commit.Hash = this.GetLatestCommitHash();
                 NotificationWriter.Clear();
                 NotificationWriter.Write("Commit " + commit.Hash + " successful");
                 this.Deploy(commit);
@@ -300,13 +301,15 @@ namespace GitScc.Blinkbox
                     var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
 
                     var buildParams = new BuildParameters(projectCollection);
-                    buildParams.Loggers = new List<ILogger>() { new BuildNotificationLogger() { Verbosity = LoggerVerbosity.Normal } };
+                    buildParams.Loggers = new List<ILogger>() { new BuildNotificationLogger() { Verbosity = LoggerVerbosity.Minimal } };
 
                     var result = BuildManager.DefaultBuildManager.Build(buildParams, buildRequest);
 
                     if (result.OverallResult == BuildResultCode.Failure)
                     {
-                        string message = result.Exception == null ? "Unknown error: please see output window." : result.Exception.Message;
+                        string message = result.Exception == null 
+                            ? "An error occurred during build; please see the pending changes window for details." 
+                            : result.Exception.Message;
                         MessageBox.Show(message, "Build failed", MessageBoxButton.OK, MessageBoxImage.Error);
                         return false;
                     }
