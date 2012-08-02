@@ -51,7 +51,7 @@ namespace GitScc.Blinkbox
             {
                 Name = "Clean Workspace",
                 CommandId = Blinkbox.CommandIds.GitTfsCleanWorkspacesButtonId,
-                Handler = (workingDir) => Run("cleanup-workspaces", workingDir)
+                Handler = (workingDir) => RunGitTfs("cleanup-workspaces", workingDir)
             });
         }
 
@@ -79,31 +79,13 @@ namespace GitScc.Blinkbox
         /// <param name="wait">
         /// waits for the process to exit before continuing execution.
         /// </param>
-        public static void Run(string command, string workingDirectory, bool wait = false)
+        public static void RunGitTfs(string command, string workingDirectory, bool wait = false)
         {
-            var process = new System.Diagnostics.Process();
-            process.StartInfo = new ProcessStartInfo("cmd.exe", "/k git tfs " + command);
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.WorkingDirectory = workingDirectory;
-            process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            var process = new Command("cmd.exe", "/k git tfs " + command, workingDirectory) { WaitUntilfinished = wait };
 
-            // Write output to the pending changes window
             NotificationWriter.Clear();
             NotificationWriter.NewSection("Git-Tfs " + command);
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.OutputDataReceived += (sender, args) => NotificationWriter.Write(args.Data);
-            process.ErrorDataReceived += (sender, args) => NotificationWriter.Write(args.Data);
-
             process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            if (wait)
-            {
-                process.WaitForExit();
-            }
         }
 
         /// <summary>
@@ -131,7 +113,7 @@ namespace GitScc.Blinkbox
             GitBash.Run("checkout tfs_merge", workingDirectory);
 
             // Pull down changes
-            Run("pull", workingDirectory);
+            RunGitTfs("pull", workingDirectory);
 
             // Switch back to current branch
             GitBash.Run("checkout " + currentBranch, workingDirectory);
@@ -195,7 +177,7 @@ namespace GitScc.Blinkbox
             GitBash.Run("git merge " + currentBranch + " --no-commit", workingDirectory);
 
             // Checkin from tfs-merge branch
-            Run("checkintool", workingDirectory, true);
+            RunGitTfs("checkintool", workingDirectory);
 
             // Switch back to the current Branch 
             GitBash.Run("checkout " + currentBranch, workingDirectory);
