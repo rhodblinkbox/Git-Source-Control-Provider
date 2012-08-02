@@ -49,10 +49,7 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Executes the command
         /// </summary>
-        /// <returns>
-        /// the result of execution
-        /// </returns>
-        public new int Start()
+        public new void Start()
         {
             base.Start();
             this.BeginOutputReadLine();

@@ -93,6 +93,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blinkbox\Command.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Blinkbox\CommandIds.cs" />
     <Compile Include="Blinkbox\BuildNotificationLogger.cs" />
     <Compile Include="Blinkbox\NotificationWriter.cs" />
@@ -109,7 +112,7 @@
     <Compile Include="Blinkbox\Options\BlinkboxOptionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PendingChangesView.bb.cs" >
+    <Compile Include="PendingChangesView.bb.cs">
       <DependentUpon>PendingChangesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="GitToolCommands.cs" />

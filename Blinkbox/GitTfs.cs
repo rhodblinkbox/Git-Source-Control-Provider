@@ -16,6 +16,16 @@ namespace GitScc.Blinkbox
     public class GitTfs
     {
         /// <summary>
+        /// the name of the tfs merge branch
+        /// </summary>
+        private static readonly string tfsMergeBranch = "tfs_merge_test";
+
+        /// <summary>
+        /// The name of the tfs remote branch
+        /// </summary>
+        private static readonly string tfsRemoteBranch = "remotes/tfs/default";
+
+        /// <summary>
         /// Commands which appear in the git tfs menu
         /// </summary>
         private static readonly List<GitTfsCommand> menuOptions = new List<GitTfsCommand>();
@@ -28,9 +38,16 @@ namespace GitScc.Blinkbox
 
             menuOptions.Add(new GitTfsCommand()
             {
-                Name = "Review (merge to tfs_merge)",
+                Name = "Review (compare to tfs_merge branch)",
                 CommandId = Blinkbox.CommandIds.GitTfsReviewButtonId,
                 Handler = (workingDir) => Review(workingDir)
+            });
+
+            menuOptions.Add(new GitTfsCommand()
+            {
+                Name = "Complete Review (merge to tfs_merge branch)",
+                CommandId = Blinkbox.CommandIds.GitTfsCompleteReviewButtonId,
+                Handler = (workingDir) => CompleteReview(workingDir)
             });
 
             menuOptions.Add(new GitTfsCommand()
@@ -89,6 +106,37 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
+        /// Runs initial checks
+        /// </summary>
+        /// <param name="workingDirectory">
+        /// The working directory.
+        /// </param>
+        /// <returns>
+        /// true if successful
+        /// </returns>
+        private static bool InitialChecks(string workingDirectory)
+        {
+            try
+            {
+                var cleanWorkingDirectory = string.IsNullOrEmpty(GitBash.Run("status --porcelain", workingDirectory));
+                if (!cleanWorkingDirectory)
+                {
+                    MessageBox.Show("Cannot Get Latest - there are uncommitted changes in your working directory", "Cannot Get Latest", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return false;
+                }
+
+                // Create the tfs_merge branch (fails silently if it already exists)
+                GitBash.Run("branch refs/heads/" + tfsMergeBranch, workingDirectory);
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Get the latest from TFS
         /// </summary>
         /// <param name="workingDirectory">
@@ -96,21 +144,16 @@ namespace GitScc.Blinkbox
         /// </param>
         public static void GetLatest(string workingDirectory)
         {
-            var cleanWorkingDirectory = string.IsNullOrEmpty(GitBash.Run("status --porcelain", workingDirectory));
-            if (!cleanWorkingDirectory)
+            if (!InitialChecks(workingDirectory))
             {
-                MessageBox.Show("Cannot Get Latest - there are uncommitted changes in your working directory", "Cannot Get Latest", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             // store the name of the current branch
             var currentBranch = GitBash.Run("symbolic-ref -q HEAD", workingDirectory);
 
-            // Create the tfs_merge branch (fails silently if it already exists)
-            GitBash.Run("branch refs/heads/tfs_merge", workingDirectory);
-
             // Switch to the tfs-merge branch 
-            GitBash.Run("checkout tfs_merge", workingDirectory);
+            GitBash.Run("checkout " + tfsMergeBranch, workingDirectory);
 
             // Pull down changes
             RunGitTfs("pull", workingDirectory);
@@ -119,7 +162,7 @@ namespace GitScc.Blinkbox
             GitBash.Run("checkout " + currentBranch, workingDirectory);
 
             // Merge without commit from tfs-merge to current branch. 
-            GitBash.Run("git merge " + currentBranch + " --no-commit", workingDirectory);
+            GitBash.Run("git merge " + tfsRemoteBranch + " --no-commit", workingDirectory);
 
             // show the tortoise commit tool
             RunTortoise("commit", workingDirectory);
@@ -150,6 +193,37 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
+        /// Merges the current working branch into tfs_merge branch
+        /// </summary>
+        /// <param name="workingDirectory">
+        /// The working directory.
+        /// </param>
+        public static void CompleteReview(string workingDirectory)
+        {
+            var cleanWorkingDirectory = string.IsNullOrEmpty(GitBash.Run("status --porcelain", workingDirectory));
+            if (!cleanWorkingDirectory)
+            {
+                MessageBox.Show("Cannot Get Latest - there are uncommitted changes in your working directory", "Cannot Get Latest", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // store the name of the current branch
+            var currentBranch = GitBash.Run("symbolic-ref -q HEAD", workingDirectory);
+
+            // Create the tfs_merge branch (fails silently if it already exists)
+            GitBash.Run("branch refs/heads/" + tfsMergeBranch, workingDirectory);
+
+            // Switch to the tfs-merge branch 
+            GitBash.Run("checkout " + tfsMergeBranch, workingDirectory);
+
+            // Merge without commit from tfs-merge to current branch. 
+            GitBash.Run("git merge " + currentBranch + " --no-commit", workingDirectory);
+
+            // show the tortoise commit tool
+            RunTortoise("commit", workingDirectory);
+        }
+
+        /// <summary>
         /// Get the latest from TFS
         /// </summary>
         /// <param name="workingDirectory">
@@ -168,10 +242,10 @@ namespace GitScc.Blinkbox
             var currentBranch = GitBash.Run("symbolic-ref -q HEAD", workingDirectory);
 
             // Create the tfs_merge branch (fails silently if it already exists)
-            GitBash.Run("branch refs/heads/tfs_merge", workingDirectory);
+            GitBash.Run("branch refs/heads/" + tfsMergeBranch, workingDirectory);
 
             // Switch to the tfs-merge branch 
-            GitBash.Run("checkout tfs_merge", workingDirectory);
+            GitBash.Run("checkout " + tfsMergeBranch, workingDirectory);
 
             // Run a tortoise merge . 
             GitBash.Run("git merge " + currentBranch + " --no-commit", workingDirectory);
@@ -181,8 +255,6 @@ namespace GitScc.Blinkbox
 
             // Switch back to the current Branch 
             GitBash.Run("checkout " + currentBranch, workingDirectory);
-
-
         }
 
         /// <summary>

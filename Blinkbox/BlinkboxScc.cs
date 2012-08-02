@@ -153,6 +153,7 @@ namespace GitScc.Blinkbox
                 case Blinkbox.CommandIds.GitTfsGetLatestButtonId:
                 case Blinkbox.CommandIds.GitTfsCleanWorkspacesButtonId:
                 case Blinkbox.CommandIds.GitTfsReviewButtonId:
+                case Blinkbox.CommandIds.GitTfsCompleteReviewButtonId:
                 case Blinkbox.CommandIds.GitTfsMenu:
                 case Blinkbox.CommandIds.GitTfsMenuGroup:
                     // Disable controls if git-tfs is not found. 
