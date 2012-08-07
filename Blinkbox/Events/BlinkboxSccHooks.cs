@@ -48,6 +48,11 @@ namespace GitScc.Blinkbox.Events
         public static event EventHandler<OnCommitArgs> OnCommit;
 
         /// <summary>
+        /// Event fired before a refresh.
+        /// </summary>
+        public static event EventHandler<EventArgs> OnRefreshButton;
+
+        /// <summary>
         /// Gets or sets a single hook into the IOleCommandTarget.QueryStatus call in the package. 
         /// Can only be set once - it must run syncronously and return a status value. 
         /// </summary>
@@ -105,6 +110,19 @@ namespace GitScc.Blinkbox.Events
             if (OnCommit != null)
             {
                 OnCommit(sender, args);
+            }
+        }
+
+        /// <summary>
+        /// Triggers the settings Refresh event.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="args">The args.</param>
+        internal static void TriggerRefreshButton(object sender, EventArgs args)
+        {
+            if (OnRefreshButton != null)
+            {
+                OnRefreshButton(sender, args);
             }
         }
     }

@@ -339,6 +339,7 @@ namespace GitScc
 
         private void OnRefreshCommand(object sender, EventArgs e)
         {
+            Blinkbox.Events.BlinkboxSccHooks.TriggerRefreshButton(sender, e);
             sccService.NoRefresh = false;
             sccService.Refresh();
         }

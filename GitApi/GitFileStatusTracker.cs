@@ -18,7 +18,7 @@ using System.Diagnostics;
 
 namespace GitScc
 {
-    public class GitFileStatusTracker : IDisposable
+    public partial class GitFileStatusTracker : IDisposable
     {
         private string initFolder;
 

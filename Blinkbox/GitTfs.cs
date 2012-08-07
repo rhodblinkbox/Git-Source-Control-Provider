@@ -9,6 +9,7 @@ namespace GitScc.Blinkbox
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Windows;
+    using System.Linq;
 
     /// <summary>
     /// Git Tfs class.
@@ -98,10 +99,7 @@ namespace GitScc.Blinkbox
         /// </param>
         public static void RunGitTfs(string command, string workingDirectory, bool wait = false)
         {
-            var process = new Command("cmd.exe", "/k git tfs " + command, workingDirectory) { WaitUntilfinished = wait };
-
-            NotificationWriter.Clear();
-            NotificationWriter.NewSection("Git-Tfs " + command);
+            var process = new Command("cmd.exe", "/k git tfs " + command, workingDirectory) { WaitUntilFinished = wait };
             process.Start();
         }
 
@@ -150,22 +148,26 @@ namespace GitScc.Blinkbox
             }
 
             // store the name of the current branch
-            var currentBranch = GitBash.Run("symbolic-ref -q HEAD", workingDirectory);
+            var currentBranch = GetCurrentBranch(workingDirectory);
 
             // Switch to the tfs-merge branch 
-            GitBash.Run("checkout " + tfsMergeBranch, workingDirectory);
+            var checkoutTfsMerge = new GitCommand("checkout " + tfsMergeBranch, workingDirectory).StartAndWait();
 
-            // Pull down changes
+            // Pull down changes into tfs remote branch, and tfs_merge branch
             RunGitTfs("pull", workingDirectory);
 
-            // Switch back to current branch
-            GitBash.Run("checkout " + currentBranch, workingDirectory);
+            CommitIfRequired(workingDirectory);
 
-            // Merge without commit from tfs-merge to current branch. 
-            GitBash.Run("git merge " + tfsRemoteBranch + " --no-commit", workingDirectory);
+            if (!string.IsNullOrEmpty(currentBranch))
+            {
+                // Switch back to current branch
+                var checkoutCurrentBranch = new GitCommand("checkout " + currentBranch, workingDirectory).StartAndWait();
 
-            // show the tortoise commit tool
-            RunTortoise("commit", workingDirectory);
+                // Merge without commit from tfs-merge to current branch. 
+                var mergeLatestToCurrent = new GitCommand("merge " + tfsRemoteBranch + " --no-commit", workingDirectory).StartAndWait();
+
+                CommitIfRequired(workingDirectory);
+            }
         }
 
         /// <summary>
@@ -183,13 +185,14 @@ namespace GitScc.Blinkbox
                 return;
             }
 
-            // TODO: get latest from tfs
-
             // store the name of the current branch
-            var currentBranch = GitBash.Run("symbolic-ref -q HEAD", workingDirectory);
+            var currentBranch = GetCurrentBranch(workingDirectory);
 
-            // Run tortoise diff between current branch and tfs_merge branch
-            RunTortoise("showcompare /url1:refs/heads/" + currentBranch + " /url2:refs/heads/tfs_merge /revision1:HEAD /revision2:HEAD", workingDirectory);
+            var compareCommand = new GitCommand("diff --name-status " + currentBranch + ".." + tfsMergeBranch, workingDirectory).Start();
+            var diffList = compareCommand.Output.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var files = diffList.Select(x => x.Split("\t".ToCharArray())).Select(x => new { Status = x[0], File = x[1] });
+            var gitFiles = files.Select(f => new GitFile() { FileName = f.File, Status = GitFileStatus.Modified });
+            PendingChangesView.Review(gitFiles.ToList());
         }
 
         /// <summary>
@@ -239,22 +242,65 @@ namespace GitScc.Blinkbox
             }
 
             // store the name of the current branch
-            var currentBranch = GitBash.Run("symbolic-ref -q HEAD", workingDirectory);
+            var currentBranch = GetCurrentBranch(workingDirectory);
 
             // Create the tfs_merge branch (fails silently if it already exists)
-            GitBash.Run("branch refs/heads/" + tfsMergeBranch, workingDirectory);
+            new GitCommand("branch refs/heads/" + tfsMergeBranch, workingDirectory);
 
             // Switch to the tfs-merge branch 
-            GitBash.Run("checkout " + tfsMergeBranch, workingDirectory);
+            new GitCommand("checkout " + tfsMergeBranch, workingDirectory);
 
             // Run a tortoise merge . 
-            GitBash.Run("git merge " + currentBranch + " --no-commit", workingDirectory);
+            new GitCommand("merge " + currentBranch + " --no-commit", workingDirectory);
 
             // Checkin from tfs-merge branch
             RunGitTfs("checkintool", workingDirectory);
 
             // Switch back to the current Branch 
-            GitBash.Run("checkout " + currentBranch, workingDirectory);
+            new GitCommand("checkout " + currentBranch, workingDirectory);
+        }
+
+        /// <summary>
+        /// Get the name of the current branch. 
+        /// </summary>
+        /// <param name="workingDirectory">
+        /// The working directory.
+        /// </param>
+        /// <returns>
+        /// the name of the current branch
+        /// </returns>
+        private static string GetCurrentBranch(string workingDirectory)
+        {
+            var versionCommand = new GitCommand("symbolic-ref -q HEAD", workingDirectory).StartAndWait();
+            return versionCommand.Output.Replace("refs/heads/", string.Empty);
+        }
+
+        /// <summary> 
+        /// Checks whether the working directory is clean.
+        /// </summary>
+        /// <param name="workingDirectory">
+        /// The working directory.
+        /// </param>
+        /// <returns>
+        /// true if the working directory is clean.
+        /// </returns>
+        private static bool WorkingDirectoryClean(string workingDirectory)
+        {
+            return string.IsNullOrEmpty(GitBash.Run("status --porcelain", workingDirectory));
+        }
+
+        /// <summary>
+        /// Merges if required.
+        /// </summary>
+        /// <param name="workingDirectory">
+        /// The working Directory.
+        /// </param>
+        private static void CommitIfRequired(string workingDirectory)
+        {
+            if (!WorkingDirectoryClean(workingDirectory))
+            {
+                RunTortoise("commit", workingDirectory);
+            }
         }
 
         /// <summary>
@@ -270,6 +316,23 @@ namespace GitScc.Blinkbox
         {
             var tortoiseGitPath = GitSccOptions.Current.TortoiseGitPath;
             RunDetatched(tortoiseGitPath, "/command:" + command + " /path:\"" + workingDirectory + "\"", workingDirectory);
+            using (Process process = new Process())
+            {
+                process.StartInfo.UseShellExecute = true;
+                process.StartInfo.ErrorDialog = false;
+                process.StartInfo.RedirectStandardOutput = false;
+                process.StartInfo.RedirectStandardInput = false;
+
+                process.StartInfo.CreateNoWindow = false;
+                process.StartInfo.FileName = tortoiseGitPath;
+                process.StartInfo.Arguments = "/command:" + command + " /path:\"" + workingDirectory + "\"";
+                process.StartInfo.WorkingDirectory = workingDirectory;
+                process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+                process.StartInfo.LoadUserProfile = true;
+
+                process.Start();
+                process.WaitForExit();
+            }
         }
 
         /// <summary>
@@ -301,6 +364,7 @@ namespace GitScc.Blinkbox
                 process.StartInfo.LoadUserProfile = true;
 
                 process.Start();
+                process.WaitForExit();
             }
         } 
 

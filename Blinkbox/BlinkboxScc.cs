@@ -59,6 +59,7 @@ namespace GitScc.Blinkbox
             // Setup Hooks
             BlinkboxSccHooks.QueryCommandStatus = this.QueryCommandStatus;
             BlinkboxSccHooks.OnRegisterCommands += (sender, args) => this.RegisterComponents(args.MenuService);
+            BlinkboxSccHooks.OnRefreshButton += (sender, args) => PendingChangesView.CancelReview();
             this.sccService = sccProviderService;
             this.basicSccProvider = basicSccProvider;
         }

@@ -102,11 +102,11 @@ namespace GitScc
 
         private void dataGrid1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            GetSelectedFileFullName((fileName) =>
+            GetSelectedFileFullName(fileName =>
             {
-                OpenFile(fileName);
+                var service = BasicSccProvider.GetServiceEx<SccProviderService>();
+                service.CompareFile(fileName);
             });
-
         }
 
         private void ClearEditor()
@@ -177,6 +177,12 @@ namespace GitScc
         DateTime lastTimeRefresh = DateTime.Now.AddDays(-1);
         internal void Refresh(GitFileStatusTracker tracker)
         {
+            if (Reviewing)
+            {
+                // We are currently showing the review list, so dont refresh the UI
+                return;
+            }
+
             this.tracker = tracker;
 
             if (!GitBash.Exists)
