@@ -19,12 +19,17 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// the name of the tfs merge branch
         /// </summary>
-        private static readonly string tfsMergeBranch = "tfs_merge_test";
+        private static readonly string tfsMergeBranch = "tfs_merge";
 
         /// <summary>
         /// The name of the tfs remote branch
         /// </summary>
         private static readonly string tfsRemoteBranch = "remotes/tfs/default";
+
+        /// <summary>
+        /// The name of the tfs remote branch
+        /// </summary>
+        public const string defaultBranch = "HEAD";
 
         /// <summary>
         /// Commands which appear in the git tfs menu
@@ -178,6 +183,7 @@ namespace GitScc.Blinkbox
         /// </param>
         public static void Review(string workingDirectory)
         {
+            // TODO: review wrong way round - delete rather than add. 
             var cleanWorkingDirectory = string.IsNullOrEmpty(GitBash.Run("status --porcelain", workingDirectory));
             if (!cleanWorkingDirectory)
             {
@@ -190,9 +196,8 @@ namespace GitScc.Blinkbox
 
             var compareCommand = new GitCommand("diff --name-status " + currentBranch + ".." + tfsMergeBranch, workingDirectory).Start();
             var diffList = compareCommand.Output.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-            var files = diffList.Select(x => x.Split("\t".ToCharArray())).Select(x => new { Status = x[0], File = x[1] });
-            var gitFiles = files.Select(f => new GitFile() { FileName = f.File, Status = GitFileStatus.Modified });
-            PendingChangesView.Review(gitFiles.ToList());
+            var gitFiles = diffList.Select(GitFile.FromDiff);
+            PendingChangesView.Review(gitFiles.ToList(), tfsMergeBranch);
         }
 
         /// <summary>
@@ -315,7 +320,7 @@ namespace GitScc.Blinkbox
         public static void RunTortoise(string command, string workingDirectory)
         {
             var tortoiseGitPath = GitSccOptions.Current.TortoiseGitPath;
-            RunDetatched(tortoiseGitPath, "/command:" + command + " /path:\"" + workingDirectory + "\"", workingDirectory);
+            ////RunDetatched(tortoiseGitPath, "/command:" + command + " /path:\"" + workingDirectory + "\"", workingDirectory);
             using (Process process = new Process())
             {
                 process.StartInfo.UseShellExecute = true;
@@ -333,6 +338,12 @@ namespace GitScc.Blinkbox
                 process.Start();
                 process.WaitForExit();
             }
+        }
+
+        public static string GetLatestRevision(string workingDirectory, string branchName = defaultBranch)
+        {
+            var command = new GitCommand("rev-parse " + branchName, workingDirectory).StartAndWait();
+            return command.Output.Replace("\n", string.Empty); // Git bash adds a return on the end
         }
 
         /// <summary>

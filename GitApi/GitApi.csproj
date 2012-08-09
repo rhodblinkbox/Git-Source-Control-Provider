@@ -38,6 +38,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GitFile.bb.cs" />
     <Compile Include="GitFileStatusTracker.bb.cs" />
     <Compile Include="DataServices\Change.cs" />
     <Compile Include="DataServices\Commit.cs" />

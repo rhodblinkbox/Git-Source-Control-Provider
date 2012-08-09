@@ -100,14 +100,15 @@ namespace GitScc
             this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
         }
 
-        private void dataGrid1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             GetSelectedFileFullName(fileName =>
             {
                 var service = BasicSccProvider.GetServiceEx<SccProviderService>();
-                service.CompareFile(fileName);
+                service.CompareFile(fileName, reviewBranchName);
             });
         }
+        
 
         private void ClearEditor()
         {

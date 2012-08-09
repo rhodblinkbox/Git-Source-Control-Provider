@@ -712,14 +712,14 @@ namespace GitScc
             CompareFile(fileName);
         }
 
-        internal void CompareFile(string fileName)
+        internal void CompareFile(string fileName, string branchName = null)
         {
             GitFileStatus status = GetFileStatus(fileName);
             if (status == GitFileStatus.Modified || status == GitFileStatus.Staged)
             {
                 string tempFile = Path.GetFileName(fileName);
                 tempFile = Path.Combine(Path.GetTempPath(), tempFile);
-                CurrentTracker.SaveFileFromRepository(fileName, tempFile);
+                CurrentTracker.SaveFileFromRepository(fileName, tempFile, branchName);
                 _sccProvider.RunDiffCommand(tempFile, fileName);
             }
         }

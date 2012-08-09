@@ -15,7 +15,11 @@ namespace GitScc
     using System.Diagnostics;
     using System.Linq;
     using System.Windows.Data;
+    using System.Windows.Input;
     using System.Windows.Threading;
+
+    using GitScc.Blinkbox;
+    using GitScc.Blinkbox.Options;
 
     /// <summary>
     /// BB extensions to the PendingChangesView
@@ -27,21 +31,40 @@ namespace GitScc
         /// </summary>
         private static PendingChangesView currentInstance;
 
+        internal string reviewBranchName = null;
+
         /// <summary>
         /// Flag indicates that a review is currently in progress.
         /// </summary>
         public bool Reviewing { get; private set; }
 
-        public static void Review (List<GitFile> changedFiles)
+        /// <summary>
+        /// Show a list of files for review.
+        /// </summary>
+        /// <param name="changedFiles">
+        /// The changed files.
+        /// </param>
+        public static void Review (List<GitFile> changedFiles, string branchName)
         {
+            currentInstance.reviewBranchName = branchName;
             currentInstance.DisplayReview(changedFiles);
         }
 
+        /// <summary>
+        /// Cancel the current review and enable the pending changes list. 
+        /// </summary>
         public static void CancelReview()
         {
+            currentInstance.reviewBranchName = null;
             currentInstance.Reviewing = false;
         }
-        
+
+        /// <summary>
+        /// List the provided files in the pending changes window for reivew. 
+        /// </summary>
+        /// <param name="changedFiles">
+        /// The changed files.
+        /// </param>
         internal void DisplayReview(List<GitFile> changedFiles)
         {
             // Set the reviewing flag to prevent refreshes over-writing the review list with the pending changes list.
@@ -127,8 +150,20 @@ namespace GitScc
 
             this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
         }
-        
 
+        private void dataGrid1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            GetSelectedFileFullName(fileName =>
+            {
+                // Call tortoiseproc to compare.
+                var workingDirectory = service.CurrentTracker.GitWorkingDirectory;
+                var tfsRevision = GitTfs.GetLatestRevision(this.service.CurrentTracker.GitWorkingDirectory, BlinkboxSccOptions.Current.TfsMergeBranch);
+                var command = Reviewing
+                    ? string.Format("diff /path:{0} /startrev:{1} /endrev:{2}", fileName, "0000000000000000000000000000000000000000", tfsRevision)
+                    : string.Format("diff /path:{0}", fileName);
+                GitTfs.RunTortoise(command, workingDirectory);
+            });
+        }
 
         /// <summary>
         /// Writes a message to the diff editor

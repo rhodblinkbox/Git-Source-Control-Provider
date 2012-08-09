@@ -30,6 +30,11 @@ namespace GitScc.Blinkbox.Options
         public string GitTfsPath { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the TFS merge branch.
+        /// </summary>
+        public string TfsMergeBranch { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether deployed urls should be launched in VS or in the default browser.
         /// </summary>
         /// <value>
@@ -134,6 +139,7 @@ namespace GitScc.Blinkbox.Options
             this.UrlToLaunchPropertyName = string.IsNullOrEmpty(this.UrlToLaunchPropertyName) ? "UrlToLaunch" : this.UrlToLaunchPropertyName;
             this.CommitGuidPropertyName = string.IsNullOrEmpty(this.CommitGuidPropertyName) ? "CommitGuid" : this.CommitGuidPropertyName;
             this.CommitCommentPropertyName = string.IsNullOrEmpty(this.CommitCommentPropertyName) ? "CommitComment" : this.CommitCommentPropertyName;
+            this.TfsMergeBranch = string.IsNullOrEmpty(this.TfsMergeBranch) ? "tfs_merge" : this.TfsMergeBranch;
         }
 
         /// <summary>
