@@ -117,14 +117,14 @@ namespace GitScc.Blinkbox
         /// <returns>
         /// true if successful
         /// </returns>
-        private static bool InitialChecks(string workingDirectory)
+        private static bool InitialChecks(string workingDirectory, string operation)
         {
             try
             {
                 var cleanWorkingDirectory = string.IsNullOrEmpty(GitBash.Run("status --porcelain", workingDirectory));
                 if (!cleanWorkingDirectory)
                 {
-                    MessageBox.Show("Cannot Get Latest - there are uncommitted changes in your working directory", "Cannot Get Latest", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Cannot " + operation + " - there are uncommitted changes in your working directory", "Cannot Get Latest", MessageBoxButton.OK, MessageBoxImage.Error);
                     return false;
                 }
 
@@ -147,10 +147,13 @@ namespace GitScc.Blinkbox
         /// </param>
         public static void GetLatest(string workingDirectory)
         {
-            if (!InitialChecks(workingDirectory))
+            if (!InitialChecks(workingDirectory, "Get Latest"))
             {
                 return;
             }
+
+
+            NotificationWriter.NewSection("Start Get Latest");
 
             // store the name of the current branch
             var currentBranch = GetCurrentBranch(workingDirectory);
@@ -183,21 +186,27 @@ namespace GitScc.Blinkbox
         /// </param>
         public static void Review(string workingDirectory)
         {
-            // TODO: review wrong way round - delete rather than add. 
-            var cleanWorkingDirectory = string.IsNullOrEmpty(GitBash.Run("status --porcelain", workingDirectory));
-            if (!cleanWorkingDirectory)
+            if (!InitialChecks(workingDirectory, "Review"))
             {
-                MessageBox.Show("Cannot Checkin - there are uncommitted changes in your working directory", "Cannot Checkin", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
+            NotificationWriter.NewSection("Start review");
 
             // store the name of the current branch
             var currentBranch = GetCurrentBranch(workingDirectory);
 
-            var compareCommand = new GitCommand("diff --name-status " + currentBranch + ".." + tfsMergeBranch, workingDirectory).Start();
+            var compareCommand = new GitCommand("diff --name-status " + tfsMergeBranch + ".." + currentBranch, workingDirectory).Start();
             var diffList = compareCommand.Output.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
             var gitFiles = diffList.Select(GitFile.FromDiff);
-            PendingChangesView.Review(gitFiles.ToList(), tfsMergeBranch);
+            if (gitFiles.Count() > 0)
+            {
+                PendingChangesView.Review(gitFiles.ToList(), tfsMergeBranch);
+            }
+            else
+            {
+                NotificationWriter.Write("No changes found to review");
+            }
         }
 
         /// <summary>
@@ -208,12 +217,12 @@ namespace GitScc.Blinkbox
         /// </param>
         public static void CompleteReview(string workingDirectory)
         {
-            var cleanWorkingDirectory = string.IsNullOrEmpty(GitBash.Run("status --porcelain", workingDirectory));
-            if (!cleanWorkingDirectory)
+            if (!InitialChecks(workingDirectory, "Complete Review"))
             {
-                MessageBox.Show("Cannot Get Latest - there are uncommitted changes in your working directory", "Cannot Get Latest", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
+            NotificationWriter.NewSection("Complete Review (merge to tfs_merge branch)");
 
             // store the name of the current branch
             var currentBranch = GitBash.Run("symbolic-ref -q HEAD", workingDirectory);
@@ -239,12 +248,13 @@ namespace GitScc.Blinkbox
         /// </param>
         public static void Checkin(string workingDirectory)
         {
-            var cleanWorkingDirectory = string.IsNullOrEmpty(GitBash.Run("status --porcelain", workingDirectory));
-            if (!cleanWorkingDirectory)
+            if (!InitialChecks(workingDirectory, "Checkin"))
             {
-                MessageBox.Show("Cannot Checkin - there are uncommitted changes in your working directory", "Cannot Checkin", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
+
+            NotificationWriter.NewSection("Start Checkin from tfs_merge branch");
 
             // store the name of the current branch
             var currentBranch = GetCurrentBranch(workingDirectory);
@@ -254,9 +264,6 @@ namespace GitScc.Blinkbox
 
             // Switch to the tfs-merge branch 
             new GitCommand("checkout " + tfsMergeBranch, workingDirectory);
-
-            // Run a tortoise merge . 
-            new GitCommand("merge " + currentBranch + " --no-commit", workingDirectory);
 
             // Checkin from tfs-merge branch
             RunGitTfs("checkintool", workingDirectory);
