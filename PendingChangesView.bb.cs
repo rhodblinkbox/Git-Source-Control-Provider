@@ -13,7 +13,9 @@ namespace GitScc
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
+    using System.Windows.Controls;
     using System.Windows.Data;
     using System.Windows.Input;
     using System.Windows.Threading;
@@ -151,8 +153,21 @@ namespace GitScc
             this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
         }
 
+        /// <summary>
+        /// Replaces the double-click functionality with a tortoise-git diff, if available. 
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Windows.Input.MouseButtonEventArgs"/> instance containing the event data.</param>
         private void dataGrid1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            if (!BlinkboxSccOptions.Current.TortoiseAvailable)
+            {
+                // Call the existing implementation. 
+                this.MouseDoubleClick(sender, e);
+                return;
+            }
+
+            // Otherwise, use tortiose git to provide the diff.
             GetSelectedFileFullName(fileName =>
             {
                 // Call tortoiseproc to compare.
@@ -163,6 +178,52 @@ namespace GitScc
                     : string.Format("diff /path:{0}", fileName);
                 GitTfs.RunTortoise(command, workingDirectory);
             });
+        }
+
+        private void dataGrid1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!Reviewing)
+            {
+                // Use the existing implementation
+                SelectionChanged(sender, e);
+                return;
+            }
+
+            // Diff with TFS
+            var fileName = this.GetSelectedFileName();
+            if (fileName == null)
+            {
+                this.ClearEditor();
+                this.diffLines = new string[0];
+                return;
+            }
+
+            Action act = () =>
+            {
+                service.NoRefresh = true;
+                try
+                {
+                    var tmpFileName = Path.ChangeExtension(Path.GetTempFileName(), ".diff");
+                    var fileNameRel = tracker.GetRelativeFileName(fileName);
+                    var tfsRevision = GitTfs.GetLatestRevision(this.service.CurrentTracker.GitWorkingDirectory, BlinkboxSccOptions.Current.TfsMergeBranch);
+
+                    GitBash.RunCmd(string.Format("diff {0} {1} > \"{2}\"", tfsRevision, fileNameRel, tmpFileName), service.CurrentTracker.GitWorkingDirectory);
+                    
+                    if (!string.IsNullOrWhiteSpace(tmpFileName) && File.Exists(tmpFileName))
+                    {
+                        diffLines = File.ReadAllLines(tmpFileName);
+                        this.ShowFile(tmpFileName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowStatusMessage(ex.Message);
+                }
+                service.NoRefresh = false;
+
+            };
+
+            this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
         }
 
         /// <summary>

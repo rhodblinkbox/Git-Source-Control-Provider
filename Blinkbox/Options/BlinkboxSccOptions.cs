@@ -84,6 +84,18 @@ namespace GitScc.Blinkbox.Options
         }
 
         /// <summary>
+        /// Gets a value indicating whether TortoiseGit is available.
+        /// </summary>
+        /// <value><c>true</c> if TortoiseGit is available otherwise, <c>false</c>.</value>
+        public bool TortoiseAvailable
+        {
+            get
+            {
+                return !string.IsNullOrEmpty(GitSccOptions.Current.TortoiseGitPath) && File.Exists(GitSccOptions.Current.TortoiseGitPath);
+            }
+        }
+
+        /// <summary>
         /// Prevents a default instance of the <see cref="BlinkboxSccOptions"/> class from being created. 
         /// Initializes a new instance of the <see cref="BlinkboxSccOptions"/> class.
         /// </summary>

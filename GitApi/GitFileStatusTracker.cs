@@ -352,7 +352,7 @@ namespace GitScc
             return GetRelativePath(repository.WorkTree, fileName).Replace("\\", "/");
         }
 
-        private string GetRelativeFileName(string fileName)
+        public string GetRelativeFileName(string fileName)
         {
             return GetRelativePath(repository.WorkTree, fileName);
         }

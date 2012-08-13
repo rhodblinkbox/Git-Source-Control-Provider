@@ -111,7 +111,7 @@
 
         <Button guid="guidSccProviderCmdSet"
                 id="GitTfsReviewButtonId"
-                priority="0x0107"
+                priority="0x0108"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="GitTfsMenuGroup"/>
@@ -128,7 +128,7 @@
 
         <Button guid="guidSccProviderCmdSet"
                 id="GitTfsCompleteReviewButtonId"
-                priority="0x0107"
+                priority="0x0109"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="GitTfsMenuGroup"/>
@@ -143,7 +143,7 @@
 
         <Button guid="guidSccProviderCmdSet"
                 id="GitTfsCheckinButtonId"
-                priority="0x0106"
+                priority="0x0110"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="GitTfsMenuGroup"/>
@@ -158,7 +158,7 @@
 
         <Button guid="guidSccProviderCmdSet"
                 id="GitTfsCleanWorkspacesButtonId"
-                priority="0x0107"
+                priority="0x0111"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="GitTfsMenuGroup"/>

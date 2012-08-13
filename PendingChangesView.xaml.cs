@@ -61,7 +61,7 @@ namespace GitScc
             }
         }
 
-        private void dataGrid1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var fileName = GetSelectedFileName();
             if (fileName == null)
