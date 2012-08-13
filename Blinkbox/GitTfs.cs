@@ -130,6 +130,9 @@ namespace GitScc.Blinkbox
 
                 // Create the tfs_merge branch (fails silently if it already exists)
                 GitBash.Run("branch refs/heads/" + tfsMergeBranch, workingDirectory);
+
+                NotificationWriter.Clear();
+                NotificationWriter.NewSection("Start " + operation);
             }
             catch (Exception e)
             {
@@ -151,9 +154,6 @@ namespace GitScc.Blinkbox
             {
                 return;
             }
-
-
-            NotificationWriter.NewSection("Start Get Latest");
 
             // store the name of the current branch
             var currentBranch = GetCurrentBranch(workingDirectory);
@@ -191,8 +191,6 @@ namespace GitScc.Blinkbox
                 return;
             }
 
-            NotificationWriter.NewSection("Start review");
-
             // store the name of the current branch
             var currentBranch = GetCurrentBranch(workingDirectory);
 
@@ -222,22 +220,19 @@ namespace GitScc.Blinkbox
                 return;
             }
 
-            NotificationWriter.NewSection("Complete Review (merge to tfs_merge branch)");
-
             // store the name of the current branch
-            var currentBranch = GitBash.Run("symbolic-ref -q HEAD", workingDirectory);
-
-            // Create the tfs_merge branch (fails silently if it already exists)
-            GitBash.Run("branch refs/heads/" + tfsMergeBranch, workingDirectory);
+            var currentBranch = GetCurrentBranch(workingDirectory);
 
             // Switch to the tfs-merge branch 
-            GitBash.Run("checkout " + tfsMergeBranch, workingDirectory);
+            var checkoutTfsMerge = new GitCommand("checkout " + tfsMergeBranch, workingDirectory).StartAndWait();
 
             // Merge without commit from tfs-merge to current branch. 
-            GitBash.Run("git merge " + currentBranch + " --no-commit", workingDirectory);
+            var merge = new GitCommand("merge " + currentBranch, workingDirectory).StartAndWait();
 
-            // show the tortoise commit tool
-            RunTortoise("commit", workingDirectory);
+            CommitIfRequired(workingDirectory);
+
+            // Switch back to the current branch 
+            var switchBacktoWorking = new GitCommand("checkout " + currentBranch, workingDirectory).StartAndWait();
         }
 
         /// <summary>
@@ -253,23 +248,17 @@ namespace GitScc.Blinkbox
                 return;
             }
 
-
-            NotificationWriter.NewSection("Start Checkin from tfs_merge branch");
-
             // store the name of the current branch
             var currentBranch = GetCurrentBranch(workingDirectory);
 
-            // Create the tfs_merge branch (fails silently if it already exists)
-            new GitCommand("branch refs/heads/" + tfsMergeBranch, workingDirectory);
-
             // Switch to the tfs-merge branch 
-            new GitCommand("checkout " + tfsMergeBranch, workingDirectory);
+            var checkoutTfsMerge = new GitCommand("checkout " + tfsMergeBranch, workingDirectory).StartAndWait();
 
             // Checkin from tfs-merge branch
             RunGitTfs("checkintool", workingDirectory);
 
             // Switch back to the current Branch 
-            new GitCommand("checkout " + currentBranch, workingDirectory);
+            var switchBacktoWorking = new GitCommand("checkout " + currentBranch, workingDirectory).StartAndWait();
         }
 
         /// <summary>

@@ -207,7 +207,7 @@ namespace GitScc
                     var fileNameRel = tracker.GetRelativeFileName(fileName);
                     var tfsRevision = GitTfs.GetLatestRevision(this.service.CurrentTracker.GitWorkingDirectory, BlinkboxSccOptions.Current.TfsMergeBranch);
 
-                    GitBash.RunCmd(string.Format("diff {0} {1} > \"{2}\"", tfsRevision, fileNameRel, tmpFileName), service.CurrentTracker.GitWorkingDirectory);
+                    GitBash.RunCmd(string.Format("diff {0} \"{1}\" > \"{2}\"", tfsRevision, fileNameRel, tmpFileName), service.CurrentTracker.GitWorkingDirectory);
                     
                     if (!string.IsNullOrWhiteSpace(tmpFileName) && File.Exists(tmpFileName))
                     {
