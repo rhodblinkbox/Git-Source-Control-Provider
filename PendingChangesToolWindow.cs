@@ -12,7 +12,7 @@ namespace GitScc
     /// Summary description for SccProviderToolWindow.
     /// </summary>
     [Guid("75EDECF4-68D8-4B7B-92A9-5915461DA6D9")]
-    public class PendingChangesToolWindow : ToolWindowPane
+    public partial class PendingChangesToolWindow : ToolWindowPane
     {
         private SccProviderService sccProviderService;
         protected UserControl control;

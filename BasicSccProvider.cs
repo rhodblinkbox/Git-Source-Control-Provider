@@ -50,7 +50,7 @@ namespace GitScc
     //[ProvideAutoLoad(UIContextGuids.SolutionExists)]
     // Declare the package guid
     [Guid("C4128D99-2000-41D1-A6C3-704E6C1A3DE2")]
-    public class BasicSccProvider : MsVsShell.Package, IOleCommandTarget
+    public partial class BasicSccProvider : MsVsShell.Package, IOleCommandTarget
     {
         private SccOnIdleEvent _OnIdleEvent = new SccOnIdleEvent();
 
@@ -78,8 +78,6 @@ namespace GitScc
             sccService = new SccProviderService(this, projects);
 
             ((IServiceContainer)this).AddService(typeof(SccProviderService), sccService, true);
-
-            Blinkbox.Events.BlinkboxSccHooks.TriggerOnPackageInitialise(this, new Blinkbox.Events.OnPackageInitialiseArgs() { PackageInstance = this, SccService = this.sccService });
             
             // Add our command handlers for menu (commands must exist in the .vsct file)
             MsVsShell.OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as MsVsShell.OleMenuCommandService;
@@ -156,7 +154,7 @@ namespace GitScc
                 menu = new MenuCommand(new EventHandler(OnAbout), cmd);
                 mcs.AddCommand(menu);
 
-                Blinkbox.Events.BlinkboxSccHooks.TriggerRegisterCommands(this, new Blinkbox.Events.OnRegisterCommandsArgs() { MenuService = mcs });
+                RegisterComponents(mcs);
             }
 
 
@@ -211,7 +209,7 @@ namespace GitScc
             }
 
             // Call hook to query additional commands first. 
-            var result = Blinkbox.Events.BlinkboxSccHooks.QueryCommandStatus(guidCmdGroup, prgCmds, cmdf, pCmdText);
+            var result = QueryBlinkboxCommandStatus(guidCmdGroup, prgCmds, cmdf, pCmdText);
             if (result != (int)Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED)
             {
                 // Handled in the hook
@@ -339,7 +337,7 @@ namespace GitScc
 
         private void OnRefreshCommand(object sender, EventArgs e)
         {
-            Blinkbox.Events.BlinkboxSccHooks.TriggerRefreshButton(sender, e);
+            this.HandleRefreshButton();
             sccService.NoRefresh = false;
             sccService.Refresh();
         }

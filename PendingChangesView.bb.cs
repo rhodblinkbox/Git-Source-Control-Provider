@@ -252,5 +252,16 @@ namespace GitScc
                 currentInstance.DiffEditor.Dispatcher.BeginInvoke(action);
             }
         }
+
+
+        /// <summary>
+        /// performs a custom commit for the blinkbox functionality.
+        /// </summary>
+        /// <returns>a Commit object</returns>
+        public CommitData BlinkboxCommit()
+        {
+            var success = this.Commit();
+            return new CommitData() { Message = this.Comments, Success = success };
+        }
     }
 }

@@ -99,11 +99,8 @@
     <Compile Include="Blinkbox\CommandIds.cs" />
     <Compile Include="Blinkbox\BuildNotificationLogger.cs" />
     <Compile Include="Blinkbox\NotificationWriter.cs" />
-    <Compile Include="Blinkbox\Events\BlinkboxSccHooks.cs" />
     <Compile Include="Blinkbox\BlinkboxScc.cs" />
-    <Compile Include="Blinkbox\Events\OnPackageInitialiseArgs.cs" />
-    <Compile Include="Blinkbox\Events\OnRegisterCommandsArgs.cs" />
-    <Compile Include="Blinkbox\Events\OnCommitArgs.cs" />
+    <Compile Include="Blinkbox\CommitData.cs" />
     <Compile Include="Blinkbox\GitTfs.cs" />
     <Compile Include="Blinkbox\Options\BlinkboxSccOptions.cs" />
     <Compile Include="Blinkbox\Options\BlinkboxOptionsControl.cs">
@@ -112,6 +109,7 @@
     <Compile Include="Blinkbox\Options\BlinkboxOptionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PendingChangesToolWindow.bb.cs" />
     <Compile Include="PendingChangesView.bb.cs">
       <DependentUpon>PendingChangesView.xaml</DependentUpon>
     </Compile>
@@ -237,7 +235,9 @@
       <Name>Sharpen</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Blinkbox\Events\" />
+  </ItemGroup>
   <PropertyGroup>
     <!--
     To specify a different registry root to register your package, uncomment the TargetRegistryRoot

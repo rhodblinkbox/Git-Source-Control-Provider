@@ -302,9 +302,9 @@ namespace GitScc
                 return true;
         }
 
-        internal void Commit()
+        internal bool Commit()
         {
-            var commitArgs = new Blinkbox.Events.OnCommitArgs { Message = this.Comments };
+            bool success = false;
             service.NoRefresh = true;
             if (HasComments() && StageSelectedFiles())
             {
@@ -314,8 +314,7 @@ namespace GitScc
                     var id = tracker.Commit(Comments);
                     ShowStatusMessage("Commit successfully. Commit Hash: " + id);
                     ClearUI();
-                    commitArgs.Success = true;
-                    commitArgs.Id = id;
+                    success = true;
                 }
                 catch (Exception ex)
                 {
@@ -326,7 +325,8 @@ namespace GitScc
             service.NoRefresh = false;
             //service.lastTimeRefresh = DateTime.Now;
             service.NodesGlyphsDirty = true; // force refresh
-            Blinkbox.Events.BlinkboxSccHooks.TriggerCommit(this, commitArgs);
+
+            return success;
         }
 
         internal void AmendCommit()

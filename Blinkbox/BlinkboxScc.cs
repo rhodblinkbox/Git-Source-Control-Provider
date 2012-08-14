@@ -8,7 +8,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace GitScc.Blinkbox
+namespace GitScc
 {
     using System;
     using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace GitScc.Blinkbox
     using System.Web;
     using System.Windows;
 
-    using GitScc.Blinkbox.Events;
+    using GitScc.Blinkbox;
     using GitScc.Blinkbox.Options;
 
     using Microsoft.Build.Evaluation;
@@ -37,33 +37,8 @@ namespace GitScc.Blinkbox
     /// Blinkbox implementation inheriting from GitSourceControlProvider. 
     /// BasicSccProvider has been modified as little as possible, so thats its easier to merge in 3rd party changes. 
     /// </summary>
-    public class BlinkboxScc
+    public partial class BasicSccProvider
     {
-        /// <summary>
-        /// Keeps a referece to the sccService.
-        /// </summary>
-        private readonly SccProviderService sccService = null;
-
-        /// <summary>
-        /// reference to the BasicSccProvider package
-        /// </summary>
-        private readonly BasicSccProvider basicSccProvider = null;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlinkboxScc"/> class.
-        /// </summary>
-        /// <param name="sccProviderService">The SCC service.</param>
-        /// <param name="basicSccProvider">The basic SCC provider.</param>
-        public BlinkboxScc(SccProviderService sccProviderService, BasicSccProvider basicSccProvider)
-        {
-            // Setup Hooks
-            BlinkboxSccHooks.QueryCommandStatus = this.QueryCommandStatus;
-            BlinkboxSccHooks.OnRegisterCommands += (sender, args) => this.RegisterComponents(args.MenuService);
-            BlinkboxSccHooks.OnRefreshButton += (sender, args) => PendingChangesView.CancelReview();
-            this.sccService = sccProviderService;
-            this.basicSccProvider = basicSccProvider;
-        }
-
         /// <summary>
         /// Shows a message in the status bar.
         /// </summary>
@@ -75,13 +50,21 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
+        /// Handles a refresh button click.
+        /// </summary>
+        public void HandleRefreshButton()
+        {
+            PendingChangesView.CancelReview();
+        }
+
+        /// <summary>
         /// Gets a service of type T.
         /// </summary>
         /// <typeparam name="T">the type of service.</typeparam>
         /// <returns>the required service.</returns>
         private static T GetService<T>()
         {
-            return BasicSccProvider.GetServiceEx<T>();
+            return GetServiceEx<T>();
         }
 
         /// <summary>
@@ -97,12 +80,12 @@ namespace GitScc.Blinkbox
                 {
                     var currentMenuOption = menuOption;
                     Action handler = () => currentMenuOption.Handler(this.GetSolutionDirectory());
-                    RegisterCommandWithMenuService(menuService, menuOption.CommandId, (sender, args) => handler());
+                    this.RegisterCommandWithMenuService(menuService, menuOption.CommandId, (sender, args) => handler());
                 }
 
                 // Commit and test button
-                RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxCommitAndDeployId, this.OnCommitAndDeploy);
-                RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxDeployId, this.OnDeploy);
+                this.RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxCommitAndDeployId, this.OnCommitAndDeploy);
+                this.RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxDeployId, this.OnDeploy);
             }
         }
 
@@ -131,7 +114,7 @@ namespace GitScc.Blinkbox
         /// <returns>
         /// integer indicating whether the command is supported.
         /// </returns>
-        private int QueryCommandStatus(Guid commandGroupGuid, OLECMD[] commands, OLECMDF commandFlags, IntPtr commandText)
+        private int QueryBlinkboxCommandStatus(Guid commandGroupGuid, OLECMD[] commands, OLECMDF commandFlags, IntPtr commandText)
         {
             // Process Blinkbox Commands
             switch (commands[0].cmdID)
@@ -171,7 +154,7 @@ namespace GitScc.Blinkbox
                     if (menuOption != null)
                     {
                         // If its a menu option set the text. 
-                        this.basicSccProvider.SetOleCmdText(commandText, menuOption.Name);
+                        this.SetOleCmdText(commandText, menuOption.Name);
                     }
 
                     break;
@@ -187,6 +170,18 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
+        /// Handles a click of the commit button.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        public void HandleCommit(object sender, EventArgs e)
+        {
+            // Call existing implementation
+            OnCommitCommand(sender, e);
+
+        }
+
+        /// <summary>
         /// Checks whether a deploy project is available.
         /// </summary>
         /// <returns>true if the solution has a deploy project.</returns>
@@ -197,23 +192,13 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
-        /// Gets the tool window pane.
-        /// </summary>
-        /// <typeparam name="T">the type of pane.</typeparam>
-        /// <returns>the tool window pane.</returns>
-        private T GetToolWindowPane<T>() where T : ToolWindowPane
-        {
-            return (T)this.basicSccProvider.FindToolWindow(typeof(T), 0, true);
-        }
-
-        /// <summary>
         /// Handles the Deploy button. 
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         private void OnDeploy(object sender, EventArgs e)
         {
-            var commit = new OnCommitArgs()
+            var commit = new CommitData()
                 {
                     Hash = this.GetLatestCommitHash(),
                     Message = "Re-deploy"
@@ -230,24 +215,9 @@ namespace GitScc.Blinkbox
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         private void OnCommitAndDeploy(object sender, EventArgs e)
         {
-            // Subscribe to successful commit event
-            BlinkboxSccHooks.OnCommit += this.DeploySuccessfulCommit;
-
             // Commit to git repository
-            this.GetToolWindowPane<PendingChangesToolWindow>().OnCommitCommand();
-        }
+             var commit = this.GetToolWindowPane<PendingChangesToolWindow>().BlinkboxCommit();
 
-        /// <summary>
-        /// Deploys dev websites on a successful commit
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="commit">
-        /// The commit.
-        /// </param>
-        private void DeploySuccessfulCommit(object sender, OnCommitArgs commit)
-        {
             if (commit.Success)
             {
                 commit.Hash = this.GetLatestCommitHash();
@@ -255,9 +225,6 @@ namespace GitScc.Blinkbox
                 NotificationWriter.Write("Commit " + commit.Hash + " successful");
                 this.Deploy(commit);
             }
-
-            // Unsubscribe from successful commit event
-            BlinkboxSccHooks.OnCommit -= this.DeploySuccessfulCommit;
         }
 
         /// <summary>
@@ -269,7 +236,7 @@ namespace GitScc.Blinkbox
         /// <returns>
         /// true if the deploy was successful.
         /// </returns>
-        private bool Deploy(OnCommitArgs commit)
+        private bool Deploy(CommitData commit)
         {
             NotificationWriter.Write("Begin build and deploy to " + commit.Hash);
 

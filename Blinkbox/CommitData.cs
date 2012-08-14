@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="OnCommitArgs.cs" company="blinkbox">
+// <copyright file="CommitData.cs" company="blinkbox">
 //   OnCommitArgs
 // </copyright>
 // <summary>
@@ -7,14 +7,12 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace GitScc.Blinkbox.Events
+namespace GitScc.Blinkbox
 {
-    using System;
-
     /// <summary>
     /// Event arguments for the  OnCommit event.
     /// </summary>
-    public class OnCommitArgs : EventArgs
+    public class CommitData
     {
         /// <summary>
         /// Gets or sets Message.
@@ -25,11 +23,6 @@ namespace GitScc.Blinkbox.Events
         /// Gets or sets CommitHash.
         /// </summary>
         public string Hash { get; set; }
-
-        /// <summary>
-        /// Gets or sets CommitId.
-        /// </summary>
-        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the commit was succcesful.
