@@ -20,9 +20,43 @@ namespace GitScc.Blinkbox.Options
     public class BlinkboxSccOptions
     {
         /// <summary>
+        /// The name of the tfs remote branch
+        /// </summary>
+        public const string HeadRevision = "HEAD";
+
+        /// <summary>
         /// The name of the config file
         /// </summary>
         private static string configFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "blinkboxScc.config");
+        
+        /// <summary>
+        /// private instance of BlinkboxSccOptions.
+        /// </summary>
+        private static BlinkboxSccOptions sccOptions;
+
+        /// <summary>
+        /// Prevents a default instance of the <see cref="BlinkboxSccOptions"/> class from being created. 
+        /// Initializes a new instance of the <see cref="BlinkboxSccOptions"/> class.
+        /// </summary>
+        private BlinkboxSccOptions()
+        {
+        }
+
+        /// <summary>
+        /// Gets Current.
+        /// </summary>
+        public static BlinkboxSccOptions Current
+        {
+            get
+            {
+                if (sccOptions == null)
+                {
+                    sccOptions = LoadFromConfig();
+                }
+
+                return sccOptions;
+            }
+        }
 
         /// <summary>
         /// Gets or sets GitTfsPath.
@@ -33,6 +67,11 @@ namespace GitScc.Blinkbox.Options
         /// Gets or sets the name of the TFS merge branch.
         /// </summary>
         public string TfsMergeBranch { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the TFS merge branch.
+        /// </summary>
+        public string TfsRemoteBranch { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether deployed urls should be launched in VS or in the default browser.
@@ -63,27 +102,6 @@ namespace GitScc.Blinkbox.Options
         public string CommitCommentPropertyName { get; set; }
 
         /// <summary>
-        /// BlinkboxSccOptions.
-        /// </summary>
-        private static BlinkboxSccOptions sccOptions;
-
-        /// <summary>
-        /// Gets Current.
-        /// </summary>
-        public static BlinkboxSccOptions Current
-        {
-            get
-            {
-                if (sccOptions == null)
-                {
-                    sccOptions = LoadFromConfig();
-                }
-
-                return sccOptions;
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether TortoiseGit is available.
         /// </summary>
         /// <value><c>true</c> if TortoiseGit is available otherwise, <c>false</c>.</value>
@@ -93,14 +111,6 @@ namespace GitScc.Blinkbox.Options
             {
                 return !string.IsNullOrEmpty(GitSccOptions.Current.TortoiseGitPath) && File.Exists(GitSccOptions.Current.TortoiseGitPath);
             }
-        }
-
-        /// <summary>
-        /// Prevents a default instance of the <see cref="BlinkboxSccOptions"/> class from being created. 
-        /// Initializes a new instance of the <see cref="BlinkboxSccOptions"/> class.
-        /// </summary>
-        private BlinkboxSccOptions()
-        {
         }
 
         /// <summary>
@@ -152,6 +162,7 @@ namespace GitScc.Blinkbox.Options
             this.CommitGuidPropertyName = string.IsNullOrEmpty(this.CommitGuidPropertyName) ? "CommitGuid" : this.CommitGuidPropertyName;
             this.CommitCommentPropertyName = string.IsNullOrEmpty(this.CommitCommentPropertyName) ? "CommitComment" : this.CommitCommentPropertyName;
             this.TfsMergeBranch = string.IsNullOrEmpty(this.TfsMergeBranch) ? "tfs_merge" : this.TfsMergeBranch;
+            this.TfsRemoteBranch = string.IsNullOrEmpty(this.TfsRemoteBranch) ? "remotes/tfs/default" : this.TfsRemoteBranch;
         }
 
         /// <summary>

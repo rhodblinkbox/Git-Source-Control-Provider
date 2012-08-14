@@ -11,26 +11,13 @@ namespace GitScc.Blinkbox
     using System.Windows;
     using System.Linq;
 
+    using GitScc.Blinkbox.Options;
+
     /// <summary>
     /// Git Tfs class.
     /// </summary>
     public class GitTfs
     {
-        /// <summary>
-        /// the name of the tfs merge branch
-        /// </summary>
-        private static readonly string tfsMergeBranch = "tfs_merge";
-
-        /// <summary>
-        /// The name of the tfs remote branch
-        /// </summary>
-        private static readonly string tfsRemoteBranch = "remotes/tfs/default";
-
-        /// <summary>
-        /// The name of the tfs remote branch
-        /// </summary>
-        public const string defaultBranch = "HEAD";
-
         /// <summary>
         /// Commands which appear in the git tfs menu
         /// </summary>
@@ -44,28 +31,28 @@ namespace GitScc.Blinkbox
 
             menuOptions.Add(new GitTfsCommand()
             {
-                Name = "Review (compare to tfs_merge branch)",
+                Name = "Review",
                 CommandId = Blinkbox.CommandIds.GitTfsReviewButtonId,
                 Handler = (workingDir) => Review(workingDir)
             });
 
             menuOptions.Add(new GitTfsCommand()
             {
-                Name = "Complete Review (merge to tfs_merge branch)",
+                Name = "Complete Review",
                 CommandId = Blinkbox.CommandIds.GitTfsCompleteReviewButtonId,
                 Handler = (workingDir) => CompleteReview(workingDir)
             });
 
             menuOptions.Add(new GitTfsCommand()
             {
-                Name = "Check in from tfs_merge", 
+                Name = "Check in", 
                 CommandId = Blinkbox.CommandIds.GitTfsCheckinButtonId,
                 Handler = (workingDir) => Checkin(workingDir)
             });
 
             menuOptions.Add(new GitTfsCommand()
             {
-                Name = "Get Latest (via tfs_merge)", 
+                Name = "Get Latest", 
                 CommandId = Blinkbox.CommandIds.GitTfsGetLatestButtonId,
                 Handler = (workingDir) => GetLatest(workingDir)
             });
@@ -129,7 +116,7 @@ namespace GitScc.Blinkbox
                 }
 
                 // Create the tfs_merge branch (fails silently if it already exists)
-                GitBash.Run("branch refs/heads/" + tfsMergeBranch, workingDirectory);
+                GitBash.Run("branch refs/heads/" + BlinkboxSccOptions.Current.TfsMergeBranch, workingDirectory);
 
                 NotificationWriter.Clear();
                 NotificationWriter.NewSection("Start " + operation);
@@ -159,7 +146,7 @@ namespace GitScc.Blinkbox
             var currentBranch = GetCurrentBranch(workingDirectory);
 
             // Switch to the tfs-merge branch 
-            var checkoutTfsMerge = new GitCommand("checkout " + tfsMergeBranch, workingDirectory).StartAndWait();
+            var checkoutTfsMerge = new GitCommand("checkout " + BlinkboxSccOptions.Current.TfsMergeBranch, workingDirectory).StartAndWait();
 
             // Pull down changes into tfs remote branch, and tfs_merge branch
             RunGitTfs("pull", workingDirectory);
@@ -172,7 +159,7 @@ namespace GitScc.Blinkbox
                 var checkoutCurrentBranch = new GitCommand("checkout " + currentBranch, workingDirectory).StartAndWait();
 
                 // Merge without commit from tfs-merge to current branch. 
-                var mergeLatestToCurrent = new GitCommand("merge " + tfsRemoteBranch + " --no-commit", workingDirectory).StartAndWait();
+                var mergeLatestToCurrent = new GitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", workingDirectory).StartAndWait();
 
                 CommitIfRequired(workingDirectory);
             }
@@ -194,12 +181,12 @@ namespace GitScc.Blinkbox
             // store the name of the current branch
             var currentBranch = GetCurrentBranch(workingDirectory);
 
-            var compareCommand = new GitCommand("diff --name-status " + tfsMergeBranch + ".." + currentBranch, workingDirectory).Start();
+            var compareCommand = new GitCommand("diff --name-status " + BlinkboxSccOptions.Current.TfsMergeBranch + ".." + currentBranch, workingDirectory).Start();
             var diffList = compareCommand.Output.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
             var gitFiles = diffList.Select(GitFile.FromDiff);
             if (gitFiles.Count() > 0)
             {
-                PendingChangesView.Review(gitFiles.ToList(), tfsMergeBranch);
+                PendingChangesView.Review(gitFiles.ToList(), BlinkboxSccOptions.Current.TfsMergeBranch);
             }
             else
             {
@@ -224,7 +211,7 @@ namespace GitScc.Blinkbox
             var currentBranch = GetCurrentBranch(workingDirectory);
 
             // Switch to the tfs-merge branch 
-            var checkoutTfsMerge = new GitCommand("checkout " + tfsMergeBranch, workingDirectory).StartAndWait();
+            var checkoutTfsMerge = new GitCommand("checkout " + BlinkboxSccOptions.Current.TfsMergeBranch, workingDirectory).StartAndWait();
 
             // Merge without commit from tfs-merge to current branch. 
             var merge = new GitCommand("merge " + currentBranch, workingDirectory).StartAndWait();
@@ -252,7 +239,7 @@ namespace GitScc.Blinkbox
             var currentBranch = GetCurrentBranch(workingDirectory);
 
             // Switch to the tfs-merge branch 
-            var checkoutTfsMerge = new GitCommand("checkout " + tfsMergeBranch, workingDirectory).StartAndWait();
+            var checkoutTfsMerge = new GitCommand("checkout " + BlinkboxSccOptions.Current.TfsMergeBranch, workingDirectory).StartAndWait();
 
             // Checkin from tfs-merge branch
             RunGitTfs("checkintool", workingDirectory);
@@ -336,7 +323,7 @@ namespace GitScc.Blinkbox
             }
         }
 
-        public static string GetLatestRevision(string workingDirectory, string branchName = defaultBranch)
+        public static string GetLatestRevision(string workingDirectory, string branchName = Blinkbox.Options.BlinkboxSccOptions.HeadRevision)
         {
             var command = new GitCommand("rev-parse " + branchName, workingDirectory).StartAndWait();
             return command.Output.Replace("\n", string.Empty); // Git bash adds a return on the end
