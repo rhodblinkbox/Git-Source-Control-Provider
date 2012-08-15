@@ -12,7 +12,7 @@ namespace GitScc.Blinkbox
     /// <summary>
     /// Defines the command ids used for blinkbox commands in the Visual Studio environment.
     /// </summary>
-    public class CommandIds
+    public static class CommandIds
     {
         /// <summary>
         /// Identifies the CommitAndDeploy command.
@@ -58,5 +58,6 @@ namespace GitScc.Blinkbox
         /// Identifies the GitTfs Complete Review command.
         /// </summary>
         public const int GitTfsCompleteReviewButtonId = 0x407;
+
     }
 }

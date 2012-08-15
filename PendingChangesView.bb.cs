@@ -36,7 +36,7 @@ namespace GitScc
         internal string reviewBranchName = null;
 
         /// <summary>
-        /// Flag indicates that a review is currently in progress.
+        /// Gets a value indicating that a review is currently in progress.
         /// </summary>
         public bool Reviewing { get; private set; }
 
@@ -154,7 +154,7 @@ namespace GitScc
         }
 
         /// <summary>
-        /// Replaces the double-click functionality with a tortoise-git diff, if available. 
+        /// Replaces the double-click functionality with a tortoise-git diff, if available.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.Windows.Input.MouseButtonEventArgs"/> instance containing the event data.</param>
@@ -168,24 +168,24 @@ namespace GitScc
             }
 
             // Otherwise, use tortiose git to provide the diff.
-            GetSelectedFileFullName(fileName =>
+            this.GetSelectedFileFullName(fileName =>
             {
                 // Call tortoiseproc to compare.
                 var workingDirectory = service.CurrentTracker.GitWorkingDirectory;
-                var tfsRevision = GitTfs.GetLatestRevision(this.service.CurrentTracker.GitWorkingDirectory, BlinkboxSccOptions.Current.TfsMergeBranch);
+                var tfsRevision = new DevelopmentProcess(this.service.CurrentTracker.GitWorkingDirectory).GetLatestRevision(BlinkboxSccOptions.Current.TfsMergeBranch);
                 var command = Reviewing
                     ? string.Format("diff /path:{0} /startrev:{1} /endrev:{2}", fileName, "0000000000000000000000000000000000000000", tfsRevision)
                     : string.Format("diff /path:{0}", fileName);
-                GitTfs.RunTortoise(command, workingDirectory);
+                SourceControlHelper.RunTortoise(command, workingDirectory);
             });
         }
 
         private void dataGrid1_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!Reviewing)
+            if (!this.Reviewing)
             {
                 // Use the existing implementation
-                SelectionChanged(sender, e);
+                this.SelectionChanged(sender, e);
                 return;
             }
 
@@ -205,9 +205,9 @@ namespace GitScc
                 {
                     var tmpFileName = Path.ChangeExtension(Path.GetTempFileName(), ".diff");
                     var fileNameRel = tracker.GetRelativeFileName(fileName);
-                    var tfsRevision = GitTfs.GetLatestRevision(this.service.CurrentTracker.GitWorkingDirectory, BlinkboxSccOptions.Current.TfsMergeBranch);
+                    var tfsRevision = new DevelopmentProcess(this.service.CurrentTracker.GitWorkingDirectory).GetLatestRevision(BlinkboxSccOptions.Current.TfsMergeBranch);
 
-                    GitBash.RunCmd(string.Format("diff {0} \"{1}\" > \"{2}\"", tfsRevision, fileNameRel, tmpFileName), service.CurrentTracker.GitWorkingDirectory);
+                    SourceControlHelper.RunGitCommand(string.Format("diff {0} \"{1}\" > \"{2}\"", tfsRevision, fileNameRel, tmpFileName), service.CurrentTracker.GitWorkingDirectory);
                     
                     if (!string.IsNullOrWhiteSpace(tmpFileName) && File.Exists(tmpFileName))
                     {

@@ -76,7 +76,7 @@ namespace GitScc
             if (menuService != null)
             {
                 // Register Git Tfs commands with menu service
-                foreach (var menuOption in GitTfs.MenuOptions)
+                foreach (var menuOption in GitTfsMenu.MenuOptions)
                 {
                     var currentMenuOption = menuOption;
                     Action handler = () => currentMenuOption.Handler(this.GetSolutionDirectory());
@@ -150,7 +150,7 @@ namespace GitScc
                         commandFlags &= ~OLECMDF.OLECMDF_ENABLED;
                     }
 
-                    var menuOption = GitTfs.MenuOptions.FirstOrDefault(x => x.CommandId == commands[0].cmdID);
+                    var menuOption = GitTfsMenu.MenuOptions.FirstOrDefault(x => x.CommandId == commands[0].cmdID);
                     if (menuOption != null)
                     {
                         // If its a menu option set the text. 

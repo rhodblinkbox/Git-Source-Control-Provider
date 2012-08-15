@@ -1,20 +1,20 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Command.cs" company="blinkbox">
+// <copyright file="CommandProcess.cs" company="blinkbox">
 // TODO: Update copyright text.
 // </copyright>
 // -----------------------------------------------------------------------
-namespace GitScc.Blinkbox
+
+namespace GitScc.Blinkbox.Commands
 {
     using System.Diagnostics;
-    using System.Text;
 
     /// <summary>
-    /// Wrapper for a new process.
+    /// Runs a command in a new process.
     /// </summary>
-    public class Command : Process
+    public class CommandProcess : Process
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Command"/> class.
+        /// Initializes a new instance of the <see cref="CommandProcess"/> class.
         /// </summary>
         /// <param name="command">
         /// The command.
@@ -25,21 +25,22 @@ namespace GitScc.Blinkbox
         /// <param name="workingDirectory">
         /// The working Directory.
         /// </param>
-        public Command(string command, string arguments, string workingDirectory)
+        public CommandProcess(string command, string arguments, string workingDirectory)
         {
-            StartInfo = new ProcessStartInfo(command, arguments);
+            this.StartInfo = new ProcessStartInfo(command, arguments);
             StartInfo.WorkingDirectory = workingDirectory;
 
             // Hidden process - no window.
             StartInfo.UseShellExecute = false;
             StartInfo.CreateNoWindow = true;
             StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            StartInfo.LoadUserProfile = true;
 
             // Send output to the pending changes window
             StartInfo.RedirectStandardOutput = true;
             StartInfo.RedirectStandardError = true;
-            OutputDataReceived += (sender, args) => this.ReceiveOutput(args);
-            ErrorDataReceived += (sender, args) => this.ReceiveOutput(args);
+            this.OutputDataReceived += (sender, args) => this.ReceiveOutput(args);
+            this.ErrorDataReceived += (sender, args) => this.ReceiveOutput(args);
         }
 
         /// <summary>
@@ -63,14 +64,14 @@ namespace GitScc.Blinkbox
         /// <returns>
         /// The command.
         /// </returns>
-        public new Command Start()
+        public new CommandProcess Start()
         {
             NotificationWriter.Write(System.IO.Path.GetFileName(this.StartInfo.FileName + " " + this.StartInfo.Arguments));
             base.Start();
 
             if (this.WaitUntilFinished)
             {
-                WaitForExit();
+                this.WaitForExit();
             }
 
             this.Output = StandardOutput.ReadToEnd().TrimEnd("\n".ToCharArray());
@@ -86,7 +87,7 @@ namespace GitScc.Blinkbox
         /// <returns>
         /// The command.
         /// </returns>
-        public Command StartAndWait()
+        public CommandProcess StartAndWait()
         {
             this.WaitUntilFinished = true;
             return this.Start();
@@ -101,30 +102,6 @@ namespace GitScc.Blinkbox
         private void ReceiveOutput(DataReceivedEventArgs args)
         {
             NotificationWriter.Write(args.Data);
-        }
-    }
-
-    /// <summary>
-    /// Executes a command in git.
-    /// </summary>
-    public class GitCommand : Command
-    {
-        public GitCommand(string command, string workingDirectory)
-            : base(GitBash.GitExePath, command, workingDirectory)
-        {
-            // Required for various git commands such as diff to prevent a warning.
-            StartInfo.EnvironmentVariables.Add("TERM", "msys");
-        }
-
-        /// <summary>
-        /// Gets Git outputs some information as errors - so combine error and output.
-        /// </summary>
-        public new string Output
-        {
-            get
-            {
-                return base.Output + Error;
-            } 
         }
     }
 }

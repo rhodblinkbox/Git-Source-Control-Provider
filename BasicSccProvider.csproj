@@ -93,15 +93,19 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Blinkbox\Command.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Blinkbox\CommandIds.cs" />
     <Compile Include="Blinkbox\BuildNotificationLogger.cs" />
+    <Compile Include="Blinkbox\CommandProcess.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Blinkbox\Commands\GitCommand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Blinkbox\DevelopmentProcess.cs" />
     <Compile Include="Blinkbox\NotificationWriter.cs" />
     <Compile Include="Blinkbox\BlinkboxScc.cs" />
     <Compile Include="Blinkbox\CommitData.cs" />
-    <Compile Include="Blinkbox\GitTfs.cs" />
+    <Compile Include="Blinkbox\GitTfsMenu.cs" />
     <Compile Include="Blinkbox\Options\BlinkboxSccOptions.cs" />
     <Compile Include="Blinkbox\Options\BlinkboxOptionsControl.cs">
       <SubType>UserControl</SubType>
@@ -109,7 +113,10 @@
     <Compile Include="Blinkbox\Options\BlinkboxOptionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PendingChangesToolWindow.bb.cs" />
+    <Compile Include="Blinkbox\SourceControlHelper.cs" />
+    <Compile Include="PendingChangesToolWindow.bb.cs">
+      <DependentUpon>PendingChangesToolWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="PendingChangesView.bb.cs">
       <DependentUpon>PendingChangesView.xaml</DependentUpon>
     </Compile>
@@ -235,9 +242,7 @@
       <Name>Sharpen</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Blinkbox\Events\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <!--
     To specify a different registry root to register your package, uncomment the TargetRegistryRoot
