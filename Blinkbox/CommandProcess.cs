@@ -16,19 +16,12 @@ namespace GitScc.Blinkbox.Commands
         /// <summary>
         /// Initializes a new instance of the <see cref="CommandProcess"/> class.
         /// </summary>
-        /// <param name="command">
-        /// The command.
-        /// </param>
-        /// <param name="arguments">
-        /// The arguments.
-        /// </param>
-        /// <param name="workingDirectory">
-        /// The working Directory.
-        /// </param>
-        public CommandProcess(string command, string arguments, string workingDirectory)
+        /// <param name="command">The command.</param>
+        /// <param name="arguments">The arguments.</param>
+        public CommandProcess(string command, string arguments)
         {
             this.StartInfo = new ProcessStartInfo(command, arguments);
-            StartInfo.WorkingDirectory = workingDirectory;
+            StartInfo.WorkingDirectory = BasicSccProvider.GetWorkingDirectory();
 
             // Hidden process - no window.
             StartInfo.UseShellExecute = false;

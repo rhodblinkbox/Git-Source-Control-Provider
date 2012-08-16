@@ -20,9 +20,8 @@ namespace GitScc.Blinkbox.Commands
         /// Initializes a new instance of the <see cref="GitCommand"/> class.
         /// </summary>
         /// <param name="command">The command.</param>
-        /// <param name="workingDirectory">The working directory.</param>
-        public GitCommand(string command, string workingDirectory)
-            : base(GitBash.GitExePath, command, workingDirectory)
+        public GitCommand(string command)
+            : base(GitBash.GitExePath, command)
         {
             // Required for various git commands such as diff to prevent a warning.
             StartInfo.EnvironmentVariables.Add("TERM", "msys");

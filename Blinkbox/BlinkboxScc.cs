@@ -11,26 +11,17 @@
 namespace GitScc
 {
     using System;
-    using System.Collections.Generic;
     using System.ComponentModel.Design;
     using System.IO;
     using System.Linq;
-    using System.Text.RegularExpressions;
-    using System.Web;
-    using System.Windows;
 
     using GitScc.Blinkbox;
     using GitScc.Blinkbox.Options;
 
-    using Microsoft.Build.Evaluation;
-    using Microsoft.Build.Execution;
-    using Microsoft.Build.Framework;
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.OLE.Interop;
-    using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
 
-    using MessageBox = System.Windows.MessageBox;
     using MsVsShell = Microsoft.VisualStudio.Shell;
 
     /// <summary>
@@ -79,7 +70,7 @@ namespace GitScc
                 foreach (var menuOption in GitTfsMenu.MenuOptions)
                 {
                     var currentMenuOption = menuOption;
-                    Action handler = () => currentMenuOption.Handler(this.GetSolutionDirectory());
+                    Action handler = () => currentMenuOption.Handler();
                     this.RegisterCommandWithMenuService(menuService, menuOption.CommandId, (sender, args) => handler());
                 }
 
@@ -178,7 +169,6 @@ namespace GitScc
         {
             // Call existing implementation
             OnCommitCommand(sender, e);
-
         }
 
         /// <summary>
@@ -187,7 +177,7 @@ namespace GitScc
         /// <returns>true if the solution has a deploy project.</returns>
         private bool DeployProjectAvailable()
         {
-            var solutionDir = this.GetSolutionDirectory();
+            var solutionDir = GetSolutionDirectory();
             return File.Exists(solutionDir + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName);
         }
 
@@ -198,14 +188,18 @@ namespace GitScc
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         private void OnDeploy(object sender, EventArgs e)
         {
-            var commit = new CommitData()
-                {
-                    Hash = this.GetLatestCommitHash(),
-                    Message = "Re-deploy"
-                };
+            using (var deploy = new Deploy())
+            {
+                var commit = new CommitData()
+                    {
+                        Hash = SourceControlHelper.GetHeadRevisionHash(sccService.CurrentGitWorkingDirectory),
+                        Message = "Re-deploy"
+                    };
 
-            NotificationWriter.Clear();
-            this.Deploy(commit);
+                NotificationWriter.Clear();
+                deploy.RunDeploy(commit);
+            }
+
         }
 
         /// <summary>
@@ -220,148 +214,45 @@ namespace GitScc
 
             if (commit.Success)
             {
-                commit.Hash = this.GetLatestCommitHash();
+                commit.Hash = SourceControlHelper.GetHeadRevisionHash(sccService.CurrentGitWorkingDirectory);
                 NotificationWriter.Clear();
                 NotificationWriter.Write("Commit " + commit.Hash + " successful");
-                this.Deploy(commit);
+                new Deploy().RunDeploy(commit);
             }
         }
 
         /// <summary>
-        /// Builds and deploys.
+        /// Gets the current working directory.
         /// </summary>
-        /// <param name="commit">
-        /// The commit. Supplied if called after a successful commit, otherwise a new instance is created. 
-        /// </param>
-        /// <returns>
-        /// true if the deploy was successful.
-        /// </returns>
-        private bool Deploy(CommitData commit)
+        /// <returns>The working directory</returns>
+        public static string GetWorkingDirectory()
         {
-            NotificationWriter.Write("Begin build and deploy to " + commit.Hash);
-
-            try
+            if (_SccProvider == null)
             {
-                // Look for a deploy project
-                var buildProjectFileName = this.GetSolutionDirectory() + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName;
-                if (!File.Exists(buildProjectFileName))
-                {
-                    MessageBox.Show("build project not found", "Deploy abandoned", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return false;
-                }
-
-                NotificationWriter.Write("Deploy project found at " + buildProjectFileName);
-
-                // Initisalise our own project collection which can be cleaned up after the build. This is to prevent caching of the project. 
-                using (var projectCollection = new ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection.ToolsetLocations))
-                {
-                    var commitComment = Regex.Replace(commit.Message, @"\r|\n|\t", string.Empty);
-                    commitComment = HttpUtility.UrlEncode(commitComment.Substring(0, commitComment.Length > 80 ? 80 : commitComment.Length));
-
-                    // Global properties need to be set before the projects are instantiated. 
-                    var globalProperties = new Dictionary<string, string>
-                        {
-                            { BlinkboxSccOptions.Current.CommitGuidPropertyName, commit.Hash }, 
-                            { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment }
-                        };
-                    var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
-
-                    // Build it
-                    WriteToStatusBar("Building " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
-                    var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
-
-                    var buildParams = new BuildParameters(projectCollection);
-                    buildParams.Loggers = new List<ILogger>() { new BuildNotificationLogger() { Verbosity = LoggerVerbosity.Minimal } };
-
-                    var result = BuildManager.DefaultBuildManager.Build(buildParams, buildRequest);
-
-                    if (result.OverallResult == BuildResultCode.Failure)
-                    {
-                        string message = result.Exception == null 
-                            ? "An error occurred during build; please see the pending changes window for details." 
-                            : result.Exception.Message;
-                        MessageBox.Show(message, "Build failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return false;
-                    }
-
-                    // Launch urls in browser
-                    var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
-                    foreach (var launchItem in launchUrls)
-                    {
-                        this.LaunchBrowser(launchItem.EvaluatedInclude);
-                    }
-
-                    // Clean up project to prevent caching.
-                    projectCollection.UnloadAllProjects();
-                    projectCollection.UnregisterAllLoggers();
-                }
-
-                return true;
+                throw new Exception("Unable to get working directory- _SccProvider is null");
             }
-            catch (Exception exc)
-            {
-                MessageBox.Show(exc.Message, "Build failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                return false;
-            }
+            return _SccProvider.sccService.CurrentGitWorkingDirectory;
         }
 
         /// <summary>
-        /// Gets the hash of the latest commit
+        /// Gets the current branch.
         /// </summary>
-        /// <returns>
-        /// The get latest commit hash.
-        /// </returns>
-        private string GetLatestCommitHash()
+        /// <returns>The branch</returns>
+        public static string GetCurrentBranch()
         {
-            var commitHash = GitBash.Run("rev-parse HEAD", this.sccService.CurrentTracker.GitWorkingDirectory).Replace("\n", string.Empty); // Git bash adds a return on the end
-            return commitHash;
-        }
-
-        /// <summary>
-        /// Launches the provided url in the Visual Studio browser.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        private void LaunchBrowser(string url)
-        {
-            if (!string.IsNullOrEmpty(url))
+            if (_SccProvider == null)
             {
-                string errorMessage;
-                try
-                {
-                    if (Blinkbox.Options.BlinkboxSccOptions.Current.LaunchDeployedUrlsInVS)
-                    {
-                        // launch in visual studio browser
-                        var browserService = GetService<SVsWebBrowsingService>() as IVsWebBrowsingService;
-                        if (browserService != null)
-                        {
-                            IVsWindowFrame frame;
-
-                            // passing 0 to the NavigateFlags allows the browser service to reuse open instances of the internal browser.
-                            browserService.Navigate(url, 0, out frame);
-                        }
-                    }
-                    else
-                    {
-                        // Launch in default browser
-                        System.Diagnostics.Process.Start(url);
-                    }
-
-                    return;
-                }
-                catch (Exception e)
-                {
-                    errorMessage = e.Message;
-                }
-
-                MessageBox.Show("Cannot launch " + url + ": " + errorMessage, "Browser failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                throw new Exception("Unable to get current branch - _SccProvider is null");
             }
+            return _SccProvider.sccService.CurrentBranchName;
         }
+
 
         /// <summary>
         /// Gets the solution directory.
         /// </summary>
         /// <returns>the path to the solution.</returns>
-        private string GetSolutionDirectory()
+        public static string GetSolutionDirectory()
         {
             var sol = (IVsSolution)GetService<SVsSolution>();
             string solutionDirectory, solutionFile, solutionUserOptions;
@@ -380,9 +271,9 @@ namespace GitScc
         /// <returns>
         /// <c>true</c> if the solution is git TFS controlled.
         /// </returns>
-        private bool IsSolutionGitTfsControlled()
+        public bool IsSolutionGitTfsControlled()
         {
-            var repositoryDirectory = GitFileStatusTracker.GetRepositoryDirectory(this.GetSolutionDirectory());
+            var repositoryDirectory = GitFileStatusTracker.GetRepositoryDirectory(GetSolutionDirectory());
             if (!string.IsNullOrEmpty(repositoryDirectory))
             {
                 var expectedGitTfsDirectory = repositoryDirectory + "\\.git\\tfs";

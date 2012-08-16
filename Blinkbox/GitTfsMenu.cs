@@ -28,35 +28,35 @@ namespace GitScc.Blinkbox
             {
                 Name = "Review",
                 CommandId = Blinkbox.CommandIds.GitTfsReviewButtonId,
-                Handler = (workingDir) => new DevelopmentProcess(workingDir).Review()
+                Handler = DevelopmentProcess.Review
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Complete Review",
                 CommandId = Blinkbox.CommandIds.GitTfsCompleteReviewButtonId,
-                Handler = (workingDir) => new DevelopmentProcess(workingDir).CompleteReview()
+                Handler = DevelopmentProcess.CompleteReview
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Check in", 
                 CommandId = Blinkbox.CommandIds.GitTfsCheckinButtonId,
-                Handler = (workingDir) => new DevelopmentProcess(workingDir).Checkin()
+                Handler = DevelopmentProcess.Checkin
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Get Latest", 
                 CommandId = Blinkbox.CommandIds.GitTfsGetLatestButtonId,
-                Handler = (workingDir) => new DevelopmentProcess(workingDir).GetLatest()
+                Handler = DevelopmentProcess.GetLatest
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Clean Workspace",
                 CommandId = Blinkbox.CommandIds.GitTfsCleanWorkspacesButtonId,
-                Handler = (workingDir) => SourceControlHelper.RunGitTfs("cleanup-workspaces", workingDir)
+                Handler = () => SourceControlHelper.RunGitTfs("cleanup-workspaces")
             });
         }
 
@@ -79,7 +79,7 @@ namespace GitScc.Blinkbox
             /// <summary>
             /// Gets or sets the command handler.
             /// </summary>
-            public Action<string> Handler { get; set; }
+            public Action Handler { get; set; }
         }
     }
 }
