@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace GitScc.Blinkbox.Commands
+namespace GitScc.Blinkbox
 {
     using System.Diagnostics;
 
@@ -21,7 +21,7 @@ namespace GitScc.Blinkbox.Commands
         public CommandProcess(string command, string arguments)
         {
             this.StartInfo = new ProcessStartInfo(command, arguments);
-            StartInfo.WorkingDirectory = BasicSccProvider.GetWorkingDirectory();
+            StartInfo.WorkingDirectory = SourceControlHelper.GetWorkingDirectory();
 
             // Hidden process - no window.
             StartInfo.UseShellExecute = false;

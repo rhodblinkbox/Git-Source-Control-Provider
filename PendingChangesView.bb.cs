@@ -171,7 +171,7 @@ namespace GitScc
             this.GetSelectedFileFullName(fileName =>
             {
                 // Call tortoiseproc to compare.
-                var tfsRevision = DevelopmentProcess.GetLatestRevision(BlinkboxSccOptions.Current.TfsMergeBranch);
+                var tfsRevision = SourceControlHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsMergeBranch);
                 var command = Reviewing
                     ? string.Format("diff /path:{0} /startrev:{1} /endrev:{2}", fileName, "0000000000000000000000000000000000000000", tfsRevision)
                     : string.Format("diff /path:{0}", fileName);
@@ -204,7 +204,7 @@ namespace GitScc
                 {
                     var tmpFileName = Path.ChangeExtension(Path.GetTempFileName(), ".diff");
                     var fileNameRel = tracker.GetRelativeFileName(fileName);
-                    var tfsRevision = DevelopmentProcess.GetLatestRevision(BlinkboxSccOptions.Current.TfsMergeBranch);
+                    var tfsRevision = SourceControlHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsMergeBranch);
 
                     SourceControlHelper.RunGitCommand(string.Format("diff {0} \"{1}\" > \"{2}\"", tfsRevision, fileNameRel, tmpFileName));
                     

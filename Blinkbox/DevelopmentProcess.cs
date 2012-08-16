@@ -27,7 +27,7 @@ namespace GitScc.Blinkbox
            }
 
            // store the name of the current branch
-           var currentBranch = GetCurrentBranch();
+           var currentBranch = SourceControlHelper.GetCurrentBranch();
 
            // Switch to the tfs-merge branch 
            SourceControlHelper.RunGitCommand("checkout " + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true);
@@ -60,7 +60,7 @@ namespace GitScc.Blinkbox
            }
 
            // store the name of the current branch
-           var currentBranch = GetCurrentBranch();
+           var currentBranch = SourceControlHelper.GetCurrentBranch();
 
            var diffText = SourceControlHelper.RunGitCommand("diff --name-status " + BlinkboxSccOptions.Current.TfsMergeBranch + ".." + currentBranch);
            var diffList = diffText.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
@@ -86,7 +86,7 @@ namespace GitScc.Blinkbox
            }
 
            // store the name of the current branch
-           var currentBranch = GetCurrentBranch();
+           var currentBranch = SourceControlHelper.GetCurrentBranch();
 
            // Switch to the tfs-merge branch 
            SourceControlHelper.RunGitCommand("checkout " + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true);
@@ -111,7 +111,7 @@ namespace GitScc.Blinkbox
            }
 
            // store the name of the current branch
-           var currentBranch = GetCurrentBranch();
+           var currentBranch = SourceControlHelper.GetCurrentBranch();
 
            // Switch to the tfs-merge branch 
            SourceControlHelper.RunGitCommand("checkout " + BlinkboxSccOptions.Current.TfsMergeBranch, wait:true);
@@ -123,25 +123,6 @@ namespace GitScc.Blinkbox
            SourceControlHelper.RunGitCommand("checkout " + currentBranch, wait: true);
        }
 
-       /// <summary>
-       /// Checks whether the working directory is clean.
-       /// </summary>
-       /// <returns>true if the working directory is clean.</returns>
-       public static bool WorkingDirectoryClean()
-       {
-           return SourceControlHelper.WorkingDirectoryClean();
-       }
-
-       /// <summary>
-       /// Gets the latest revision.
-       /// </summary>
-       /// <param name="branchName">Name of the branch.</param>
-       /// <returns>the hash of the latest revision.</returns>
-       public static string GetLatestRevision(string branchName = Blinkbox.Options.BlinkboxSccOptions.HeadRevision)
-       {
-           return SourceControlHelper.GetHeadRevisionHash(branchName);
-       }
-
         /// <summary>
         /// Runs initial checks
         /// </summary>
@@ -151,7 +132,7 @@ namespace GitScc.Blinkbox
         {
             try
             {
-                if (!WorkingDirectoryClean())
+                if (!SourceControlHelper.WorkingDirectoryClean())
                 {
                     MessageBox.Show("Cannot " + operation + " - there are uncommitted changes in your working directory", "Cannot " + operation, MessageBoxButton.OK, MessageBoxImage.Error);
                     return false;
@@ -171,23 +152,13 @@ namespace GitScc.Blinkbox
             return true;
         }
 
-        /// <summary>
-        /// Get the name of the current branch.
-        /// </summary>
-        /// <returns>the name of the current branch</returns>
-        private static string GetCurrentBranch()
-        {
-            return BasicSccProvider.GetCurrentBranch();
-            ////var branchName = SourceControlHelper.RunGitCommand("symbolic-ref -q HEAD");
-            ////return branchName.Replace("refs/heads/", string.Empty);
-        }
 
         /// <summary>
         /// Merges if required.
         /// </summary>
         private static void CommitIfRequired()
         {
-            if (!WorkingDirectoryClean())
+            if (!SourceControlHelper.WorkingDirectoryClean())
             {
                 SourceControlHelper.RunTortoise("commit");
             }

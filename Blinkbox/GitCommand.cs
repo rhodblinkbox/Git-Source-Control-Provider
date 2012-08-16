@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace GitScc.Blinkbox.Commands
+namespace GitScc.Blinkbox
 {
     using System;
     using System.Collections.Generic;

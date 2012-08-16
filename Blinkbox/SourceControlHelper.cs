@@ -4,38 +4,57 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace GitScc
+namespace GitScc.Blinkbox
 {
     using System.Diagnostics;
-
-    using GitScc.Blinkbox.Commands;
+    using System.Linq;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class SourceControlHelper
     {
+        /// <summary>
+        /// Gets the tracker.
+        /// </summary>
+        /// <value>The tracker.</value>
+        private static GitFileStatusTracker Tracker
+        {
+            get
+            {
+                return BasicSccProvider.GetCurrentTracker();
+            }
+        }
 
         /// <summary>
         /// Gets the current working directory.
         /// </summary>
-        /// <value>The working directory.</value>
-        private static string WorkingDirectory
+        /// <returns>The working directory</returns>
+        public static string GetWorkingDirectory()
         {
-            get
-            {
-                return BasicSccProvider.GetWorkingDirectory();
-            }
+            return Tracker.GitWorkingDirectory;
+        }
+
+        /// <summary>
+        /// Gets the current working directory.
+        /// </summary>
+        /// <returns>The working directory</returns>
+        public static bool WorkingDirectoryClean()
+        {
+
+            return !Tracker.ChangedFiles.Any();
         }
 
 
         /// <summary>
-        /// Checks whether the working directory is clean.
+        /// Gets the current branch.
         /// </summary>
-        /// <returns>true if the working directory is clean.</returns>
-        public static bool WorkingDirectoryClean()
+        /// <returns>The branch</returns>
+        public static string GetCurrentBranch()
         {
-            return string.IsNullOrEmpty(RunGitCommand("status --porcelain"));
+            return Tracker.CurrentBranch;
+            ////var branchName = RunGitCommand("symbolic-ref -q HEAD");
+            ////return branchName.Replace("refs/heads/", string.Empty);
         }
 
         /// <summary>
@@ -65,8 +84,8 @@ namespace GitScc
 
                 process.StartInfo.CreateNoWindow = false;
                 process.StartInfo.FileName = tortoiseGitPath;
-                process.StartInfo.Arguments = "/command:" + command + " /path:\"" + WorkingDirectory + "\"";
-                process.StartInfo.WorkingDirectory = WorkingDirectory;
+                process.StartInfo.WorkingDirectory = GetWorkingDirectory();
+                process.StartInfo.Arguments = "/command:" + command + " /path:\"" + process.StartInfo.WorkingDirectory + "\"";
                 process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
                 process.StartInfo.LoadUserProfile = true;
 

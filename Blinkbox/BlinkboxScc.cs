@@ -190,10 +190,11 @@ namespace GitScc
         {
             using (var deploy = new Deploy())
             {
+                var lastCommitMessage = GetCurrentTracker().LastCommitMessage;
                 var commit = new CommitData()
                     {
                         Hash = SourceControlHelper.GetHeadRevisionHash(sccService.CurrentGitWorkingDirectory),
-                        Message = "Re-deploy"
+                        Message = lastCommitMessage + "Re-deploy"
                     };
 
                 NotificationWriter.Clear();
@@ -225,28 +226,14 @@ namespace GitScc
         /// Gets the current working directory.
         /// </summary>
         /// <returns>The working directory</returns>
-        public static string GetWorkingDirectory()
+        public static GitFileStatusTracker GetCurrentTracker()
         {
             if (_SccProvider == null)
             {
-                throw new Exception("Unable to get working directory- _SccProvider is null");
+                throw new Exception("Unable to get _SccProvider");
             }
-            return _SccProvider.sccService.CurrentGitWorkingDirectory;
+            return _SccProvider.sccService.GetSolutionTracker();
         }
-
-        /// <summary>
-        /// Gets the current branch.
-        /// </summary>
-        /// <returns>The branch</returns>
-        public static string GetCurrentBranch()
-        {
-            if (_SccProvider == null)
-            {
-                throw new Exception("Unable to get current branch - _SccProvider is null");
-            }
-            return _SccProvider.sccService.CurrentBranchName;
-        }
-
 
         /// <summary>
         /// Gets the solution directory.
