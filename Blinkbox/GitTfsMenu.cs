@@ -7,6 +7,7 @@ namespace GitScc.Blinkbox
 {
     using System;
     using System.Collections.Generic;
+    using System.Windows;
 
     /// <summary>
     /// Provides the structure of the git tfs menu.
@@ -28,28 +29,28 @@ namespace GitScc.Blinkbox
             {
                 Name = "Review",
                 CommandId = Blinkbox.CommandIds.GitTfsReviewButtonId,
-                Handler = () => RunTask(DevelopmentProcess.Review)
+                Handler = () => RunTaskAsync(DevelopmentProcess.Review)
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Complete Review",
                 CommandId = Blinkbox.CommandIds.GitTfsCompleteReviewButtonId,
-                Handler = () => RunTask(DevelopmentProcess.CompleteReview)
+                Handler = () => RunTaskAsync(DevelopmentProcess.CompleteReview)
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Check in", 
                 CommandId = Blinkbox.CommandIds.GitTfsCheckinButtonId,
-                Handler = () => RunTask(DevelopmentProcess.Checkin)
+                Handler = () => RunTaskAsync(DevelopmentProcess.Checkin)
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Get Latest", 
                 CommandId = Blinkbox.CommandIds.GitTfsGetLatestButtonId,
-                Handler = () => RunTask(DevelopmentProcess.GetLatest)
+                Handler = () => RunTaskAsync(DevelopmentProcess.GetLatest)
             });
 
             MenuOptions.Add(new GitTfsCommand()
@@ -65,7 +66,7 @@ namespace GitScc.Blinkbox
         /// Runs the a command asyncronously.
         /// </summary>
         /// <param name="action">The action.</param>
-        public static void RunTask(Action action)
+        private static void RunTaskAsync(Action action)
         {
             var task = new System.Threading.Tasks.Task(action);
             task.Start();
