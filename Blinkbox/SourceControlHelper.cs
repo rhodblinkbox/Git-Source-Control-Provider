@@ -47,6 +47,15 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
+        /// Gets the last commit message.
+        /// </summary>
+        /// <returns>The last commit message</returns>
+        public static string GetLastCommitMessage()
+        {
+            return Tracker.LastCommitMessage.Replace("\n", string.Empty);
+        }
+
+        /// <summary>
         /// Gets the current working directory.
         /// </summary>
         /// <returns>The working directory</returns>
@@ -73,18 +82,17 @@ namespace GitScc.Blinkbox
         public static string GetCurrentBranch()
         {
             return Tracker.CurrentBranch;
-            ////var branchName = RunGitCommand("symbolic-ref -q HEAD");
-            ////return branchName.Replace("refs/heads/", string.Empty);
         }
 
         /// <summary>
-        /// Gets the latest revision.
+        /// Gets the latest revision for the specified branch (defaults to current branch).
         /// </summary>
         /// <param name="branchName">Name of the branch.</param>
         /// <returns>the hash of the latest revision.</returns>
-        public static string GetHeadRevisionHash(string branchName = Blinkbox.Options.BlinkboxSccOptions.HeadRevision)
+        public static string GetHeadRevisionHash(string branchName = null)
         {
-            var revision = RunGitCommand("rev-parse " + branchName, wait: true);
+            branchName = branchName ?? Tracker.CurrentBranch;
+            var revision = RunGitCommand("rev-parse " + branchName, wait: true, silent: true);
             return revision.Replace("\n", string.Empty); // Git adds a return to the revision
         }
 
@@ -119,10 +127,11 @@ namespace GitScc.Blinkbox
         /// </summary>
         /// <param name="command">The command.</param>
         /// <param name="wait">if set to <c>true</c> [wait].</param>
+        /// <param name="silent">if set to <c>true</c> output is not sent to the notification window.</param>
         /// <returns>the output of the git command.</returns>
-        public static string RunGitCommand(string command, bool wait = false)
+        public static string RunGitCommand(string command, bool wait = false, bool silent = false)
         {
-            var process = new GitCommand(command);
+            var process = new GitCommand(command) { Silent = silent };
             process = wait ? (GitCommand)process.StartAndWait() : (GitCommand)process.Start();
             return process.Output;
         }

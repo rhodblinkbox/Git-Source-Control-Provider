@@ -12,7 +12,6 @@ namespace GitScc
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel.Design;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
@@ -25,13 +24,9 @@ namespace GitScc
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
     using Microsoft.Build.Framework;
-    using Microsoft.VisualStudio;
-    using Microsoft.VisualStudio.OLE.Interop;
-    using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
 
     using MessageBox = System.Windows.MessageBox;
-    using MsVsShell = Microsoft.VisualStudio.Shell;
 
     /// <summary>
     /// Blinkbox implementation inheriting from GitSourceControlProvider. 
@@ -52,69 +47,61 @@ namespace GitScc
         {
             NotificationWriter.Write("Begin build and deploy to " + commit.Hash);
 
-            try
+            // Look for a deploy project
+            var buildProjectFileName = BasicSccProvider.GetSolutionDirectory() + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName;
+            if (!File.Exists(buildProjectFileName))
             {
-                // Look for a deploy project
-                var buildProjectFileName = BasicSccProvider.GetSolutionDirectory() + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName;
-                if (!File.Exists(buildProjectFileName))
+                MessageBox.Show("build project not found", "Deploy abandoned", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+
+            NotificationWriter.Write("Deploy project found at " + buildProjectFileName);
+
+            // Initisalise our own project collection which can be cleaned up after the build. This is to prevent caching of the project. 
+            using (var projectCollection = new ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection.ToolsetLocations))
+            {
+                var commitComment = Regex.Replace(commit.Message, @"\r|\n|\t", string.Empty);
+                commitComment = HttpUtility.UrlEncode(commitComment.Substring(0, commitComment.Length > 80 ? 80 : commitComment.Length));
+
+                // Global properties need to be set before the projects are instantiated. 
+                var globalProperties = new Dictionary<string, string>
+                    {
+                        { BlinkboxSccOptions.Current.CommitGuidPropertyName, commit.Hash }, 
+                        { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment }
+                    };
+                var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
+
+                // Build it
+                BasicSccProvider.WriteToStatusBar("Building " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
+                var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
+
+                var buildParams = new BuildParameters(projectCollection);
+                buildParams.Loggers = new List<ILogger>() { new BuildNotificationLogger() { Verbosity = LoggerVerbosity.Minimal } };
+
+                var result = BuildManager.DefaultBuildManager.Build(buildParams, buildRequest);
+
+                if (result.OverallResult == BuildResultCode.Failure)
                 {
-                    MessageBox.Show("build project not found", "Deploy abandoned", MessageBoxButton.OK, MessageBoxImage.Error);
+                    string message = result.Exception == null
+                        ? "An error occurred during build; please see the pending changes window for details."
+                        : result.Exception.Message;
+                    MessageBox.Show(message, "Build failed", MessageBoxButton.OK, MessageBoxImage.Error);
                     return false;
                 }
 
-                NotificationWriter.Write("Deploy project found at " + buildProjectFileName);
-
-                // Initisalise our own project collection which can be cleaned up after the build. This is to prevent caching of the project. 
-                using (var projectCollection = new ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection.ToolsetLocations))
+                // Launch urls in browser
+                var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
+                foreach (var launchItem in launchUrls)
                 {
-                    var commitComment = Regex.Replace(commit.Message, @"\r|\n|\t", string.Empty);
-                    commitComment = HttpUtility.UrlEncode(commitComment.Substring(0, commitComment.Length > 80 ? 80 : commitComment.Length));
-
-                    // Global properties need to be set before the projects are instantiated. 
-                    var globalProperties = new Dictionary<string, string>
-                        {
-                            { BlinkboxSccOptions.Current.CommitGuidPropertyName, commit.Hash }, 
-                            { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment }
-                        };
-                    var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
-
-                    // Build it
-                    BasicSccProvider.WriteToStatusBar("Building " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
-                    var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
-
-                    var buildParams = new BuildParameters(projectCollection);
-                    buildParams.Loggers = new List<ILogger>() { new BuildNotificationLogger() { Verbosity = LoggerVerbosity.Minimal } };
-
-                    var result = BuildManager.DefaultBuildManager.Build(buildParams, buildRequest);
-
-                    if (result.OverallResult == BuildResultCode.Failure)
-                    {
-                        string message = result.Exception == null
-                            ? "An error occurred during build; please see the pending changes window for details."
-                            : result.Exception.Message;
-                        MessageBox.Show(message, "Build failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return false;
-                    }
-
-                    // Launch urls in browser
-                    var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
-                    foreach (var launchItem in launchUrls)
-                    {
-                        this.LaunchBrowser(launchItem.EvaluatedInclude);
-                    }
-
-                    // Clean up project to prevent caching.
-                    projectCollection.UnloadAllProjects();
-                    projectCollection.UnregisterAllLoggers();
+                    this.LaunchBrowser(launchItem.EvaluatedInclude);
                 }
 
-                return true;
+                // Clean up project to prevent caching.
+                projectCollection.UnloadAllProjects();
+                projectCollection.UnregisterAllLoggers();
             }
-            catch (Exception exc)
-            {
-                MessageBox.Show(exc.Message, "Build failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                return false;
-            }
+
+            return true;
         }
 
         /// <summary>

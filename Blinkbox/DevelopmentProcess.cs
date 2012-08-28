@@ -173,7 +173,7 @@ namespace GitScc.Blinkbox
             }
 
             // Create the tfs_merge branch (fails silently if it already exists)
-            SourceControlHelper.RunGitCommand("branch refs/heads/" + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true);
+            SourceControlHelper.RunGitCommand("branch refs/heads/" + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true, silent: true);
 
             NotificationWriter.Clear();
             NotificationWriter.NewSection("Start " + operation);

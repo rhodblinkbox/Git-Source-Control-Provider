@@ -69,27 +69,27 @@ namespace GitScc
         /// </param>
         internal void DisplayReview(List<GitFile> changedFiles)
         {
-            // Set the reviewing flag to prevent refreshes over-writing the review list with the pending changes list.
-            this.Reviewing = true;
-
-            if (!GitBash.Exists)
-            {
-                Settings.Show();
-                return;
-            }
-
-            Settings.Hide();
-
-            if (tracker == null)
-            {
-                service.NoRefresh = true;
-                ClearUI();
-                service.NoRefresh = false;
-                return;
-            }
-
+           
             Action act = () =>
             {
+                // Set the reviewing flag to prevent refreshes over-writing the review list with the pending changes list.
+                this.Reviewing = true;
+
+                if (!GitBash.Exists)
+                {
+                    Settings.Show();
+                    return;
+                }
+
+                Settings.Hide();
+
+                if (tracker == null)
+                {
+                    service.NoRefresh = true;
+                    ClearUI();
+                    service.NoRefresh = false;
+                    return;
+                }
 
                 service.NoRefresh = true;
                 ShowStatusMessage("Getting changed files ...");
@@ -147,7 +147,6 @@ namespace GitScc
 
                 service.NoRefresh = false;
                 service.lastTimeRefresh = DateTime.Now;
-
             };
 
             this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
@@ -188,38 +187,39 @@ namespace GitScc
                 return;
             }
 
-            // Diff with TFS
-            var fileName = this.GetSelectedFileName();
-            if (fileName == null)
-            {
-                this.ClearEditor();
-                this.diffLines = new string[0];
-                return;
-            }
-
             Action act = () =>
             {
                 service.NoRefresh = true;
                 try
                 {
-                    var tmpFileName = Path.ChangeExtension(Path.GetTempFileName(), ".diff");
+
+                    // Diff with TFS
+                    var fileName = this.GetSelectedFileName();
+                    if (fileName == null)
+                    {
+                        // file not found locally - clear editor
+                        this.ClearEditor();
+                        this.diffLines = new string[0];
+                        return;
+                    }
+
                     var fileNameRel = tracker.GetRelativeFileName(fileName);
                     var tfsRevision = SourceControlHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsMergeBranch);
 
-                    SourceControlHelper.RunGitCommand(string.Format("diff {0} \"{1}\" > \"{2}\"", tfsRevision, fileNameRel, tmpFileName));
+                    string diffCommand = string.Format("diff {0} \"{1}\"", tfsRevision, fileNameRel);
+                    var diff = SourceControlHelper.RunGitCommand(diffCommand, silent: true);
                     
-                    if (!string.IsNullOrWhiteSpace(tmpFileName) && File.Exists(tmpFileName))
-                    {
-                        diffLines = File.ReadAllLines(tmpFileName);
-                        this.ShowFile(tmpFileName);
-                    }
+                    diffLines = diff.Split(Environment.NewLine.ToCharArray());
+                    this.DiffEditor.SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.GetDefinitionByExtension(".diff");
+                    this.ClearEditor();
+                    this.DiffEditor.Text = diff;
                 }
                 catch (Exception ex)
                 {
                     ShowStatusMessage(ex.Message);
                 }
-                service.NoRefresh = false;
 
+                service.NoRefresh = false;
             };
 
             this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
@@ -250,17 +250,6 @@ namespace GitScc
                 var action = new Action(() => currentInstance.DiffEditor.Clear());
                 currentInstance.DiffEditor.Dispatcher.BeginInvoke(action);
             }
-        }
-
-
-        /// <summary>
-        /// performs a custom commit for the blinkbox functionality.
-        /// </summary>
-        /// <returns>a Commit object</returns>
-        public CommitData BlinkboxCommit()
-        {
-            var success = this.Commit();
-            return new CommitData() { Message = this.Comments, Success = success };
         }
     }
 }

@@ -29,28 +29,28 @@ namespace GitScc.Blinkbox
             {
                 Name = "Review",
                 CommandId = Blinkbox.CommandIds.GitTfsReviewButtonId,
-                Handler = () => RunTaskAsync(DevelopmentProcess.Review)
+                Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.Review)
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Complete Review",
                 CommandId = Blinkbox.CommandIds.GitTfsCompleteReviewButtonId,
-                Handler = () => RunTaskAsync(DevelopmentProcess.CompleteReview)
+                Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.CompleteReview)
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Check in", 
                 CommandId = Blinkbox.CommandIds.GitTfsCheckinButtonId,
-                Handler = () => RunTaskAsync(DevelopmentProcess.Checkin)
+                Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.Checkin)
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Get Latest", 
                 CommandId = Blinkbox.CommandIds.GitTfsGetLatestButtonId,
-                Handler = () => RunTaskAsync(DevelopmentProcess.GetLatest)
+                Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.GetLatest)
             });
 
             MenuOptions.Add(new GitTfsCommand()
@@ -59,17 +59,6 @@ namespace GitScc.Blinkbox
                 CommandId = Blinkbox.CommandIds.GitTfsCleanWorkspacesButtonId,
                 Handler = () => SourceControlHelper.RunGitTfs("cleanup-workspaces")
             });
-        }
-
-
-        /// <summary>
-        /// Runs the a command asyncronously.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        private static void RunTaskAsync(Action action)
-        {
-            var task = new System.Threading.Tasks.Task(action);
-            task.Start();
         }
 
         /// <summary>

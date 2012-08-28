@@ -42,6 +42,11 @@ namespace GitScc.Blinkbox
         public string Output { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether output is sent to the notification window.
+        /// </summary>
+        public bool Silent { get; set; }
+
+        /// <summary>
         /// Gets ErrorText.
         /// </summary>
         public string Error { get; private set; }
@@ -59,7 +64,11 @@ namespace GitScc.Blinkbox
         /// </returns>
         public new CommandProcess Start()
         {
-            NotificationWriter.Write(System.IO.Path.GetFileName(this.StartInfo.FileName) + " " + this.StartInfo.Arguments);
+            if (!this.Silent)
+            {
+                NotificationWriter.Write(System.IO.Path.GetFileName(this.StartInfo.FileName) + " " + this.StartInfo.Arguments);
+            }
+
             base.Start();
 
             if (this.WaitUntilFinished)
@@ -69,8 +78,13 @@ namespace GitScc.Blinkbox
 
             this.Output = StandardOutput.ReadToEnd().TrimEnd("\n".ToCharArray());
             this.Error = StandardError.ReadToEnd().TrimEnd("\n".ToCharArray());
-            NotificationWriter.Write(this.Output);
-            NotificationWriter.Write(this.Error);
+
+            if (!this.Silent)
+            {
+                NotificationWriter.Write(this.Output);
+                NotificationWriter.Write(this.Error);
+            }
+
             return this;
         }
 

@@ -14,6 +14,7 @@ namespace GitScc
     using System.ComponentModel.Design;
     using System.IO;
     using System.Linq;
+    using System.Windows;
 
     using GitScc.Blinkbox;
     using GitScc.Blinkbox.Options;
@@ -41,11 +42,84 @@ namespace GitScc
         }
 
         /// <summary>
+        /// Runs the a command asyncronously.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        public static void RunAsync(Action action)
+        {
+            var task = new System.Threading.Tasks.Task(action);
+            task.Start();
+        }
+
+        /// <summary>
+        /// Gets the current working directory.
+        /// </summary>
+        /// <returns>The working directory</returns>
+        public static GitFileStatusTracker GetCurrentTracker()
+        {
+            if (_SccProvider == null)
+            {
+                throw new Exception("Unable to get _SccProvider");
+            }
+
+            return _SccProvider.sccService.GetSolutionTracker();
+        }
+
+        /// <summary>
+        /// Gets the solution directory.
+        /// </summary>
+        /// <returns>the path to the solution.</returns>
+        public static string GetSolutionDirectory()
+        {
+            var sol = (IVsSolution)GetService<SVsSolution>();
+            string solutionDirectory, solutionFile, solutionUserOptions;
+
+            if (sol.GetSolutionInfo(out solutionDirectory, out solutionFile, out solutionUserOptions) == VSConstants.S_OK)
+            {
+                return Path.GetDirectoryName(solutionFile);
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Handles a refresh button click.
         /// </summary>
         public void HandleRefreshButton()
         {
             PendingChangesView.CancelReview();
+        }
+
+
+        /// <summary>
+        /// Determines whether the solution is git TFS controlled.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> if the solution is git TFS controlled.
+        /// </returns>
+        public bool IsSolutionGitTfsControlled()
+        {
+            var repositoryDirectory = GitFileStatusTracker.GetRepositoryDirectory(GetSolutionDirectory());
+            if (!string.IsNullOrEmpty(repositoryDirectory))
+            {
+                var expectedGitTfsDirectory = repositoryDirectory + "\\.git\\tfs";
+                return Directory.Exists(expectedGitTfsDirectory);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Displays the exception.
+        /// </summary>
+        /// <param name="e">The exception.</param>
+        /// <param name="title">The title.</param>
+        /// <param name="message">The message.</param>
+        public void DisplayException(Exception e, string title = null, string message = null)
+        {
+            message = (message ?? string.Empty) + Environment.NewLine + e.Message + Environment.NewLine + e.StackTrace;
+            title = title ?? "An error occurred";
+            MessageBox.Show(message, title);
         }
 
         /// <summary>
@@ -75,8 +149,8 @@ namespace GitScc
                 }
 
                 // Commit and test button
-                this.RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxCommitAndDeployId, this.OnCommitAndDeploy);
-                this.RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxDeployId, this.OnDeploy);
+                this.RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxCommitAndDeployId, (sender, args) => this.CommitAndDeploy());
+                this.RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxDeployId, (sender, args) => this.ReDeploy());
             }
         }
 
@@ -161,17 +235,6 @@ namespace GitScc
         }
 
         /// <summary>
-        /// Handles a click of the commit button.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        public void HandleCommit(object sender, EventArgs e)
-        {
-            // Call existing implementation
-            OnCommitCommand(sender, e);
-        }
-
-        /// <summary>
         /// Checks whether a deploy project is available.
         /// </summary>
         /// <returns>true if the solution has a deploy project.</returns>
@@ -184,90 +247,67 @@ namespace GitScc
         /// <summary>
         /// Handles the Deploy button. 
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        private void OnDeploy(object sender, EventArgs e)
+        private void ReDeploy()
         {
-            using (var deploy = new Deploy())
+            try
             {
-                var lastCommitMessage = GetCurrentTracker().LastCommitMessage;
-                var commit = new CommitData()
+                // Run the following action asynchronously
+                Action action = () =>
                     {
-                        Hash = SourceControlHelper.GetHeadRevisionHash(sccService.CurrentGitWorkingDirectory),
-                        Message = lastCommitMessage + "Re-deploy"
+                        using (var deploy = new Deploy())
+                        {
+                            var commit = new CommitData 
+                            { 
+                                Hash = SourceControlHelper.GetHeadRevisionHash(),
+                                Message = SourceControlHelper.GetLastCommitMessage() + " Re-deploy"
+                            };
+                            deploy.RunDeploy(commit);
+                        }
                     };
 
                 NotificationWriter.Clear();
-                deploy.RunDeploy(commit);
+                new System.Threading.Tasks.Task(action).Start();
             }
-
+            catch (Exception e)
+            {
+                this.DisplayException(e, "Deploy failed");
+            }
         }
 
         /// <summary>
         /// Handles the "Commit and Deploy button". Builds and deploys the projects listed in the solution file under DevBuildProjectNames. 
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        private void OnCommitAndDeploy(object sender, EventArgs e)
+        private void CommitAndDeploy()
         {
-            // Commit to git repository
-             var commit = this.GetToolWindowPane<PendingChangesToolWindow>().BlinkboxCommit();
-
-            if (commit.Success)
+            try
             {
-                commit.Hash = SourceControlHelper.GetHeadRevisionHash(sccService.CurrentGitWorkingDirectory);
-                NotificationWriter.Clear();
-                NotificationWriter.Write("Commit " + commit.Hash + " successful");
-                new Deploy().RunDeploy(commit);
-            }
-        }
+                // Commit to git repository
+                var commitSuccessful = this.GetToolWindowPane<PendingChangesToolWindow>().BlinkboxCommit();
 
-        /// <summary>
-        /// Gets the current working directory.
-        /// </summary>
-        /// <returns>The working directory</returns>
-        public static GitFileStatusTracker GetCurrentTracker()
-        {
-            if (_SccProvider == null)
+                if (commitSuccessful)
+                {
+                    // Run the following action asynchronously
+                    Action action = () =>
+                    {
+                        using (var deploy = new Deploy())
+                        {
+                            var commit = new CommitData
+                                {
+                                    Hash = SourceControlHelper.GetHeadRevisionHash(),
+                                    Message = SourceControlHelper.GetLastCommitMessage()
+                                };
+                            deploy.RunDeploy(commit);
+                        }
+                    };
+
+                    NotificationWriter.Clear();
+                    new System.Threading.Tasks.Task(action).Start();
+                }
+            }
+            catch (Exception e)
             {
-                throw new Exception("Unable to get _SccProvider");
+                this.DisplayException(e, "Commit and Deploy failed");
             }
-            return _SccProvider.sccService.GetSolutionTracker();
-        }
-
-        /// <summary>
-        /// Gets the solution directory.
-        /// </summary>
-        /// <returns>the path to the solution.</returns>
-        public static string GetSolutionDirectory()
-        {
-            var sol = (IVsSolution)GetService<SVsSolution>();
-            string solutionDirectory, solutionFile, solutionUserOptions;
-
-            if (sol.GetSolutionInfo(out solutionDirectory, out solutionFile, out solutionUserOptions) == VSConstants.S_OK)
-            {
-                return Path.GetDirectoryName(solutionFile);
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Determines whether the solution is git TFS controlled.
-        /// </summary>
-        /// <returns>
-        /// <c>true</c> if the solution is git TFS controlled.
-        /// </returns>
-        public bool IsSolutionGitTfsControlled()
-        {
-            var repositoryDirectory = GitFileStatusTracker.GetRepositoryDirectory(GetSolutionDirectory());
-            if (!string.IsNullOrEmpty(repositoryDirectory))
-            {
-                var expectedGitTfsDirectory = repositoryDirectory + "\\.git\\tfs";
-                return Directory.Exists(expectedGitTfsDirectory);
-            }
-
-            return false;
         }
     }
 }

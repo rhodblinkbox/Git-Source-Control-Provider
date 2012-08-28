@@ -20,10 +20,10 @@ namespace GitScc
         /// <summary>
         /// Blinkboc commit functionality.
         /// </summary>
-        /// <returns>commit data</returns>
-        internal CommitData BlinkboxCommit()
+        /// <returns>true if the commit was successful</returns>
+        internal bool BlinkboxCommit()
         {
-            return ((PendingChangesView)control).BlinkboxCommit();
+            return ((PendingChangesView)control).Commit();
         }
     }
 }
