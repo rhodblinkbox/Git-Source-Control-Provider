@@ -161,8 +161,12 @@ namespace GitScc
         {
             if (!BlinkboxSccOptions.Current.TortoiseAvailable)
             {
-                // Call the existing implementation. 
-                this.MouseDoubleClick(sender, e);
+                // Compare the file (differs from existing implementation.
+                this.GetSelectedFileFullName(fileName =>
+                {
+                    var sccService = BasicSccProvider.GetServiceEx<SccProviderService>();
+                    sccService.CompareFile(fileName, reviewBranchName);
+                });
                 return;
             }
 

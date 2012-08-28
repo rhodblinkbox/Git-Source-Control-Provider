@@ -18,7 +18,7 @@ using System.Windows.Threading;
 namespace GitScc
 {
     [Guid("C4128D99-1000-41D1-A6C3-704E6C1A3DE2")]
-    public class SccProviderService : IVsSccProvider,
+    public partial class SccProviderService : IVsSccProvider,
         IVsSccManager2,
         IVsSccManagerTooltip,
         IVsSolutionEvents,
@@ -712,14 +712,14 @@ namespace GitScc
             CompareFile(fileName);
         }
 
-        internal void CompareFile(string fileName, string branchName = null)
+        internal void CompareFile(string fileName)
         {
             GitFileStatus status = GetFileStatus(fileName);
             if (status == GitFileStatus.Modified || status == GitFileStatus.Staged)
             {
                 string tempFile = Path.GetFileName(fileName);
                 tempFile = Path.Combine(Path.GetTempPath(), tempFile);
-                CurrentTracker.SaveFileFromRepository(fileName, tempFile, branchName);
+                CurrentTracker.SaveFileFromRepository(fileName, tempFile);
                 _sccProvider.RunDiffCommand(tempFile, fileName);
             }
         }

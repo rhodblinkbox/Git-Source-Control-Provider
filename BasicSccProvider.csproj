@@ -115,6 +115,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Blinkbox\SourceControlHelper.cs" />
+    <Compile Include="SccProviderService.bb.cs" >
+		<DependentUpon>SccProviderService.cs</DependentUpon>
+    </Compile>
     <Compile Include="PendingChangesToolWindow.bb.cs">
       <DependentUpon>PendingChangesToolWindow.cs</DependentUpon>
     </Compile>

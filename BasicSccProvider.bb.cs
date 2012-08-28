@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="BlinkboxScc.cs" company="blinkbox">
+// <copyright file="BasicSccProvider.bb.cs" company="blinkbox">
 //   TODO: Update copyright text.
 // </copyright>
 // <summary>

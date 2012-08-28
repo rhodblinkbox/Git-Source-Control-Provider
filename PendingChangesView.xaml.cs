@@ -100,15 +100,16 @@ namespace GitScc
             this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
         }
 
-        private void MouseDoubleClick(object sender, MouseButtonEventArgs e)
+/*
+        private void dataGrid1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            GetSelectedFileFullName(fileName =>
+            GetSelectedFileFullName((fileName) =>
             {
-                var service = BasicSccProvider.GetServiceEx<SccProviderService>();
-                service.CompareFile(fileName, reviewBranchName);
+                OpenFile(fileName);
             });
+
         }
-        
+*/
 
         private void ClearEditor()
         {
@@ -555,9 +556,8 @@ Note: if the file is included project, you need to delete the file from project 
 
             if (!opened) dte.ItemOperations.OpenFile(fileName);
         }
+
     }
-
-
 
     public static class ExtHelper
     {
