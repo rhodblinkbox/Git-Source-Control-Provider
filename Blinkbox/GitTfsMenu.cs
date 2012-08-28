@@ -28,28 +28,28 @@ namespace GitScc.Blinkbox
             {
                 Name = "Review",
                 CommandId = Blinkbox.CommandIds.GitTfsReviewButtonId,
-                Handler = DevelopmentProcess.Review
+                Handler = () => RunTask(DevelopmentProcess.Review)
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Complete Review",
                 CommandId = Blinkbox.CommandIds.GitTfsCompleteReviewButtonId,
-                Handler = DevelopmentProcess.CompleteReview
+                Handler = () => RunTask(DevelopmentProcess.CompleteReview)
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Check in", 
                 CommandId = Blinkbox.CommandIds.GitTfsCheckinButtonId,
-                Handler = DevelopmentProcess.Checkin
+                Handler = () => RunTask(DevelopmentProcess.Checkin)
             });
 
             MenuOptions.Add(new GitTfsCommand()
             {
                 Name = "Get Latest", 
                 CommandId = Blinkbox.CommandIds.GitTfsGetLatestButtonId,
-                Handler = DevelopmentProcess.GetLatest
+                Handler = () => RunTask(DevelopmentProcess.GetLatest)
             });
 
             MenuOptions.Add(new GitTfsCommand()
@@ -58,6 +58,17 @@ namespace GitScc.Blinkbox
                 CommandId = Blinkbox.CommandIds.GitTfsCleanWorkspacesButtonId,
                 Handler = () => SourceControlHelper.RunGitTfs("cleanup-workspaces")
             });
+        }
+
+
+        /// <summary>
+        /// Runs the a command asyncronously.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        public static void RunTask(Action action)
+        {
+            var task = new System.Threading.Tasks.Task(action);
+            task.Start();
         }
 
         /// <summary>

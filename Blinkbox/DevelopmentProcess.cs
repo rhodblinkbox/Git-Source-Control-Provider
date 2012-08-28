@@ -30,7 +30,7 @@ namespace GitScc.Blinkbox
            var currentBranch = SourceControlHelper.GetCurrentBranch();
 
            // Switch to the tfs-merge branch 
-           SourceControlHelper.RunGitCommand("checkout " + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true);
+           SourceControlHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
 
            // Pull down changes into tfs remote branch, and tfs_merge branch
            SourceControlHelper.RunGitTfs("pull");
@@ -40,7 +40,7 @@ namespace GitScc.Blinkbox
            if (!string.IsNullOrEmpty(currentBranch))
            {
                // Switch back to current branch
-               SourceControlHelper.RunGitCommand("checkout " + currentBranch, wait: true);
+               SourceControlHelper.CheckOutBranch(currentBranch);
 
                // Merge without commit from tfs-merge to current branch. 
                SourceControlHelper.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait:true);
@@ -89,7 +89,7 @@ namespace GitScc.Blinkbox
            var currentBranch = SourceControlHelper.GetCurrentBranch();
 
            // Switch to the tfs-merge branch 
-           SourceControlHelper.RunGitCommand("checkout " + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true);
+           SourceControlHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
 
            // Merge without commit from tfs-merge to current branch. 
            SourceControlHelper.RunGitCommand("merge " + currentBranch, wait: true);
@@ -97,7 +97,7 @@ namespace GitScc.Blinkbox
            CommitIfRequired();
 
            // Switch back to the current branch 
-           SourceControlHelper.RunGitCommand("checkout " + currentBranch, wait: true);
+           SourceControlHelper.CheckOutBranch(currentBranch);
        }
 
        /// <summary>
@@ -114,13 +114,13 @@ namespace GitScc.Blinkbox
            var currentBranch = SourceControlHelper.GetCurrentBranch();
 
            // Switch to the tfs-merge branch 
-           SourceControlHelper.RunGitCommand("checkout " + BlinkboxSccOptions.Current.TfsMergeBranch, wait:true);
+           SourceControlHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
 
            // Checkin from tfs-merge branch
            SourceControlHelper.RunGitTfs("checkintool");
 
            // Switch back to the current Branch 
-           SourceControlHelper.RunGitCommand("checkout " + currentBranch, wait: true);
+           SourceControlHelper.CheckOutBranch(currentBranch);
        }
 
         /// <summary>

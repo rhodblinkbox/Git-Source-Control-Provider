@@ -59,7 +59,7 @@ namespace GitScc.Blinkbox
         /// </returns>
         public new CommandProcess Start()
         {
-            NotificationWriter.Write(System.IO.Path.GetFileName(this.StartInfo.FileName + " " + this.StartInfo.Arguments));
+            NotificationWriter.Write(System.IO.Path.GetFileName(this.StartInfo.FileName) + " " + this.StartInfo.Arguments);
             base.Start();
 
             if (this.WaitUntilFinished)

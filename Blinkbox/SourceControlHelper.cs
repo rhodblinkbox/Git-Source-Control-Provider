@@ -6,6 +6,7 @@
 
 namespace GitScc.Blinkbox
 {
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
 
@@ -27,6 +28,16 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
+        /// Checks out a branch.
+        /// </summary>
+        /// <param name="branch">The branch.</param>
+        /// <param name="createNew">if set to <c>true</c> creates a new branch.</param>
+        public static void CheckOutBranch(string branch, bool createNew = false)
+        {
+            Tracker.CheckOutBranch(branch, createNew);
+        }
+
+        /// <summary>
         /// Gets the current working directory.
         /// </summary>
         /// <returns>The working directory</returns>
@@ -41,8 +52,17 @@ namespace GitScc.Blinkbox
         /// <returns>The working directory</returns>
         public static bool WorkingDirectoryClean()
         {
-
             return !Tracker.ChangedFiles.Any();
+        }
+
+        /// <summary>
+        /// Parses git status into a list of files.
+        /// </summary>
+        /// <param name="status">The status.</param>
+        /// <returns>A list of git files. </returns>
+        public static IList<GitFile> ParseGitStatus(string status)
+        {
+            return Tracker.ParseGitStatus(status);
         }
 
 
