@@ -2,8 +2,6 @@
 // <copyright file="NotificationWriter.cs" company="blinkbox">
 //   TODO: Update copyright text.
 // </copyright>
-// <summary>
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace GitScc.Blinkbox
@@ -20,7 +18,12 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Lock for singleton initialisation.
         /// </summary>
-        private static readonly object sync = new object();
+        private static readonly object Sync = new object();
+
+        /// <summary>
+        /// The singleton instance of the NotificationWriter.
+        /// </summary>
+        private static NotificationWriter instance = null;
 
         /// <summary>
         /// A queue of the messages. 
@@ -31,11 +34,6 @@ namespace GitScc.Blinkbox
         /// A thread for writing messages to the output window. 
         /// </summary>
         private readonly Thread processingThread;
-
-        /// <summary>
-        /// The singleton instance of the NotificationWriter.
-        /// </summary>
-        private static NotificationWriter instance = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationWriter"/> class. 
@@ -55,7 +53,7 @@ namespace GitScc.Blinkbox
             {
                 if (instance == null)
                 {
-                    lock (sync)
+                    lock (Sync)
                     {
                         instance = instance ?? new NotificationWriter();
                     }
@@ -112,7 +110,7 @@ namespace GitScc.Blinkbox
         {
             while (!this.messages.IsEmpty)
             {
-                string message = null;
+                string message;
                 this.messages.TryDequeue(out message);
                 if (!string.IsNullOrEmpty(message))
                 {

@@ -1,9 +1,9 @@
 // --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PendingChangesView.bb.cs" company="blinkbox">
-//   TODO: Update copyright text.
+//   blinkbox implementation of PendingChangesView.
 // </copyright>
 // <summary>
-//   Additional implementation required by the BB version of Git Source Control.
+//   blinkbox implementation of PendingChangesView.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -12,8 +12,6 @@ namespace GitScc
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
-    using System.Diagnostics;
-    using System.IO;
     using System.Linq;
     using System.Windows.Controls;
     using System.Windows.Data;
@@ -33,11 +31,15 @@ namespace GitScc
         /// </summary>
         private static PendingChangesView currentInstance;
 
-        internal string reviewBranchName = null;
+        /// <summary>
+        /// The name of the branch to be used for reviewing
+        /// </summary>
+        private string comparisonBranch = null;
 
         /// <summary>
-        /// Gets a value indicating that a review is currently in progress.
+        /// Gets a value indicating whether a review is currently in progress.
         /// </summary>
+        /// <value><c>true</c> if reviewing; otherwise, <c>false</c>.</value>
         public bool Reviewing { get; private set; }
 
         /// <summary>
@@ -46,9 +48,12 @@ namespace GitScc
         /// <param name="changedFiles">
         /// The changed files.
         /// </param>
-        public static void Review (List<GitFile> changedFiles, string branchName)
+        /// <param name="branchName">
+        /// The branch Name.
+        /// </param>
+        public static void Review(List<GitFile> changedFiles, string branchName)
         {
-            currentInstance.reviewBranchName = branchName;
+            currentInstance.comparisonBranch = branchName;
             currentInstance.DisplayReview(changedFiles);
         }
 
@@ -57,8 +62,33 @@ namespace GitScc
         /// </summary>
         public static void CancelReview()
         {
-            currentInstance.reviewBranchName = null;
+            currentInstance.comparisonBranch = null;
             currentInstance.Reviewing = false;
+        }
+
+        /// <summary>
+        /// Writes a message to the diff editor
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public static void WriteToDiffWindow(string message)
+        {
+            if (currentInstance != null)
+            {
+                var action = new Action(() => currentInstance.DiffEditor.AppendText(Environment.NewLine + message));
+                currentInstance.DiffEditor.Dispatcher.BeginInvoke(action);
+            }
+        }
+
+        /// <summary>
+        /// Clears the diff editor.
+        /// </summary>
+        public static void ClearDiffEditor()
+        {
+            if (currentInstance != null)
+            {
+                var action = new Action(() => currentInstance.DiffEditor.Clear());
+                currentInstance.DiffEditor.Dispatcher.BeginInvoke(action);
+            }
         }
 
         /// <summary>
@@ -69,7 +99,6 @@ namespace GitScc
         /// </param>
         internal void DisplayReview(List<GitFile> changedFiles)
         {
-           
             Action act = () =>
             {
                 // Set the reviewing flag to prevent refreshes over-writing the review list with the pending changes list.
@@ -94,9 +123,6 @@ namespace GitScc
                 service.NoRefresh = true;
                 ShowStatusMessage("Getting changed files ...");
 
-                Stopwatch stopwatch = new Stopwatch();
-                stopwatch.Start();
-
                 var selectedFile = GetSelectedFileName();
                 var selectedFiles = this.dataGrid1.Items.Cast<GitFile>()
                     .Where(i => i.IsSelected)
@@ -108,7 +134,7 @@ namespace GitScc
                 {
                     this.dataGrid1.ItemsSource = changedFiles;
 
-                    ICollectionView view = CollectionViewSource.GetDefaultView(this.dataGrid1.ItemsSource);
+                    var view = CollectionViewSource.GetDefaultView(this.dataGrid1.ItemsSource);
                     if (view != null)
                     {
                         view.SortDescriptions.Clear();
@@ -119,31 +145,21 @@ namespace GitScc
                     this.dataGrid1.SelectedValue = selectedFile;
                     selectedFiles.ForEach(fn =>
                     {
-                        var item = this.dataGrid1.Items.Cast<GitFile>()
-                            .Where(i => i.FileName == fn)
-                            .FirstOrDefault();
-                        if (item != null) item.IsSelected = true;
+                        var item = this.dataGrid1.Items.Cast<GitFile>().FirstOrDefault(i => i.FileName == fn);
+                        if (item != null)
+                        {
+                            item.IsSelected = true;
+                        }
                     });
 
-                    ShowStatusMessage("");
+                    ShowStatusMessage(string.Empty);
                 }
                 catch (Exception ex)
                 {
                     ShowStatusMessage(ex.Message);
                 }
+
                 this.dataGrid1.EndInit();
-
-                stopwatch.Stop();
-                Debug.WriteLine("**** PendingChangesView Refresh: " + stopwatch.ElapsedMilliseconds);
-
-                if (!GitSccOptions.Current.DisableAutoRefresh && stopwatch.ElapsedMilliseconds > 1000)
-                {
-                    this.label4.Visibility = System.Windows.Visibility.Visible;
-                }
-                else
-                {
-                    this.label4.Visibility = System.Windows.Visibility.Collapsed;
-                }
 
                 service.NoRefresh = false;
                 service.lastTimeRefresh = DateTime.Now;
@@ -165,7 +181,7 @@ namespace GitScc
                 this.GetSelectedFileFullName(fileName =>
                 {
                     var sccService = BasicSccProvider.GetServiceEx<SccProviderService>();
-                    sccService.CompareFile(fileName, reviewBranchName);
+                    sccService.CompareFile(fileName, comparisonBranch);
                 });
                 return;
             }
@@ -182,6 +198,11 @@ namespace GitScc
             });
         }
 
+        /// <summary>
+        /// Handles the SelectionChanged event of the dataGrid1 control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Windows.Controls.SelectionChangedEventArgs"/> instance containing the event data.</param>
         private void dataGrid1_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!this.Reviewing)
@@ -196,7 +217,6 @@ namespace GitScc
                 service.NoRefresh = true;
                 try
                 {
-
                     // Diff with TFS
                     var fileName = this.GetSelectedFileName();
                     if (fileName == null)
@@ -227,33 +247,6 @@ namespace GitScc
             };
 
             this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
-        }
-
-        /// <summary>
-        /// Writes a message to the diff editor
-        /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
-        public static void WriteToDiffWindow(string message)
-        {
-            if (currentInstance != null)
-            {
-                var action = new Action(() => currentInstance.DiffEditor.AppendText(Environment.NewLine + message));
-                currentInstance.DiffEditor.Dispatcher.BeginInvoke(action);
-            }
-        }
-
-        /// <summary>
-        /// Clears the diff editor.
-        /// </summary>
-        public static void ClearDiffEditor()
-        {
-            if (currentInstance != null)
-            {
-                var action = new Action(() => currentInstance.DiffEditor.Clear());
-                currentInstance.DiffEditor.Dispatcher.BeginInvoke(action);
-            }
         }
     }
 }

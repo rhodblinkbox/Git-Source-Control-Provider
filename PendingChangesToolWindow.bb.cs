@@ -1,17 +1,14 @@
 // --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PendingChangesToolWindow.bb.cs" company="blinkbox">
-//   TODO: Update copyright text.
+//   Blinkbox implementation inheriting from PendingChangesToolWindow.
 // </copyright>
 // <summary>
-//   Blinkbox implementation inheriting from GitSourceControlProvider.
-//   BasicSccProvider has been modified as little as possible, so thats its easier to merge in 3rd party changes.
+//   Blinkbox implementation inheriting from PendingChangesToolWindow.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace GitScc
 {
-    using GitScc.Blinkbox;
-
     /// <summary>
     /// blinkbox extensions to SccProviderToolWindow.
     /// </summary>
@@ -23,7 +20,7 @@ namespace GitScc
         /// <returns>true if the commit was successful</returns>
         internal bool BlinkboxCommit()
         {
-            return ((PendingChangesView)control).Commit();
+            return ((PendingChangesView)this.control).Commit();
         }
     }
 }

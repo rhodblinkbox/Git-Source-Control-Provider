@@ -2,13 +2,9 @@
 // <copyright file="Deploy.cs" company="blinkbox">
 //   TODO: Update copyright text.
 // </copyright>
-// <summary>
-//   Blinkbox implementation inheriting from GitSourceControlProvider.
-//   BasicSccProvider has been modified as little as possible, so thats its easier to merge in 3rd party changes.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace GitScc
+namespace GitScc.Blinkbox
 {
     using System;
     using System.Collections.Generic;
@@ -18,7 +14,6 @@ namespace GitScc
     using System.Web;
     using System.Windows;
 
-    using GitScc.Blinkbox;
     using GitScc.Blinkbox.Options;
 
     using Microsoft.Build.Evaluation;
@@ -29,13 +24,12 @@ namespace GitScc
     using MessageBox = System.Windows.MessageBox;
 
     /// <summary>
-    /// Blinkbox implementation inheriting from GitSourceControlProvider. 
-    /// BasicSccProvider has been modified as little as possible, so thats its easier to merge in 3rd party changes. 
+    /// Performs deployments 
     /// </summary>
-    public class Deploy : IDisposable
+    public class Deploy
     {
         /// <summary>
-        /// Builds and deploys.
+        /// Deploys using the deploy project specified in settings.
         /// </summary>
         /// <param name="commit">
         /// The commit. Supplied if called after a successful commit, otherwise a new instance is created. 
@@ -72,11 +66,11 @@ namespace GitScc
                 var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
 
                 // Build it
-                BasicSccProvider.WriteToStatusBar("Building " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
+                NotificationWriter.Write("Building " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
                 var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
 
                 var buildParams = new BuildParameters(projectCollection);
-                buildParams.Loggers = new List<ILogger>() { new BuildNotificationLogger() { Verbosity = LoggerVerbosity.Minimal } };
+                buildParams.Loggers = new List<ILogger> { new BuildNotificationLogger { Verbosity = LoggerVerbosity.Minimal } };
 
                 var result = BuildManager.DefaultBuildManager.Build(buildParams, buildRequest);
 
@@ -90,6 +84,7 @@ namespace GitScc
                 }
 
                 // Launch urls in browser
+                NotificationWriter.Write("Launch urls...");
                 var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
                 foreach (var launchItem in launchUrls)
                 {
@@ -142,11 +137,6 @@ namespace GitScc
 
                 MessageBox.Show("Cannot launch " + url + ": " + errorMessage, "Browser failed", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        public void Dispose()
-        {
-            
         }
     }
 }

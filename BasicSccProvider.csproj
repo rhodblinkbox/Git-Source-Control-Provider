@@ -93,10 +93,14 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BasicSccProvider.bb.cs" />
-    <Compile Include="Blinkbox\CommandIds.cs" />
+    <Compile Include="BasicSccProvider.bb.cs">
+      <DependentUpon>BasicSccProvider.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CommandId.bb.cs">
+      <DependentUpon>CommandId.cs</DependentUpon>
+    </Compile>
     <Compile Include="Blinkbox\BuildNotificationLogger.cs" />
-    <Compile Include="Blinkbox\CommandProcess.cs">
+    <Compile Include="Blinkbox\SccCommand.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Blinkbox\Deploy.cs" />
@@ -115,8 +119,8 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Blinkbox\SourceControlHelper.cs" />
-    <Compile Include="SccProviderService.bb.cs" >
-		<DependentUpon>SccProviderService.cs</DependentUpon>
+    <Compile Include="SccProviderService.bb.cs">
+      <DependentUpon>SccProviderService.cs</DependentUpon>
     </Compile>
     <Compile Include="PendingChangesToolWindow.bb.cs">
       <DependentUpon>PendingChangesToolWindow.cs</DependentUpon>

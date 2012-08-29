@@ -1,18 +1,15 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="CommandIds.cs" company="blinkbox">
+// <copyright file="CommandId.cs" company="blinkbox">
 //   TODO: Update copyright text.
 // </copyright>
-// <summary>
-//   
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace GitScc.Blinkbox
+namespace GitScc
 {
     /// <summary>
     /// Defines the command ids used for blinkbox commands in the Visual Studio environment.
     /// </summary>
-    public static class CommandIds
+    public static partial class CommandId
     {
         /// <summary>
         /// Identifies the CommitAndDeploy command.
@@ -58,6 +55,5 @@ namespace GitScc.Blinkbox
         /// Identifies the GitTfs Complete Review command.
         /// </summary>
         public const int GitTfsCompleteReviewButtonId = 0x407;
-
     }
 }

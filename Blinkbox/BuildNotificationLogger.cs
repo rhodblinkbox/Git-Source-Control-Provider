@@ -2,14 +2,11 @@
 // <copyright file="BuildNotificationLogger.cs" company="blinkbox">
 //   TODO: Update copyright text.
 // </copyright>
-// <summary>
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace GitScc.Blinkbox
 {
     using System;
-    using System.Diagnostics;
 
     using Microsoft.Build.Framework;
 
@@ -21,7 +18,7 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Inserts a new line and a tab. 
         /// </summary>
-        private static readonly string newLineIndent = Environment.NewLine + "\t";
+        private static readonly string NewLineIndent = Environment.NewLine + "\t";
 
         /// <summary>
         /// Gets or sets Verbosity.
@@ -40,7 +37,6 @@ namespace GitScc.Blinkbox
             get;
             set;
         }
-
 
         /// <summary>
         /// Initialises the logger.
@@ -83,7 +79,7 @@ namespace GitScc.Blinkbox
         /// </param>
         public void HandleError(BuildErrorEventArgs error)
         {
-            string template = Environment.NewLine + "Error: \"{0}\"" + newLineIndent + "in file {1} line {2}" + newLineIndent + "in project {3}" + Environment.NewLine;
+            string template = Environment.NewLine + "Error: \"{0}\"" + NewLineIndent + "in file {1} line {2}" + NewLineIndent + "in project {3}" + Environment.NewLine;
             string message = string.Format(template, error.Message, error.File, error.LineNumber, error.ProjectFile);
             NotificationWriter.Write(message);
         }
@@ -96,7 +92,7 @@ namespace GitScc.Blinkbox
         /// </param>
         public void HandleWarning(BuildWarningEventArgs warning)
         {
-            string template = "Warning: \"{0}\"" + newLineIndent + "in file {1} line {2}" + newLineIndent + "in project {3}";
+            string template = "Warning: \"{0}\"" + NewLineIndent + "in file {1} line {2}" + NewLineIndent + "in project {3}";
             string message = string.Format(template, warning.Message, warning.File, warning.LineNumber, warning.ProjectFile);
             NotificationWriter.Write(message);
         }

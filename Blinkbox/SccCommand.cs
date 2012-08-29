@@ -1,8 +1,8 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="CommandProcess.cs" company="blinkbox">
-// TODO: Update copyright text.
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SccCommand.cs" company="blinkbox">
+//   TODO: Update copyright text.
 // </copyright>
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace GitScc.Blinkbox
 {
@@ -11,14 +11,14 @@ namespace GitScc.Blinkbox
     /// <summary>
     /// Runs a command in a new process.
     /// </summary>
-    public class CommandProcess : Process
+    public class SccCommand : Process
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CommandProcess"/> class.
+        /// Initializes a new instance of the <see cref="SccCommand"/> class.
         /// </summary>
         /// <param name="command">The command.</param>
         /// <param name="arguments">The arguments.</param>
-        public CommandProcess(string command, string arguments)
+        public SccCommand(string command, string arguments)
         {
             this.StartInfo = new ProcessStartInfo(command, arguments);
             StartInfo.WorkingDirectory = SourceControlHelper.GetWorkingDirectory();
@@ -62,7 +62,7 @@ namespace GitScc.Blinkbox
         /// <returns>
         /// The command.
         /// </returns>
-        public new CommandProcess Start()
+        public new SccCommand Start()
         {
             if (!this.Silent)
             {
@@ -94,7 +94,7 @@ namespace GitScc.Blinkbox
         /// <returns>
         /// The command.
         /// </returns>
-        public CommandProcess StartAndWait()
+        public SccCommand StartAndWait()
         {
             this.WaitUntilFinished = true;
             return this.Start();

@@ -1,4 +1,11 @@
-
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SccProviderService.bb.cs" company="blinkbox">
+//   Blinkbox implementation for the SccProviderService
+// </copyright>
+// <summary>
+//   Blinkbox implementation for the SccProviderService
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace GitScc
 {

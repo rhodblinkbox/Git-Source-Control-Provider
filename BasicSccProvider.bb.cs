@@ -149,8 +149,8 @@ namespace GitScc
                 }
 
                 // Commit and test button
-                this.RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxCommitAndDeployId, (sender, args) => this.CommitAndDeploy());
-                this.RegisterCommandWithMenuService(menuService, Blinkbox.CommandIds.BlinkboxDeployId, (sender, args) => this.ReDeploy());
+                this.RegisterCommandWithMenuService(menuService, CommandId.BlinkboxCommitAndDeployId, (sender, args) => this.CommitAndDeploy());
+                this.RegisterCommandWithMenuService(menuService, CommandId.BlinkboxDeployId, (sender, args) => this.ReDeploy());
             }
         }
 
@@ -184,27 +184,27 @@ namespace GitScc
             // Process Blinkbox Commands
             switch (commands[0].cmdID)
             {
-                case Blinkbox.CommandIds.BlinkboxDeployId:
+                case CommandId.BlinkboxDeployId:
                     if (GitBash.Exists && this.DeployProjectAvailable())
                     {
                         commandFlags |= OLECMDF.OLECMDF_ENABLED;
                     }
                     break;
 
-                case Blinkbox.CommandIds.BlinkboxCommitAndDeployId:
+                case CommandId.BlinkboxCommitAndDeployId:
                     if (GitBash.Exists && this.sccService.IsSolutionGitControlled && this.DeployProjectAvailable())
                     {
                         commandFlags |= OLECMDF.OLECMDF_ENABLED;
                     }
                 break;
 
-                case Blinkbox.CommandIds.GitTfsCheckinButtonId:
-                case Blinkbox.CommandIds.GitTfsGetLatestButtonId:
-                case Blinkbox.CommandIds.GitTfsCleanWorkspacesButtonId:
-                case Blinkbox.CommandIds.GitTfsReviewButtonId:
-                case Blinkbox.CommandIds.GitTfsCompleteReviewButtonId:
-                case Blinkbox.CommandIds.GitTfsMenu:
-                case Blinkbox.CommandIds.GitTfsMenuGroup:
+                case CommandId.GitTfsCheckinButtonId:
+                case CommandId.GitTfsGetLatestButtonId:
+                case CommandId.GitTfsCleanWorkspacesButtonId:
+                case CommandId.GitTfsReviewButtonId:
+                case CommandId.GitTfsCompleteReviewButtonId:
+                case CommandId.GitTfsMenu:
+                case CommandId.GitTfsMenuGroup:
                     // Disable controls if git-tfs is not found. 
                     if (this.IsSolutionGitTfsControlled() && this.sccService.IsSolutionGitControlled)
                     {
@@ -254,15 +254,12 @@ namespace GitScc
                 // Run the following action asynchronously
                 Action action = () =>
                     {
-                        using (var deploy = new Deploy())
-                        {
-                            var commit = new CommitData 
-                            { 
-                                Hash = SourceControlHelper.GetHeadRevisionHash(),
-                                Message = SourceControlHelper.GetLastCommitMessage() + " Re-deploy"
-                            };
-                            deploy.RunDeploy(commit);
-                        }
+                        var commit = new CommitData 
+                        { 
+                            Hash = SourceControlHelper.GetHeadRevisionHash(),
+                            Message = SourceControlHelper.GetLastCommitMessage() + " Re-deploy"
+                        };
+                        new Deploy().RunDeploy(commit);
                     };
 
                 NotificationWriter.Clear();
@@ -289,15 +286,12 @@ namespace GitScc
                     // Run the following action asynchronously
                     Action action = () =>
                     {
-                        using (var deploy = new Deploy())
-                        {
-                            var commit = new CommitData
-                                {
-                                    Hash = SourceControlHelper.GetHeadRevisionHash(),
-                                    Message = SourceControlHelper.GetLastCommitMessage()
-                                };
-                            deploy.RunDeploy(commit);
-                        }
+                        var commit = new CommitData
+                            {
+                                Hash = SourceControlHelper.GetHeadRevisionHash(),
+                                Message = SourceControlHelper.GetLastCommitMessage()
+                            };
+                        new Deploy().RunDeploy(commit);
                     };
 
                     NotificationWriter.Clear();

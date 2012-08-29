@@ -3,6 +3,7 @@
 // TODO: Update copyright text.
 // </copyright>
 // -----------------------------------------------------------------------
+
 namespace GitScc.Blinkbox
 {
     using System;
@@ -12,7 +13,7 @@ namespace GitScc.Blinkbox
     using GitScc.Blinkbox.Options;
 
     /// <summary>
-    /// Git Tfs class.
+    /// Implementation of common development processes.
     /// </summary>
     public class DevelopmentProcess
     {
@@ -78,7 +79,8 @@ namespace GitScc.Blinkbox
                 var diffText = SourceControlHelper.RunGitCommand("diff --name-status " + BlinkboxSccOptions.Current.TfsMergeBranch + ".." + currentBranch);
                 var diffList = diffText.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
                 var gitFiles = diffList.Select(GitFile.FromDiff);
-                if (gitFiles.Count() > 0)
+                
+                if (gitFiles.Any())
                 {
                     PendingChangesView.Review(gitFiles.ToList(), BlinkboxSccOptions.Current.TfsMergeBranch);
                 }
@@ -180,7 +182,6 @@ namespace GitScc.Blinkbox
 
             return true;
         }
-
 
         /// <summary>
         /// Merges if required.

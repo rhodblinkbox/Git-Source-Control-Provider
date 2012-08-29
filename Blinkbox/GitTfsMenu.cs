@@ -7,7 +7,6 @@ namespace GitScc.Blinkbox
 {
     using System;
     using System.Collections.Generic;
-    using System.Windows;
 
     /// <summary>
     /// Provides the structure of the git tfs menu.
@@ -25,38 +24,38 @@ namespace GitScc.Blinkbox
         /// </summary>
         static GitTfsMenu()
         {
-            MenuOptions.Add(new GitTfsCommand()
+            MenuOptions.Add(new GitTfsCommand 
             {
                 Name = "Review",
-                CommandId = Blinkbox.CommandIds.GitTfsReviewButtonId,
+                CommandId = CommandId.GitTfsReviewButtonId,
                 Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.Review)
             });
 
-            MenuOptions.Add(new GitTfsCommand()
+            MenuOptions.Add(new GitTfsCommand
             {
                 Name = "Complete Review",
-                CommandId = Blinkbox.CommandIds.GitTfsCompleteReviewButtonId,
+                CommandId = CommandId.GitTfsCompleteReviewButtonId,
                 Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.CompleteReview)
             });
 
-            MenuOptions.Add(new GitTfsCommand()
+            MenuOptions.Add(new GitTfsCommand
             {
                 Name = "Check in", 
-                CommandId = Blinkbox.CommandIds.GitTfsCheckinButtonId,
+                CommandId = CommandId.GitTfsCheckinButtonId,
                 Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.Checkin)
             });
 
-            MenuOptions.Add(new GitTfsCommand()
+            MenuOptions.Add(new GitTfsCommand
             {
                 Name = "Get Latest", 
-                CommandId = Blinkbox.CommandIds.GitTfsGetLatestButtonId,
+                CommandId = CommandId.GitTfsGetLatestButtonId,
                 Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.GetLatest)
             });
 
-            MenuOptions.Add(new GitTfsCommand()
+            MenuOptions.Add(new GitTfsCommand
             {
                 Name = "Clean Workspace",
-                CommandId = Blinkbox.CommandIds.GitTfsCleanWorkspacesButtonId,
+                CommandId = CommandId.GitTfsCleanWorkspacesButtonId,
                 Handler = () => SourceControlHelper.RunGitTfs("cleanup-workspaces")
             });
         }

@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="SourceControlHelper.cs" company="blinkbox">
-// TODO: Update copyright text.
+// Wrapper for Source control functionality.
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -11,7 +11,7 @@ namespace GitScc.Blinkbox
     using System.Linq;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// Wrapper for Source control functionality.
     /// </summary>
     public class SourceControlHelper
     {
@@ -73,7 +73,6 @@ namespace GitScc.Blinkbox
         {
             return Tracker.ParseGitStatus(status);
         }
-
 
         /// <summary>
         /// Gets the current branch.
@@ -143,7 +142,7 @@ namespace GitScc.Blinkbox
         /// <param name="wait">waits for the process to exit before continuing execution.</param>
         public static void RunGitTfs(string command, bool wait = false)
         {
-            new CommandProcess("cmd.exe", "/k git tfs " + command).StartAndWait();
+            new SccCommand("cmd.exe", "/k git tfs " + command).StartAndWait();
         }
     }
 }

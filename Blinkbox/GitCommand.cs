@@ -6,15 +6,10 @@
 
 namespace GitScc.Blinkbox
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-
     /// <summary>
     /// Executes a command in git.
     /// </summary>
-    public class GitCommand : CommandProcess
+    public class GitCommand : SccCommand
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GitCommand"/> class.
@@ -23,7 +18,7 @@ namespace GitScc.Blinkbox
         public GitCommand(string command)
             : base(GitBash.GitExePath, command)
         {
-            // Required for various git commands such as diff to prevent a warning.
+            // Environment variable required for various git commands such as diff.
             StartInfo.EnvironmentVariables.Add("TERM", "msys");
         }
 

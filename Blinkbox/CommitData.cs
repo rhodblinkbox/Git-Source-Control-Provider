@@ -2,15 +2,12 @@
 // <copyright file="CommitData.cs" company="blinkbox">
 //   OnCommitArgs
 // </copyright>
-// <summary>
-//   Event arguments for the  OnCommit event.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace GitScc.Blinkbox
 {
     /// <summary>
-    /// Event arguments for the  OnCommit event.
+    /// Contains properties of a commit.
     /// </summary>
     public class CommitData
     {
@@ -25,7 +22,7 @@ namespace GitScc.Blinkbox
         public string Hash { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the commit was succcesful.
+        /// Gets or sets a value indicating whether the commit was successful.
         /// </summary>
         public bool Success { get; set; }
     }
