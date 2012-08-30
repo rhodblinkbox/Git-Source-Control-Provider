@@ -21,6 +21,11 @@ namespace GitScc.Blinkbox
         private static readonly string NewLineIndent = Environment.NewLine + "\t";
 
         /// <summary>
+        /// Instance of the  <see cref="NotificationService"/>
+        /// </summary>
+        private NotificationService notificationService;
+
+        /// <summary>
         /// Gets or sets Verbosity.
         /// </summary>
         public LoggerVerbosity Verbosity
@@ -36,6 +41,16 @@ namespace GitScc.Blinkbox
         {
             get;
             set;
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BuildNotificationLogger"/> class.
+        /// </summary>
+        /// <param name="notifications">The notifications.</param>
+        public BuildNotificationLogger(NotificationService notifications)
+        {
+            this.notificationService = notifications;
         }
 
         /// <summary>
@@ -67,7 +82,7 @@ namespace GitScc.Blinkbox
         {
             if (this.OutputMessage(importance))
             {
-                NotificationService.Instance.AddMessage(message);
+                this.notificationService.AddMessage(message);
             }
         }
 
@@ -81,7 +96,7 @@ namespace GitScc.Blinkbox
         {
             string template = Environment.NewLine + "Error: \"{0}\"" + NewLineIndent + "in file {1} line {2}" + NewLineIndent + "in project {3}" + Environment.NewLine;
             string message = string.Format(template, error.Message, error.File, error.LineNumber, error.ProjectFile);
-            NotificationService.Instance.AddMessage(message);
+            this.notificationService.AddMessage(message);
         }
 
         /// <summary>
@@ -94,7 +109,7 @@ namespace GitScc.Blinkbox
         {
             string template = "Warning: \"{0}\"" + NewLineIndent + "in file {1} line {2}" + NewLineIndent + "in project {3}";
             string message = string.Format(template, warning.Message, warning.File, warning.LineNumber, warning.ProjectFile);
-            NotificationService.Instance.AddMessage(message);
+            this.notificationService.AddMessage(message);
         }
 
         /// <summary>

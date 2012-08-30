@@ -90,7 +90,7 @@ namespace GitScc.Blinkbox
                 var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
 
                 var buildParams = new BuildParameters(projectCollection);
-                buildParams.Loggers = new List<ILogger> { new BuildNotificationLogger { Verbosity = LoggerVerbosity.Minimal } };
+                buildParams.Loggers = new List<ILogger> { new BuildNotificationLogger(this.notificationService) { Verbosity = LoggerVerbosity.Minimal } };
 
                 var result = BuildManager.DefaultBuildManager.Build(buildParams, buildRequest);
 
