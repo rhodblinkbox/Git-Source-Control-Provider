@@ -20,8 +20,10 @@ namespace GitScc.Blinkbox
         /// <param name="arguments">The arguments.</param>
         public SccCommand(string command, string arguments)
         {
+            var sccHelper = BasicSccProvider.GetServiceEx<SccHelperService>();
+
             this.StartInfo = new ProcessStartInfo(command, arguments);
-            StartInfo.WorkingDirectory = SourceControlHelper.GetWorkingDirectory();
+            StartInfo.WorkingDirectory = sccHelper.GetWorkingDirectory();
 
             // Hidden process - no window.
             StartInfo.UseShellExecute = false;

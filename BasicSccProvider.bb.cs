@@ -30,10 +30,6 @@ namespace GitScc
     /// </summary>
     public partial class BasicSccProvider
     {
-        /// <summary>
-        /// Instance of the  <see cref="DeploymentService"/>
-        /// </summary>
-        private DeploymentService deploymentService;
 
         /// <summary>
         /// Instance of the  <see cref="NotificationService"/>
@@ -46,28 +42,14 @@ namespace GitScc
         private List<GitTfsCommand> gitTfsCommands;
 
         /// <summary>
-        /// Instance of the  <see cref="DevelopmentProcessService"/>
+        /// Instance of the  <see cref="SccHelperService"/>
         /// </summary>
-        private DevelopmentProcessService devService;
-
-        /// <summary>
-        /// Gets the current working directory.
-        /// </summary>
-        /// <returns>The working directory</returns>
-        public static GitFileStatusTracker GetCurrentTracker()
-        {
-            if (_SccProvider == null)
-            {
-                throw new Exception("Unable to get _SccProvider");
-            }
-
-            return _SccProvider.sccService.GetSolutionTracker();
-        }
+        private SccHelperService sccHelperService;
 
         /// <summary>
         /// Handles a refresh button click.
         /// </summary>
-        public void HandleRefreshButton()
+        private void HandleRefreshButton()
         {
             PendingChangesView.CancelReview();
         }
@@ -105,13 +87,12 @@ namespace GitScc
         /// </summary>
         private void InitialiseBlinkboxExtensions()
         {
-            // register services.
-            this.deploymentService = new DeploymentService(this);
-
             this.notificationService = new NotificationService();
-            ((IServiceContainer)this).AddService(typeof(NotificationService), this.notificationService, false);
+            this.sccHelperService = new SccHelperService(this.sccService);
 
-            this.devService = new DevelopmentProcessService(this.notificationService);
+            // register services required elsewhere.
+            ((IServiceContainer)this).AddService(typeof(NotificationService), this.notificationService, false);
+            ((IServiceContainer)this).AddService(typeof(NotificationService), this.notificationService, false);
         }
 
         /// <summary>
@@ -151,35 +132,35 @@ namespace GitScc
             {
                 Name = "Review",
                 CommandId = CommandId.GitTfsReviewButtonId,
-                Handler = () => SourceControlHelper.RunAsync(this.devService.Review)
+                Handler = () => SccHelperService.RunAsync(() => new DevelopmentProcess().Review())
             });
 
             commands.Add(new GitTfsCommand
             {
                 Name = "Complete Review",
                 CommandId = CommandId.GitTfsCompleteReviewButtonId,
-                Handler = () => SourceControlHelper.RunAsync(this.devService.CompleteReview)
+                Handler = () => SccHelperService.RunAsync(() => new DevelopmentProcess().CompleteReview())
             });
 
             commands.Add(new GitTfsCommand
             {
                 Name = "Check in",
                 CommandId = CommandId.GitTfsCheckinButtonId,
-                Handler = () => SourceControlHelper.RunAsync(this.devService.Checkin)
+                Handler = () => SccHelperService.RunAsync(() => new DevelopmentProcess().Checkin())
             });
 
             commands.Add(new GitTfsCommand
             {
                 Name = "Get Latest",
                 CommandId = CommandId.GitTfsGetLatestButtonId,
-                Handler = () => SourceControlHelper.RunAsync(this.devService.GetLatest)
+                Handler = () => SccHelperService.RunAsync(() => new DevelopmentProcess().GetLatest())
             });
 
             commands.Add(new GitTfsCommand
             {
                 Name = "Clean Workspace",
                 CommandId = CommandId.GitTfsCleanWorkspacesButtonId,
-                Handler = () => SourceControlHelper.RunGitTfs("cleanup-workspaces")
+                Handler = () => SccHelperService.RunGitTfs("cleanup-workspaces")
             });
 
             return commands;
@@ -286,11 +267,11 @@ namespace GitScc
                 Action action = () =>
                     {
                         var commit = new CommitData 
-                        { 
-                            Hash = SourceControlHelper.GetHeadRevisionHash(),
-                            Message = SourceControlHelper.GetLastCommitMessage() + " Re-deploy"
+                        {
+                            Hash = sccHelperService.GetHeadRevisionHash(),
+                            Message = sccHelperService.GetLastCommitMessage() + " Re-deploy"
                         };
-                        this.deploymentService.RunDeploy(commit);
+                        new Deployment(this).RunDeploy(commit);
                     };
 
                 this.notificationService.ClearMessages();
@@ -319,10 +300,10 @@ namespace GitScc
                     {
                         var commit = new CommitData
                             {
-                                Hash = SourceControlHelper.GetHeadRevisionHash(),
-                                Message = SourceControlHelper.GetLastCommitMessage()
+                                Hash = sccHelperService.GetHeadRevisionHash(),
+                                Message = sccHelperService.GetLastCommitMessage()
                             };
-                        this.deploymentService.RunDeploy(commit);
+                        new Deployment(this).RunDeploy(commit);
                     };
 
                     this.notificationService.ClearMessages();

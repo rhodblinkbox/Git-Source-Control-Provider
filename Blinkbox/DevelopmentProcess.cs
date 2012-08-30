@@ -15,20 +15,42 @@ namespace GitScc.Blinkbox
     /// <summary>
     /// Implementation of common development processes.
     /// </summary>
-    public class DevelopmentProcessService : IDisposable
+    public class DevelopmentProcess : IDisposable
     {
         /// <summary>
         /// Instance of the  <see cref="NotificationService"/>
         /// </summary>
-        private NotificationService notificationService;
+        private NotificationService notificationServiceInstance = null;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DevelopmentProcessService"/> class.
+        /// Instance of the  <see cref="SccHelperService"/>
         /// </summary>
-        /// <param name="notificationService">The notification service.</param>
-        public DevelopmentProcessService(NotificationService notificationService)
+        private SccHelperService sccHelperInstance = null;
+
+        /// <summary>
+        /// Gets the notification service.
+        /// </summary>
+        /// <value>The notification service.</value>
+        private NotificationService NotificationService
         {
-            this.notificationService = notificationService;
+            get
+            {
+                this.notificationServiceInstance = this.notificationServiceInstance ?? BasicSccProvider.GetServiceEx<NotificationService>();
+                return this.notificationServiceInstance;
+            }
+        }
+
+        /// <summary>
+        /// Gets the sccHelper service.
+        /// </summary>
+        /// <value>The sccHelper service.</value>
+        private SccHelperService SccHelper
+        {
+            get
+            {
+                this.sccHelperInstance = this.sccHelperInstance ?? BasicSccProvider.GetServiceEx<SccHelperService>();
+                return this.sccHelperInstance;
+            }
         }
 
         /// <summary>
@@ -46,27 +68,27 @@ namespace GitScc.Blinkbox
                 }
 
                 // store the name of the current branch
-                var currentBranch = SourceControlHelper.GetCurrentBranch();
+                var currentBranch = this.SccHelper.GetCurrentBranch();
 
                 // Switch to the tfs-merge branch 
-                SourceControlHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
+                this.SccHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
 
                 // Pull down changes into tfs remote branch, and tfs_merge branch
-                SourceControlHelper.RunGitTfs("pull");
+                SccHelperService.RunGitTfs("pull");
 
                 this.CommitIfRequired();
 
                 // Switch back to current branch
-                SourceControlHelper.CheckOutBranch(currentBranch);
+                this.SccHelper.CheckOutBranch(currentBranch);
 
                 // Merge without commit from tfs-merge to current branch. 
-                SourceControlHelper.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait: true);
+                SccHelperService.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait: true);
 
                 this.CommitIfRequired();
             }
             catch (Exception e)
             {
-                this.notificationService.DisplayException(e, "Get Latest Failed");
+                this.NotificationService.DisplayException(e, "Get Latest Failed");
             }
         }
 
@@ -85,9 +107,9 @@ namespace GitScc.Blinkbox
                 }
 
                 // store the name of the current branch
-                var currentBranch = SourceControlHelper.GetCurrentBranch();
+                var currentBranch = this.SccHelper.GetCurrentBranch();
 
-                var diffText = SourceControlHelper.RunGitCommand("diff --name-status " + BlinkboxSccOptions.Current.TfsMergeBranch + ".." + currentBranch);
+                var diffText = SccHelperService.RunGitCommand("diff --name-status " + BlinkboxSccOptions.Current.TfsMergeBranch + ".." + currentBranch);
                 var diffList = diffText.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
                 var gitFiles = diffList.Select(GitFile.FromDiff);
                 
@@ -97,12 +119,12 @@ namespace GitScc.Blinkbox
                 }
                 else
                 {
-                    this.notificationService.AddMessage("No changes found to review");
+                    this.NotificationService.AddMessage("No changes found to review");
                 }
             }
             catch (Exception e)
             {
-                this.notificationService.DisplayException(e, "Get Latest Failed");
+                this.NotificationService.DisplayException(e, "Get Latest Failed");
             }
         }
 
@@ -121,22 +143,22 @@ namespace GitScc.Blinkbox
                 }
 
                 // store the name of the current branch
-                var currentBranch = SourceControlHelper.GetCurrentBranch();
+                var currentBranch = this.SccHelper.GetCurrentBranch();
 
                 // Switch to the tfs-merge branch 
-                SourceControlHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
+                this.SccHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
 
                 // Merge without commit from tfs-merge to current branch. 
-                SourceControlHelper.RunGitCommand("merge " + currentBranch, wait: true);
+                SccHelperService.RunGitCommand("merge " + currentBranch, wait: true);
 
                 this.CommitIfRequired();
 
                 // Switch back to the current branch 
-                SourceControlHelper.CheckOutBranch(currentBranch);
+                this.SccHelper.CheckOutBranch(currentBranch);
             }
             catch (Exception e)
             {
-                this.notificationService.DisplayException(e, OperationName + " Failed");
+                this.NotificationService.DisplayException(e, OperationName + " Failed");
             }
         }
 
@@ -155,20 +177,20 @@ namespace GitScc.Blinkbox
                 }
 
                 // store the name of the current branch
-                var currentBranch = SourceControlHelper.GetCurrentBranch();
+                var currentBranch = this.SccHelper.GetCurrentBranch();
 
                 // Switch to the tfs-merge branch 
-                SourceControlHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
+                this.SccHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
 
                 // Checkin from tfs-merge branch
-                SourceControlHelper.RunGitTfs("checkintool");
+                SccHelperService.RunGitTfs("checkintool");
 
                 // Switch back to the current Branch 
-                SourceControlHelper.CheckOutBranch(currentBranch);
+                this.SccHelper.CheckOutBranch(currentBranch);
             }
             catch (Exception e)
             {
-                this.notificationService.DisplayException(e, OperationName + " Failed");
+                this.NotificationService.DisplayException(e, OperationName + " Failed");
             }
         }
 
@@ -187,17 +209,17 @@ namespace GitScc.Blinkbox
         /// <returns>true if successful</returns>
         private bool InitialChecks(string operation)
         {
-            if (!SourceControlHelper.WorkingDirectoryClean())
+            if (!this.SccHelper.WorkingDirectoryClean())
             {
                 MessageBox.Show("Cannot " + operation + " - there are uncommitted changes in your working directory", "Cannot " + operation, MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
 
             // Create the tfs_merge branch (fails silently if it already exists)
-            SourceControlHelper.RunGitCommand("branch refs/heads/" + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true, silent: true);
+            SccHelperService.RunGitCommand("branch refs/heads/" + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true, silent: true);
 
-            this.notificationService.ClearMessages();
-            this.notificationService.NewSection("Start " + operation);
+            this.NotificationService.ClearMessages();
+            this.NotificationService.NewSection("Start " + operation);
 
             return true;
         }
@@ -207,9 +229,9 @@ namespace GitScc.Blinkbox
         /// </summary>
         private void CommitIfRequired()
         {
-            if (!SourceControlHelper.WorkingDirectoryClean())
+            if (!this.SccHelper.WorkingDirectoryClean())
             {
-                SourceControlHelper.RunTortoise("commit");
+                this.SccHelper.RunTortoise("commit");
             }
         }
     }

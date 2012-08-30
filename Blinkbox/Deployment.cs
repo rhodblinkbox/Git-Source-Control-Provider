@@ -26,7 +26,7 @@ namespace GitScc.Blinkbox
     /// <summary>
     /// Performs deployments 
     /// </summary>
-    public class DeploymentService : IDisposable
+    public class Deployment
     {
         /// <summary>
         /// The current instance of the <see cref="SccProviderService"/>
@@ -39,10 +39,10 @@ namespace GitScc.Blinkbox
         private readonly NotificationService notificationService;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeploymentService"/> class.
+        /// Initializes a new instance of the <see cref="Deployment"/> class.
         /// </summary>
         /// <param name="basicSccProvider">The basic SCC provider.</param>
-        public DeploymentService(BasicSccProvider basicSccProvider)
+        public Deployment(BasicSccProvider basicSccProvider)
         {
             this.sccProviderService = basicSccProvider.GetService<SccProviderService>();
             this.notificationService = basicSccProvider.GetService<NotificationService>();
@@ -117,14 +117,6 @@ namespace GitScc.Blinkbox
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            // Noop
         }
 
         /// <summary>

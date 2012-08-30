@@ -189,12 +189,14 @@ namespace GitScc
             // Otherwise, use tortiose git to provide the diff.
             this.GetSelectedFileFullName(fileName =>
             {
+                var sccHelper = BasicSccProvider.GetServiceEx<SccHelperService>();
+
                 // Call tortoiseproc to compare.
-                var tfsRevision = SourceControlHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsMergeBranch);
+                var tfsRevision = sccHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsMergeBranch);
                 var command = Reviewing
                     ? string.Format("diff /path:{0} /startrev:{1} /endrev:{2}", fileName, "0000000000000000000000000000000000000000", tfsRevision)
                     : string.Format("diff /path:{0}", fileName);
-                SourceControlHelper.RunTortoise(command);
+                sccHelper.RunTortoise(command);
             });
         }
 
@@ -227,11 +229,13 @@ namespace GitScc
                         return;
                     }
 
+                    var sccHelper = BasicSccProvider.GetServiceEx<SccHelperService>();
+
                     var fileNameRel = tracker.GetRelativeFileName(fileName);
-                    var tfsRevision = SourceControlHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsMergeBranch);
+                    var tfsRevision = sccHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsMergeBranch);
 
                     string diffCommand = string.Format("diff {0} \"{1}\"", tfsRevision, fileNameRel);
-                    var diff = SourceControlHelper.RunGitCommand(diffCommand, silent: true);
+                    var diff = SccHelperService.RunGitCommand(diffCommand, silent: true);
                     
                     diffLines = diff.Split(Environment.NewLine.ToCharArray());
                     this.DiffEditor.SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.GetDefinitionByExtension(".diff");
