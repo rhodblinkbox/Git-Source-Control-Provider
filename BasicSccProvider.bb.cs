@@ -108,7 +108,7 @@ namespace GitScc
         /// </summary>
         private void InitialiseBlinkboxExtensions()
         {
-            this.notificationService = new NotificationService(this.sccService);
+            this.notificationService = new NotificationService();
             this.sccHelperService = new SccHelperService(this.sccService);
 
             // register services required elsewhere.

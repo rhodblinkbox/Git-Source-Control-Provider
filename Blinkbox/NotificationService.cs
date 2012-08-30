@@ -20,7 +20,7 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Instance of the  <see cref="SccProviderService"/>
         /// </summary>
-        private readonly SccProviderService sccProvider;
+        private bool processEnabled = true;
 
         /// <summary>
         /// A queue of the messages. 
@@ -40,15 +40,10 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationService"/> class.
         /// </summary>
-        /// <param name="sccProvider">The SCC provider.</param>
-        public NotificationService(SccProviderService sccProvider)
+        public NotificationService()
         {
-            this.sccProvider = sccProvider;
             this.processingThread = new Thread(this.ProcessMessages);
             this.processingThread.Start();
-
-            // resume message processing whenever the source control is activated. 
-            sccProvider.SourceControlActivatedOrDeactivated += (sender, args) => this.ProcessMessages();
         }
 
         /// <summary>
@@ -94,7 +89,8 @@ namespace GitScc.Blinkbox
         /// </summary>
         public void Dispose()
         {
-            // Noop
+            this.processEnabled = false;
+            this.processingThread.Abort();
         }
 
         /// <summary>
@@ -130,7 +126,7 @@ namespace GitScc.Blinkbox
         /// </summary>
         private void ProcessMessages()
         {
-            while (this.sccProvider.Active)
+            while (this.processEnabled)
             {
                 this.WriteMessageQueue();
                 System.Threading.Thread.Sleep(500);

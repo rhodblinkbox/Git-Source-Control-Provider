@@ -29,7 +29,7 @@
         <Parent guid="guidSccProviderCmdSet" id="imnuPendingChangesToolWindowToolbarMenu"/>
         <CommandFlag>TextChanges</CommandFlag>
         <Strings>
-          <ButtonText>Git Pending Changes</ButtonText>
+          <ButtonText>Open BB Git Source Control</ButtonText>
           <CommandName>GitPendingChanges</CommandName>
         </Strings>
       </Menu>
@@ -288,7 +288,7 @@
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>IconAndText</CommandFlag>
         <Strings>
-          <ButtonText>Git Pending Changes</ButtonText>
+          <ButtonText>Open BB Git Source Control</ButtonText>
         </Strings>
       </Button>
 
