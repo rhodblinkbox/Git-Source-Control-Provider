@@ -27,11 +27,6 @@ namespace GitScc
     public partial class PendingChangesView
     {
         /// <summary>
-        /// Static reference to the current instance of the PendingChangesView.
-        /// </summary>
-        private static PendingChangesView currentInstance;
-
-        /// <summary>
         /// The name of the branch to be used for reviewing
         /// </summary>
         private string comparisonBranch = null;
@@ -43,6 +38,15 @@ namespace GitScc
         public bool Reviewing { get; private set; }
 
         /// <summary>
+        /// Initialises the blinkbox extensions.
+        /// </summary>
+        public void InitialiseBlinkboxExtensions()
+        {
+            // Register this component as a service so that we can use it externally. 
+            BasicSccProvider.RegisterService(this);
+        }
+
+        /// <summary>
         /// Show a list of files for review.
         /// </summary>
         /// <param name="changedFiles">
@@ -51,44 +55,38 @@ namespace GitScc
         /// <param name="branchName">
         /// The branch Name.
         /// </param>
-        public static void Review(List<GitFile> changedFiles, string branchName)
+        public void Review(List<GitFile> changedFiles, string branchName)
         {
-            currentInstance.comparisonBranch = branchName;
-            currentInstance.DisplayReview(changedFiles);
+            this.comparisonBranch = branchName;
+            this.DisplayReview(changedFiles);
         }
 
         /// <summary>
         /// Cancel the current review and enable the pending changes list. 
         /// </summary>
-        public static void CancelReview()
+        public void CancelReview()
         {
-            currentInstance.comparisonBranch = null;
-            currentInstance.Reviewing = false;
+            this.comparisonBranch = null;
+            this.Reviewing = false;
         }
 
         /// <summary>
         /// Writes a message to the diff editor
         /// </summary>
         /// <param name="message">The message.</param>
-        public static void WriteToDiffWindow(string message)
+        public void WriteToDiffWindow(string message)
         {
-            if (currentInstance != null)
-            {
-                var action = new Action(() => currentInstance.DiffEditor.AppendText(Environment.NewLine + message));
-                currentInstance.DiffEditor.Dispatcher.BeginInvoke(action);
-            }
+            var action = new Action(() => this.DiffEditor.AppendText(Environment.NewLine + message));
+            this.DiffEditor.Dispatcher.BeginInvoke(action);
         }
 
         /// <summary>
         /// Clears the diff editor.
         /// </summary>
-        public static void ClearDiffEditor()
+        public void ClearDiffEditor()
         {
-            if (currentInstance != null)
-            {
-                var action = new Action(() => currentInstance.DiffEditor.Clear());
-                currentInstance.DiffEditor.Dispatcher.BeginInvoke(action);
-            }
+            var action = new Action(() => this.DiffEditor.Clear());
+            this.DiffEditor.Dispatcher.BeginInvoke(action);
         }
 
         /// <summary>

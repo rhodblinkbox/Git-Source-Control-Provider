@@ -115,7 +115,11 @@ namespace GitScc.Blinkbox
                 
                 if (gitFiles.Any())
                 {
-                    PendingChangesView.Review(gitFiles.ToList(), BlinkboxSccOptions.Current.TfsMergeBranch);
+                    var pendingChangesView = BasicSccProvider.GetServiceEx<PendingChangesView>();
+                    if (pendingChangesView != null)
+                    {
+                        pendingChangesView.Review(gitFiles.ToList(), BlinkboxSccOptions.Current.TfsMergeBranch);
+                    }
                 }
                 else
                 {

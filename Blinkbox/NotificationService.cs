@@ -18,19 +18,9 @@ namespace GitScc.Blinkbox
     public class NotificationService : IDisposable
     {
         /// <summary>
-        /// Lock for singleton initialisation.
-        /// </summary>
-        private static readonly object Sync = new object();
-
-        /// <summary>
         /// Flag indicating that notifications should be processed
         /// </summary>
         private static bool notificationsActive = false;
-
-        /// <summary>
-        /// The singleton instance of the NotificationWriter.
-        /// </summary>
-        private static NotificationService instance = null;
 
         /// <summary>
         /// A queue of the messages. 
@@ -41,6 +31,24 @@ namespace GitScc.Blinkbox
         /// A thread for writing messages to the output window. 
         /// </summary>
         private readonly Thread processingThread;
+
+        /// <summary>
+        /// Instance of the pending changes view
+        /// </summary>
+        private PendingChangesView pendingChangesViewInstance = null;
+
+        /// <summary>
+        /// Gets the pending changes view.
+        /// </summary>
+        /// <value>The pending changes view.</value>
+        private PendingChangesView PendingChangesView
+        {
+            get
+            {
+                this.pendingChangesViewInstance = this.pendingChangesViewInstance ?? BasicSccProvider.GetServiceEx<PendingChangesView>();
+                return this.pendingChangesViewInstance;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationService"/> class. 
@@ -58,17 +66,6 @@ namespace GitScc.Blinkbox
         {
             // Stop notification processing. 
             notificationsActive = false;
-        }
-
-        /// <summary>
-        /// Gets a singleton Instance.
-        /// </summary>
-        public static NotificationService Instance
-        {
-            get
-            {
-                return BasicSccProvider.GetServiceEx<NotificationService>();
-            }
         }
 
         /// <summary>
@@ -94,7 +91,7 @@ namespace GitScc.Blinkbox
         /// <param name="message">Message to write.</param>
         public void AddMessage(string message)
         {
-            Instance.messages.Enqueue(message);
+            this.messages.Enqueue(message);
         }
 
         /// <summary>
@@ -122,6 +119,7 @@ namespace GitScc.Blinkbox
         private void ProcessMessages()
         {
             notificationsActive = true;
+            // TODO: set notificationsActive to false when the solution closes. 
             while (notificationsActive)
             {
                 this.WriteMessageQueue();
@@ -140,7 +138,7 @@ namespace GitScc.Blinkbox
                 this.messages.TryDequeue(out message);
                 if (!string.IsNullOrEmpty(message))
                 {
-                    PendingChangesView.WriteToDiffWindow(message);
+                    this.PendingChangesView.WriteToDiffWindow(message);
                 }
             }
         }

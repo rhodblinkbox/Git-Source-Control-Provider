@@ -30,7 +30,6 @@ namespace GitScc
     /// </summary>
     public partial class BasicSccProvider
     {
-
         /// <summary>
         /// Instance of the  <see cref="NotificationService"/>
         /// </summary>
@@ -47,11 +46,18 @@ namespace GitScc
         private SccHelperService sccHelperService;
 
         /// <summary>
-        /// Handles a refresh button click.
+        /// Registers a service.
         /// </summary>
-        private void HandleRefreshButton()
+        /// <typeparam name="T">The thye of the service to register.</typeparam>
+        /// <param name="instance">The instance of the service.</param>
+        public static void RegisterService<T>(T instance)
         {
-            PendingChangesView.CancelReview();
+            if (_SccProvider == null)
+            {
+                throw new Exception("no instance of BasicSccProvider found");
+            }
+
+            ((IServiceContainer)_SccProvider).AddService(typeof(T), instance, false);
         }
 
         /// <summary>
@@ -83,6 +89,18 @@ namespace GitScc
         }
 
         /// <summary>
+        /// Handles a refresh button click.
+        /// </summary>
+        private void HandleRefreshButton()
+        {
+            var pendingChangesWindow = this.GetService<PendingChangesView>();
+            if (pendingChangesWindow != null)
+            {
+                pendingChangesWindow.CancelReview();
+            }
+        }
+
+        /// <summary>
         /// Initialises the blinkbox extensions to BasicSccProvider.
         /// </summary>
         private void InitialiseBlinkboxExtensions()
@@ -91,8 +109,8 @@ namespace GitScc
             this.sccHelperService = new SccHelperService(this.sccService);
 
             // register services required elsewhere.
-            ((IServiceContainer)this).AddService(typeof(NotificationService), this.notificationService, false);
-            ((IServiceContainer)this).AddService(typeof(NotificationService), this.notificationService, false);
+            RegisterService(this.notificationService);
+            RegisterService(this.sccHelperService);
         }
 
         /// <summary>

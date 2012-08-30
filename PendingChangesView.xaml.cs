@@ -31,7 +31,7 @@ namespace GitScc
         {
             InitializeComponent();
             this.service = BasicSccProvider.GetServiceEx<SccProviderService>();
-            currentInstance = this;
+            this.InitialiseBlinkboxExtensions();
         }
 
         #region Events

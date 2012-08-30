@@ -14,6 +14,11 @@ namespace GitScc.Blinkbox
     public class SccCommand : Process
     {
         /// <summary>
+        /// Instance of the <see cref="NotificationService"/>
+        /// </summary>
+        private readonly NotificationService notificationService;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SccCommand"/> class.
         /// </summary>
         /// <param name="command">The command.</param>
@@ -21,6 +26,7 @@ namespace GitScc.Blinkbox
         public SccCommand(string command, string arguments)
         {
             var sccHelper = BasicSccProvider.GetServiceEx<SccHelperService>();
+            this.notificationService = BasicSccProvider.GetServiceEx<NotificationService>();
 
             this.StartInfo = new ProcessStartInfo(command, arguments);
             StartInfo.WorkingDirectory = sccHelper.GetWorkingDirectory();
@@ -68,7 +74,7 @@ namespace GitScc.Blinkbox
         {
             if (!this.Silent)
             {
-                NotificationService.Instance.AddMessage(System.IO.Path.GetFileName(this.StartInfo.FileName) + " " + this.StartInfo.Arguments);
+                this.notificationService.AddMessage(System.IO.Path.GetFileName(this.StartInfo.FileName) + " " + this.StartInfo.Arguments);
             }
 
             base.Start();
@@ -83,8 +89,8 @@ namespace GitScc.Blinkbox
 
             if (!this.Silent)
             {
-                NotificationService.Instance.AddMessage(this.Output);
-                NotificationService.Instance.AddMessage(this.Error);
+                this.notificationService.AddMessage(this.Output);
+                this.notificationService.AddMessage(this.Error);
             }
 
             return this;
@@ -110,7 +116,7 @@ namespace GitScc.Blinkbox
         /// </param>
         private void ReceiveOutput(DataReceivedEventArgs args)
         {
-            NotificationService.Instance.AddMessage(args.Data);
+            this.notificationService.AddMessage(args.Data);
         }
     }
 }
