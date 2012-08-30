@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Deploy.cs" company="blinkbox">
+// <copyright file="DeploymentService.cs" company="blinkbox">
 //   TODO: Update copyright text.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
@@ -26,8 +26,28 @@ namespace GitScc.Blinkbox
     /// <summary>
     /// Performs deployments 
     /// </summary>
-    public class Deploy
+    public class DeploymentService : IDisposable
     {
+        /// <summary>
+        /// The current instance of the <see cref="BasicSccProvider"/>
+        /// </summary>
+        private BasicSccProvider basicSccProvider;
+
+        /// <summary>
+        /// The current instance of the <see cref="SccProviderService"/>
+        /// </summary>
+        private SccProviderService sccProviderService;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeploymentService"/> class.
+        /// </summary>
+        /// <param name="basicSccProvider">The basic SCC provider.</param>
+        public DeploymentService(BasicSccProvider basicSccProvider)
+        {
+            this.basicSccProvider = basicSccProvider;
+            this.sccProviderService = basicSccProvider.GetService<SccProviderService>();
+        }
+
         /// <summary>
         /// Deploys using the deploy project specified in settings.
         /// </summary>
@@ -42,7 +62,7 @@ namespace GitScc.Blinkbox
             Notifications.AddMessage("Begin build and deploy to " + commit.Hash);
 
             // Look for a deploy project
-            var buildProjectFileName = BasicSccProvider.GetSolutionDirectory() + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName;
+            var buildProjectFileName = this.sccProviderService.GetSolutionDirectory() + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName;
             if (!File.Exists(buildProjectFileName))
             {
                 MessageBox.Show("build project not found", "Deploy abandoned", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -97,6 +117,14 @@ namespace GitScc.Blinkbox
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            // Noop
         }
 
         /// <summary>

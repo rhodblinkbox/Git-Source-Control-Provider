@@ -20,7 +20,6 @@ namespace GitScc
 
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.OLE.Interop;
-    using Microsoft.VisualStudio.Shell.Interop;
 
     using MsVsShell = Microsoft.VisualStudio.Shell;
 
@@ -30,6 +29,12 @@ namespace GitScc
     /// </summary>
     public partial class BasicSccProvider
     {
+
+        /// <summary>
+        /// Instance of the deployment service.
+        /// </summary>
+        private DeploymentService deploymentService;
+
         /// <summary>
         /// Gets the current working directory.
         /// </summary>
@@ -45,32 +50,12 @@ namespace GitScc
         }
 
         /// <summary>
-        /// Gets the solution directory.
-        /// </summary>
-        /// <returns>the path to the solution.</returns>
-        public static string GetSolutionDirectory()
-        {
-            var sol = (IVsSolution)GetService<SVsSolution>();
-            string solutionDirectory, solutionFile, solutionUserOptions;
-
-            if (sol.GetSolutionInfo(out solutionDirectory, out solutionFile, out solutionUserOptions) == VSConstants.S_OK)
-            {
-                return Path.GetDirectoryName(solutionFile);
-            }
-
-            return null;
-        }
-
-
-
-        /// <summary>
         /// Handles a refresh button click.
         /// </summary>
         public void HandleRefreshButton()
         {
             PendingChangesView.CancelReview();
         }
-
 
         /// <summary>
         /// Determines whether the solution is git TFS controlled.
@@ -80,7 +65,7 @@ namespace GitScc
         /// </returns>
         public bool IsSolutionGitTfsControlled()
         {
-            var repositoryDirectory = GitFileStatusTracker.GetRepositoryDirectory(GetSolutionDirectory());
+            var repositoryDirectory = GitFileStatusTracker.GetRepositoryDirectory(this.sccService.GetSolutionDirectory());
             if (!string.IsNullOrEmpty(repositoryDirectory))
             {
                 var expectedGitTfsDirectory = repositoryDirectory + "\\.git\\tfs";
@@ -91,14 +76,15 @@ namespace GitScc
         }
 
         /// <summary>
-        /// Gets a service of type T.
+        /// Gets the service of type T.
         /// </summary>
-        /// <typeparam name="T">the type of service.</typeparam>
-        /// <returns>the required service.</returns>
-        private static T GetService<T>()
+        /// <typeparam name="T">The type of a service</typeparam>
+        /// <returns>service of type T.</returns>
+        public T GetService<T>()
         {
-            return GetServiceEx<T>();
+            return (T)base.GetService(typeof(T));
         }
+
 
         /// <summary>
         /// Registers commands and services used by the extension.
@@ -120,6 +106,16 @@ namespace GitScc
                 this.RegisterCommandWithMenuService(menuService, CommandId.BlinkboxCommitAndDeployId, (sender, args) => this.CommitAndDeploy());
                 this.RegisterCommandWithMenuService(menuService, CommandId.BlinkboxDeployId, (sender, args) => this.ReDeploy());
             }
+        }
+
+        /// <summary>
+        /// Initialises the blinkbox extensions to BasicSccProvider.
+        /// </summary>
+        private void InitialiseBlinkboxExtensions()
+        {
+            // register services.
+            this.deploymentService = new DeploymentService(this);
+            ((IServiceContainer)this).AddService(typeof(DeploymentService), this.deploymentService, false);
         }
 
         /// <summary>
@@ -208,7 +204,7 @@ namespace GitScc
         /// <returns>true if the solution has a deploy project.</returns>
         private bool DeployProjectAvailable()
         {
-            var solutionDir = GetSolutionDirectory();
+            var solutionDir = this.sccService.GetSolutionDirectory();
             return File.Exists(solutionDir + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName);
         }
 
@@ -227,7 +223,7 @@ namespace GitScc
                             Hash = SourceControlHelper.GetHeadRevisionHash(),
                             Message = SourceControlHelper.GetLastCommitMessage() + " Re-deploy"
                         };
-                        new Deploy().RunDeploy(commit);
+                        this.deploymentService.RunDeploy(commit);
                     };
 
                 Notifications.ClearMessages();
@@ -259,7 +255,7 @@ namespace GitScc
                                 Hash = SourceControlHelper.GetHeadRevisionHash(),
                                 Message = SourceControlHelper.GetLastCommitMessage()
                             };
-                        new Deploy().RunDeploy(commit);
+                        this.deploymentService.RunDeploy(commit);
                     };
 
                     Notifications.ClearMessages();

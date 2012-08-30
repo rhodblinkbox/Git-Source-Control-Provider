@@ -11,11 +11,31 @@ namespace GitScc
 {
     using System.IO;
 
+    using Microsoft.VisualStudio;
+    using Microsoft.VisualStudio.Shell.Interop;
+
     /// <summary>
     /// Blinkbox implementation for the SccProviderService
     /// </summary>
     public partial class SccProviderService
     {
+        /// <summary>
+        /// Gets the solution directory.
+        /// </summary>
+        /// <returns>the path to the solution.</returns>
+        public string GetSolutionDirectory()
+        {
+            var sol = (IVsSolution)this._sccProvider.GetService(typeof(SVsSolution));
+            string solutionDirectory, solutionFile, solutionUserOptions;
+
+            if (sol.GetSolutionInfo(out solutionDirectory, out solutionFile, out solutionUserOptions) == VSConstants.S_OK)
+            {
+                return Path.GetDirectoryName(solutionFile);
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Compares the file.
         /// </summary>

@@ -78,6 +78,8 @@ namespace GitScc
             sccService = new SccProviderService(this, projects);
 
             ((IServiceContainer)this).AddService(typeof(SccProviderService), sccService, true);
+
+            this.InitialiseBlinkboxExtensions();
             
             // Add our command handlers for menu (commands must exist in the .vsct file)
             MsVsShell.OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as MsVsShell.OleMenuCommandService;
