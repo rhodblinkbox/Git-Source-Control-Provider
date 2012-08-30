@@ -65,7 +65,7 @@ namespace GitScc.Blinkbox
             var buildProjectFileName = this.sccProviderService.GetSolutionDirectory() + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName;
             if (!File.Exists(buildProjectFileName))
             {
-                MessageBox.Show("build project not found", "Deploy abandoned", MessageBoxButton.OK, MessageBoxImage.Error);
+                NotificationService.DisplayError("build project not found", "Deploy abandoned");
                 return false;
             }
 
@@ -99,7 +99,8 @@ namespace GitScc.Blinkbox
                     string message = result.Exception == null
                         ? "An error occurred during build; please see the pending changes window for details."
                         : result.Exception.Message;
-                    MessageBox.Show(message, "Build failed", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                    NotificationService.DisplayError(message, "Build failed");
                     return false;
                 }
 
@@ -155,7 +156,7 @@ namespace GitScc.Blinkbox
                     errorMessage = e.Message;
                 }
 
-                MessageBox.Show("Cannot launch " + url + ": " + errorMessage, "Browser failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                NotificationService.DisplayError("Cannot launch " + url + ": " + errorMessage, "Browser failed");
             }
         }
     }

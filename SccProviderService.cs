@@ -84,6 +84,7 @@ namespace GitScc
             Trace.WriteLine(String.Format(CultureInfo.CurrentUICulture, "Git Source Control Provider set active"));
             _active = true;
             Refresh();
+            this.SourceControlActivatedOrDeactivated(this, new EventArgs());
             return VSConstants.S_OK;
         }
 
@@ -95,6 +96,7 @@ namespace GitScc
             _active = false;
             CloseTracker();
             NodesGlyphsDirty = true;
+            this.SourceControlActivatedOrDeactivated(this, new EventArgs());
             return VSConstants.S_OK;
         }
 
@@ -244,6 +246,9 @@ namespace GitScc
 
         public int OnAfterOpenSolution([InAttribute] Object pUnkReserved, [InAttribute] int fNewSolution)
         {
+            this.SolutionOpen = true;
+            this.SolutionOpenedOrClosed(this, new EventArgs());
+
             //automatic switch the scc provider
             if (!Active && !GitSccOptions.Current.DisableAutoLoad)
             {
@@ -260,6 +265,8 @@ namespace GitScc
 
         public int OnAfterCloseSolution([InAttribute] Object pUnkReserved)
         {
+            this.SolutionOpen = false;
+            this.SolutionOpenedOrClosed(this, new EventArgs());
             CloseTracker();
             return VSConstants.S_OK;
         }

@@ -88,7 +88,7 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
-                this.NotificationService.DisplayException(e, "Get Latest Failed");
+                NotificationService.DisplayException(e, "Get Latest Failed");
             }
         }
 
@@ -128,7 +128,7 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
-                this.NotificationService.DisplayException(e, "Get Latest Failed");
+                NotificationService.DisplayException(e, "Get Latest Failed");
             }
         }
 
@@ -162,7 +162,7 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
-                this.NotificationService.DisplayException(e, OperationName + " Failed");
+                NotificationService.DisplayException(e, OperationName + " Failed");
             }
         }
 
@@ -194,7 +194,7 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
-                this.NotificationService.DisplayException(e, OperationName + " Failed");
+                NotificationService.DisplayException(e, OperationName + " Failed");
             }
         }
 
@@ -215,7 +215,7 @@ namespace GitScc.Blinkbox
         {
             if (!this.SccHelper.WorkingDirectoryClean())
             {
-                MessageBox.Show("Cannot " + operation + " - there are uncommitted changes in your working directory", "Cannot " + operation, MessageBoxButton.OK, MessageBoxImage.Error);
+                NotificationService.DisplayError("Cannot " + operation + " - there are uncommitted changes in your working directory", "Cannot " + operation);
                 return false;
             }
 

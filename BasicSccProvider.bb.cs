@@ -68,11 +68,14 @@ namespace GitScc
         /// </returns>
         public bool IsSolutionGitTfsControlled()
         {
-            var repositoryDirectory = GitFileStatusTracker.GetRepositoryDirectory(this.sccService.GetSolutionDirectory());
-            if (!string.IsNullOrEmpty(repositoryDirectory))
+            if (this.sccService.Active && this.sccService.SolutionOpen)
             {
-                var expectedGitTfsDirectory = repositoryDirectory + "\\.git\\tfs";
-                return Directory.Exists(expectedGitTfsDirectory);
+                var repositoryDirectory = GitFileStatusTracker.GetRepositoryDirectory(this.sccService.GetSolutionDirectory());
+                if (!string.IsNullOrEmpty(repositoryDirectory))
+                {
+                    var expectedGitTfsDirectory = repositoryDirectory + "\\.git\\tfs";
+                    return Directory.Exists(expectedGitTfsDirectory);
+                }
             }
 
             return false;
@@ -105,7 +108,7 @@ namespace GitScc
         /// </summary>
         private void InitialiseBlinkboxExtensions()
         {
-            this.notificationService = new NotificationService();
+            this.notificationService = new NotificationService(this.sccService);
             this.sccHelperService = new SccHelperService(this.sccService);
 
             // register services required elsewhere.
@@ -270,8 +273,13 @@ namespace GitScc
         /// <returns>true if the solution has a deploy project.</returns>
         private bool DeployProjectAvailable()
         {
-            var solutionDir = this.sccService.GetSolutionDirectory();
-            return File.Exists(solutionDir + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName);
+            if (this.sccService.Active && this.sccService.SolutionOpen)
+            {
+                var solutionDir = this.sccService.GetSolutionDirectory();
+                return File.Exists(solutionDir + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -297,7 +305,7 @@ namespace GitScc
             }
             catch (Exception e)
             {
-                this.notificationService.DisplayException(e, "Deploy failed");
+                NotificationService.DisplayException(e, "Deploy failed");
             }
         }
 
@@ -330,7 +338,7 @@ namespace GitScc
             }
             catch (Exception e)
             {
-                this.notificationService.DisplayException(e, "Commit and Deploy failed");
+                NotificationService.DisplayException(e, "Commit and Deploy failed");
             }
         }
     }
