@@ -39,7 +39,7 @@ namespace GitScc.Blinkbox
         /// </returns>
         public bool RunDeploy(CommitData commit)
         {
-            NotificationWriter.Write("Begin build and deploy to " + commit.Hash);
+            Notifications.AddMessage("Begin build and deploy to " + commit.Hash);
 
             // Look for a deploy project
             var buildProjectFileName = BasicSccProvider.GetSolutionDirectory() + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName;
@@ -49,7 +49,7 @@ namespace GitScc.Blinkbox
                 return false;
             }
 
-            NotificationWriter.Write("Deploy project found at " + buildProjectFileName);
+            Notifications.AddMessage("Deploy project found at " + buildProjectFileName);
 
             // Initisalise our own project collection which can be cleaned up after the build. This is to prevent caching of the project. 
             using (var projectCollection = new ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection.ToolsetLocations))
@@ -66,7 +66,7 @@ namespace GitScc.Blinkbox
                 var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
 
                 // Build it
-                NotificationWriter.Write("Building " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
+                Notifications.AddMessage("Building " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
                 var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
 
                 var buildParams = new BuildParameters(projectCollection);
@@ -84,7 +84,7 @@ namespace GitScc.Blinkbox
                 }
 
                 // Launch urls in browser
-                NotificationWriter.Write("Launch urls...");
+                Notifications.AddMessage("Launch urls...");
                 var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
                 foreach (var launchItem in launchUrls)
                 {

@@ -7,6 +7,7 @@
 namespace GitScc.Blinkbox
 {
     using System;
+    using System.Diagnostics;
     using System.Linq;
     using System.Windows;
 
@@ -42,20 +43,17 @@ namespace GitScc.Blinkbox
 
                 CommitIfRequired();
 
-                if (!string.IsNullOrEmpty(currentBranch))
-                {
-                    // Switch back to current branch
-                    SourceControlHelper.CheckOutBranch(currentBranch);
+                // Switch back to current branch
+                SourceControlHelper.CheckOutBranch(currentBranch);
 
-                    // Merge without commit from tfs-merge to current branch. 
-                    SourceControlHelper.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait: true);
+                // Merge without commit from tfs-merge to current branch. 
+                SourceControlHelper.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait: true);
 
-                    CommitIfRequired();
-                }
+                CommitIfRequired();
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message + Environment.NewLine + e.StackTrace, "Get Latest Failed");
+                Notifications.DisplayException(e, "Get Latest Failed");
             }
         }
 
@@ -86,12 +84,12 @@ namespace GitScc.Blinkbox
                 }
                 else
                 {
-                    NotificationWriter.Write("No changes found to review");
+                    Notifications.AddMessage("No changes found to review");
                 }
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message + Environment.NewLine + e.StackTrace, "Get Latest Failed");
+                Notifications.DisplayException(e, "Get Latest Failed");
             }
         }
 
@@ -125,7 +123,7 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message + Environment.NewLine + e.StackTrace, OperationName + " Failed");
+                Notifications.DisplayException(e, OperationName + " Failed");
             }
         }
 
@@ -157,7 +155,7 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message + Environment.NewLine + e.StackTrace, OperationName + " Failed");
+                Notifications.DisplayException(e, OperationName + " Failed");
             }
         }
 
@@ -177,8 +175,8 @@ namespace GitScc.Blinkbox
             // Create the tfs_merge branch (fails silently if it already exists)
             SourceControlHelper.RunGitCommand("branch refs/heads/" + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true, silent: true);
 
-            NotificationWriter.Clear();
-            NotificationWriter.NewSection("Start " + operation);
+            Notifications.ClearMessages();
+            Notifications.NewSection("Start " + operation);
 
             return true;
         }

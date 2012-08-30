@@ -66,7 +66,7 @@ namespace GitScc.Blinkbox
         {
             if (!this.Silent)
             {
-                NotificationWriter.Write(System.IO.Path.GetFileName(this.StartInfo.FileName) + " " + this.StartInfo.Arguments);
+                Notifications.AddMessage(System.IO.Path.GetFileName(this.StartInfo.FileName) + " " + this.StartInfo.Arguments);
             }
 
             base.Start();
@@ -81,8 +81,8 @@ namespace GitScc.Blinkbox
 
             if (!this.Silent)
             {
-                NotificationWriter.Write(this.Output);
-                NotificationWriter.Write(this.Error);
+                Notifications.AddMessage(this.Output);
+                Notifications.AddMessage(this.Error);
             }
 
             return this;
@@ -108,7 +108,7 @@ namespace GitScc.Blinkbox
         /// </param>
         private void ReceiveOutput(DataReceivedEventArgs args)
         {
-            NotificationWriter.Write(args.Data);
+            Notifications.AddMessage(args.Data);
         }
     }
 }

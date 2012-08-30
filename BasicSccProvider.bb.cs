@@ -14,7 +14,6 @@ namespace GitScc
     using System.ComponentModel.Design;
     using System.IO;
     using System.Linq;
-    using System.Windows;
 
     using GitScc.Blinkbox;
     using GitScc.Blinkbox.Options;
@@ -82,6 +81,8 @@ namespace GitScc
             return null;
         }
 
+
+
         /// <summary>
         /// Handles a refresh button click.
         /// </summary>
@@ -107,19 +108,6 @@ namespace GitScc
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Displays the exception.
-        /// </summary>
-        /// <param name="e">The exception.</param>
-        /// <param name="title">The title.</param>
-        /// <param name="message">The message.</param>
-        public void DisplayException(Exception e, string title = null, string message = null)
-        {
-            message = (message ?? string.Empty) + Environment.NewLine + e.Message + Environment.NewLine + e.StackTrace;
-            title = title ?? "An error occurred";
-            MessageBox.Show(message, title);
         }
 
         /// <summary>
@@ -262,12 +250,12 @@ namespace GitScc
                         new Deploy().RunDeploy(commit);
                     };
 
-                NotificationWriter.Clear();
+                Notifications.ClearMessages();
                 new System.Threading.Tasks.Task(action).Start();
             }
             catch (Exception e)
             {
-                this.DisplayException(e, "Deploy failed");
+                Notifications.DisplayException(e, "Deploy failed");
             }
         }
 
@@ -294,13 +282,13 @@ namespace GitScc
                         new Deploy().RunDeploy(commit);
                     };
 
-                    NotificationWriter.Clear();
+                    Notifications.ClearMessages();
                     new System.Threading.Tasks.Task(action).Start();
                 }
             }
             catch (Exception e)
             {
-                this.DisplayException(e, "Commit and Deploy failed");
+                Notifications.DisplayException(e, "Commit and Deploy failed");
             }
         }
     }
