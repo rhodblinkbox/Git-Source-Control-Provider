@@ -33,11 +33,6 @@ namespace GitScc.Blinkbox
         private readonly Thread processingThread;
 
         /// <summary>
-        /// Flag indicating that notifications are being processed
-        /// </summary>
-        private bool processingMessages = false;
-
-        /// <summary>
         /// Instance of the pending changes view
         /// </summary>
         private PendingChangesView pendingChangesViewInstance = null;
@@ -54,7 +49,6 @@ namespace GitScc.Blinkbox
 
             // resume message processing whenever the source control is activated. 
             sccProvider.SourceControlActivatedOrDeactivated += (sender, args) => this.ProcessMessages();
-            sccProvider.SolutionOpenedOrClosed += (sender, args) => this.ProcessMessages();
         }
 
         /// <summary>
@@ -136,16 +130,8 @@ namespace GitScc.Blinkbox
         /// </summary>
         private void ProcessMessages()
         {
-            if (this.processingMessages)
+            while (this.sccProvider.Active)
             {
-                // Already processing
-                return;
-            }
-
-            while (this.sccProvider.Active && this.sccProvider.SolutionOpen)
-            {
-                // only process messages if the solution is open. 
-                this.processingMessages = true;
                 this.WriteMessageQueue();
                 System.Threading.Thread.Sleep(500);
             }
