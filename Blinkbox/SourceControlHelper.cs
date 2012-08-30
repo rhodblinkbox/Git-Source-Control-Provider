@@ -28,6 +28,16 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
+        /// Runs the a command asyncronously.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        public static void RunAsync(System.Action action)
+        {
+            var task = new System.Threading.Tasks.Task(action);
+            task.Start();
+        }
+
+        /// <summary>
         /// Checks out a branch.
         /// </summary>
         /// <param name="branch">The branch.</param>

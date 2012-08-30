@@ -31,26 +31,6 @@ namespace GitScc
     public partial class BasicSccProvider
     {
         /// <summary>
-        /// Shows a message in the status bar.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public static void WriteToStatusBar(string message)
-        {
-            var dte = GetService<EnvDTE.DTE>();
-            dte.StatusBar.Text = message;
-        }
-
-        /// <summary>
-        /// Runs the a command asyncronously.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        public static void RunAsync(Action action)
-        {
-            var task = new System.Threading.Tasks.Task(action);
-            task.Start();
-        }
-
-        /// <summary>
         /// Gets the current working directory.
         /// </summary>
         /// <returns>The working directory</returns>

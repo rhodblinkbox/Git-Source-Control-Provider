@@ -28,28 +28,28 @@ namespace GitScc.Blinkbox
             {
                 Name = "Review",
                 CommandId = CommandId.GitTfsReviewButtonId,
-                Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.Review)
+                Handler = () => SourceControlHelper.RunAsync(DevelopmentProcess.Review)
             });
 
             MenuOptions.Add(new GitTfsCommand
             {
                 Name = "Complete Review",
                 CommandId = CommandId.GitTfsCompleteReviewButtonId,
-                Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.CompleteReview)
+                Handler = () => SourceControlHelper.RunAsync(DevelopmentProcess.CompleteReview)
             });
 
             MenuOptions.Add(new GitTfsCommand
             {
                 Name = "Check in", 
                 CommandId = CommandId.GitTfsCheckinButtonId,
-                Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.Checkin)
+                Handler = () => SourceControlHelper.RunAsync(DevelopmentProcess.Checkin)
             });
 
             MenuOptions.Add(new GitTfsCommand
             {
                 Name = "Get Latest", 
                 CommandId = CommandId.GitTfsGetLatestButtonId,
-                Handler = () => BasicSccProvider.RunAsync(DevelopmentProcess.GetLatest)
+                Handler = () => SourceControlHelper.RunAsync(DevelopmentProcess.GetLatest)
             });
 
             MenuOptions.Add(new GitTfsCommand
