@@ -90,6 +90,38 @@ namespace GitScc
         }
 
         /// <summary>
+        /// Performs a commit.
+        /// </summary>
+        /// <returns>true if the commit was successful.</returns>
+        internal bool Commit()
+        {
+            var success = false;
+            this.service.NoRefresh = true;
+            if (this.HasComments() && this.StageSelectedFiles())
+            {
+                try
+                {
+                    this.ShowStatusMessage("Committing ...");
+                    var id = this.tracker.Commit(this.Comments);
+                    this.ShowStatusMessage("Commit successfully. Commit Hash: " + id);
+                    this.ClearUI();
+                    success = true;
+                }
+                catch (Exception ex)
+                {
+                    NotificationService.DisplayError(ex.Message, "Commit Failed");
+                    this.ShowStatusMessage(ex.Message);
+                }
+            }
+
+            this.service.NoRefresh = false;
+            //service.lastTimeRefresh = DateTime.Now;
+            this.service.NodesGlyphsDirty = true; // force refresh
+
+            return success;
+        }
+
+        /// <summary>
         /// List the provided files in the pending changes window for reivew. 
         /// </summary>
         /// <param name="changedFiles">

@@ -100,7 +100,7 @@ namespace GitScc
             this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
         }
 
-/*
+/* We are implementing this in the blinkbox partial class
         private void dataGrid1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             GetSelectedFileFullName((fileName) =>
@@ -303,9 +303,9 @@ namespace GitScc
                 return true;
         }
 
-        internal bool Commit()
+        /* Implemented in the blinkbox extensions
+        internal void Commit()
         {
-            bool success = false;
             service.NoRefresh = true;
             if (HasComments() && StageSelectedFiles())
             {
@@ -315,7 +315,6 @@ namespace GitScc
                     var id = tracker.Commit(Comments);
                     ShowStatusMessage("Commit successfully. Commit Hash: " + id);
                     ClearUI();
-                    success = true;
                 }
                 catch (Exception ex)
                 {
@@ -326,9 +325,8 @@ namespace GitScc
             service.NoRefresh = false;
             //service.lastTimeRefresh = DateTime.Now;
             service.NodesGlyphsDirty = true; // force refresh
-
-            return success;
         }
+        */
 
         internal void AmendCommit()
         {
