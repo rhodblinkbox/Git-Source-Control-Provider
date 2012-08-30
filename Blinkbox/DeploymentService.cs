@@ -36,7 +36,7 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Instance of the  <see cref="NotificationService"/>
         /// </summary>
-        private NotificationService notificationService;
+        private readonly NotificationService notificationService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeploymentService"/> class.

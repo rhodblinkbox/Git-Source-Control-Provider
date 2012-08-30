@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="DevelopmentProcess.cs" company="blinkbox">
+// <copyright file="DevelopmentProcessService.cs" company="blinkbox">
 // TODO: Update copyright text.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -7,7 +7,6 @@
 namespace GitScc.Blinkbox
 {
     using System;
-    using System.Diagnostics;
     using System.Linq;
     using System.Windows;
 
@@ -16,18 +15,32 @@ namespace GitScc.Blinkbox
     /// <summary>
     /// Implementation of common development processes.
     /// </summary>
-    public class DevelopmentProcess
+    public class DevelopmentProcessService : IDisposable
     {
+        /// <summary>
+        /// Instance of the  <see cref="NotificationService"/>
+        /// </summary>
+        private NotificationService notificationService;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DevelopmentProcessService"/> class.
+        /// </summary>
+        /// <param name="notificationService">The notification service.</param>
+        public DevelopmentProcessService(NotificationService notificationService)
+        {
+            this.notificationService = notificationService;
+        }
+
         /// <summary>
         /// Get the latest from TFS
         /// </summary>
-        public static void GetLatest()
+        public void GetLatest()
         {
             const string OperationName = "Get Latest";
 
             try
             {
-                if (!InitialChecks(OperationName))
+                if (!this.InitialChecks(OperationName))
                 {
                     return;
                 }
@@ -41,7 +54,7 @@ namespace GitScc.Blinkbox
                 // Pull down changes into tfs remote branch, and tfs_merge branch
                 SourceControlHelper.RunGitTfs("pull");
 
-                CommitIfRequired();
+                this.CommitIfRequired();
 
                 // Switch back to current branch
                 SourceControlHelper.CheckOutBranch(currentBranch);
@@ -49,24 +62,24 @@ namespace GitScc.Blinkbox
                 // Merge without commit from tfs-merge to current branch. 
                 SourceControlHelper.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait: true);
 
-                CommitIfRequired();
+                this.CommitIfRequired();
             }
             catch (Exception e)
             {
-                NotificationService.Instance.DisplayException(e, "Get Latest Failed");
+                this.notificationService.DisplayException(e, "Get Latest Failed");
             }
         }
 
         /// <summary>
         /// Get the latest from TFS
         /// </summary>
-        public static void Review()
+        public void Review()
         {
             const string OperationName = "Review";
 
             try
             {
-                if (!InitialChecks(OperationName))
+                if (!this.InitialChecks(OperationName))
                 {
                     return;
                 }
@@ -84,25 +97,25 @@ namespace GitScc.Blinkbox
                 }
                 else
                 {
-                    NotificationService.Instance.AddMessage("No changes found to review");
+                    this.notificationService.AddMessage("No changes found to review");
                 }
             }
             catch (Exception e)
             {
-                NotificationService.Instance.DisplayException(e, "Get Latest Failed");
+                this.notificationService.DisplayException(e, "Get Latest Failed");
             }
         }
 
         /// <summary>
         /// Merges the current working branch into tfs_merge branch
         /// </summary>
-        public static void CompleteReview()
+        public void CompleteReview()
         {
             const string OperationName = "Complete Review";
 
             try
             {
-                if (!InitialChecks(OperationName))
+                if (!this.InitialChecks(OperationName))
                 {
                     return;
                 }
@@ -116,27 +129,27 @@ namespace GitScc.Blinkbox
                 // Merge without commit from tfs-merge to current branch. 
                 SourceControlHelper.RunGitCommand("merge " + currentBranch, wait: true);
 
-                CommitIfRequired();
+                this.CommitIfRequired();
 
                 // Switch back to the current branch 
                 SourceControlHelper.CheckOutBranch(currentBranch);
             }
             catch (Exception e)
             {
-                NotificationService.Instance.DisplayException(e, OperationName + " Failed");
+                this.notificationService.DisplayException(e, OperationName + " Failed");
             }
         }
 
         /// <summary>
         /// Get the latest from TFS
         /// </summary>
-        public static void Checkin()
+        public void Checkin()
         {
             const string OperationName = "Check in";
 
             try
             {
-                if (!InitialChecks(OperationName))
+                if (!this.InitialChecks(OperationName))
                 {
                     return;
                 }
@@ -155,8 +168,16 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
-                NotificationService.Instance.DisplayException(e, OperationName + " Failed");
+                this.notificationService.DisplayException(e, OperationName + " Failed");
             }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            // NOop
         }
 
         /// <summary>
@@ -164,7 +185,7 @@ namespace GitScc.Blinkbox
         /// </summary>
         /// <param name="operation">The operation.</param>
         /// <returns>true if successful</returns>
-        private static bool InitialChecks(string operation)
+        private bool InitialChecks(string operation)
         {
             if (!SourceControlHelper.WorkingDirectoryClean())
             {
@@ -175,8 +196,8 @@ namespace GitScc.Blinkbox
             // Create the tfs_merge branch (fails silently if it already exists)
             SourceControlHelper.RunGitCommand("branch refs/heads/" + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true, silent: true);
 
-            NotificationService.Instance.ClearMessages();
-            NotificationService.Instance.NewSection("Start " + operation);
+            this.notificationService.ClearMessages();
+            this.notificationService.NewSection("Start " + operation);
 
             return true;
         }
@@ -184,7 +205,7 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Merges if required.
         /// </summary>
-        private static void CommitIfRequired()
+        private void CommitIfRequired()
         {
             if (!SourceControlHelper.WorkingDirectoryClean())
             {

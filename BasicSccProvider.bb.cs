@@ -11,6 +11,7 @@
 namespace GitScc
 {
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel.Design;
     using System.IO;
     using System.Linq;
@@ -29,7 +30,6 @@ namespace GitScc
     /// </summary>
     public partial class BasicSccProvider
     {
-
         /// <summary>
         /// Instance of the  <see cref="DeploymentService"/>
         /// </summary>
@@ -39,6 +39,16 @@ namespace GitScc
         /// Instance of the  <see cref="NotificationService"/>
         /// </summary>
         private NotificationService notificationService;
+
+        /// <summary>
+        /// List of git tfs commands available
+        /// </summary>
+        private List<GitTfsCommand> gitTfsCommands;
+
+        /// <summary>
+        /// Instance of the  <see cref="DevelopmentProcessService"/>
+        /// </summary>
+        private DevelopmentProcessService devService;
 
         /// <summary>
         /// Gets the current working directory.
@@ -97,12 +107,12 @@ namespace GitScc
         {
             // register services.
             this.deploymentService = new DeploymentService(this);
-            ((IServiceContainer)this).AddService(typeof(DeploymentService), this.deploymentService, false);
 
             this.notificationService = new NotificationService();
             ((IServiceContainer)this).AddService(typeof(NotificationService), this.notificationService, false);
-        }
 
+            this.devService = new DevelopmentProcessService(this.notificationService);
+        }
 
         /// <summary>
         /// Registers commands and services used by the extension.
@@ -110,10 +120,13 @@ namespace GitScc
         /// <param name="menuService">The menu service.</param>
         private void RegisterComponents(MsVsShell.OleMenuCommandService menuService)
         {
+
+            this.gitTfsCommands = this.DefineGitTfsCommands();
+
             if (menuService != null)
             {
                 // Register Git Tfs commands with menu service
-                foreach (var menuOption in GitTfsMenu.MenuOptions)
+                foreach (var menuOption in this.gitTfsCommands)
                 {
                     var currentMenuOption = menuOption;
                     Action handler = () => currentMenuOption.Handler();
@@ -124,6 +137,52 @@ namespace GitScc
                 this.RegisterCommandWithMenuService(menuService, CommandId.BlinkboxCommitAndDeployId, (sender, args) => this.CommitAndDeploy());
                 this.RegisterCommandWithMenuService(menuService, CommandId.BlinkboxDeployId, (sender, args) => this.ReDeploy());
             }
+        }
+
+        /// <summary>
+        /// Defines the git TFS commands availalble.
+        /// </summary>
+        /// <returns>A list of commands</returns>
+        private List<GitTfsCommand> DefineGitTfsCommands()
+        {
+            var commands = new List<GitTfsCommand>();
+
+            commands.Add(new GitTfsCommand
+            {
+                Name = "Review",
+                CommandId = CommandId.GitTfsReviewButtonId,
+                Handler = () => SourceControlHelper.RunAsync(this.devService.Review)
+            });
+
+            commands.Add(new GitTfsCommand
+            {
+                Name = "Complete Review",
+                CommandId = CommandId.GitTfsCompleteReviewButtonId,
+                Handler = () => SourceControlHelper.RunAsync(this.devService.CompleteReview)
+            });
+
+            commands.Add(new GitTfsCommand
+            {
+                Name = "Check in",
+                CommandId = CommandId.GitTfsCheckinButtonId,
+                Handler = () => SourceControlHelper.RunAsync(this.devService.Checkin)
+            });
+
+            commands.Add(new GitTfsCommand
+            {
+                Name = "Get Latest",
+                CommandId = CommandId.GitTfsGetLatestButtonId,
+                Handler = () => SourceControlHelper.RunAsync(this.devService.GetLatest)
+            });
+
+            commands.Add(new GitTfsCommand
+            {
+                Name = "Clean Workspace",
+                CommandId = CommandId.GitTfsCleanWorkspacesButtonId,
+                Handler = () => SourceControlHelper.RunGitTfs("cleanup-workspaces")
+            });
+
+            return commands;
         }
 
         /// <summary>
@@ -187,7 +246,7 @@ namespace GitScc
                         commandFlags &= ~OLECMDF.OLECMDF_ENABLED;
                     }
 
-                    var menuOption = GitTfsMenu.MenuOptions.FirstOrDefault(x => x.CommandId == commands[0].cmdID);
+                    var menuOption = this.gitTfsCommands.FirstOrDefault(x => x.CommandId == commands[0].cmdID);
                     if (menuOption != null)
                     {
                         // If its a menu option set the text. 
