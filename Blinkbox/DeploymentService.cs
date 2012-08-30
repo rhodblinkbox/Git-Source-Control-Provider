@@ -29,14 +29,14 @@ namespace GitScc.Blinkbox
     public class DeploymentService : IDisposable
     {
         /// <summary>
-        /// The current instance of the <see cref="BasicSccProvider"/>
-        /// </summary>
-        private BasicSccProvider basicSccProvider;
-
-        /// <summary>
         /// The current instance of the <see cref="SccProviderService"/>
         /// </summary>
-        private SccProviderService sccProviderService;
+        private readonly SccProviderService sccProviderService;
+
+        /// <summary>
+        /// Instance of the  <see cref="NotificationService"/>
+        /// </summary>
+        private NotificationService notificationService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeploymentService"/> class.
@@ -44,8 +44,8 @@ namespace GitScc.Blinkbox
         /// <param name="basicSccProvider">The basic SCC provider.</param>
         public DeploymentService(BasicSccProvider basicSccProvider)
         {
-            this.basicSccProvider = basicSccProvider;
             this.sccProviderService = basicSccProvider.GetService<SccProviderService>();
+            this.notificationService = basicSccProvider.GetService<NotificationService>();
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace GitScc.Blinkbox
         /// </returns>
         public bool RunDeploy(CommitData commit)
         {
-            Notifications.AddMessage("Begin build and deploy to " + commit.Hash);
+            this.notificationService.AddMessage("Begin build and deploy to " + commit.Hash);
 
             // Look for a deploy project
             var buildProjectFileName = this.sccProviderService.GetSolutionDirectory() + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName;
@@ -69,7 +69,7 @@ namespace GitScc.Blinkbox
                 return false;
             }
 
-            Notifications.AddMessage("Deploy project found at " + buildProjectFileName);
+            this.notificationService.AddMessage("Deploy project found at " + buildProjectFileName);
 
             // Initisalise our own project collection which can be cleaned up after the build. This is to prevent caching of the project. 
             using (var projectCollection = new ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection.ToolsetLocations))
@@ -86,7 +86,7 @@ namespace GitScc.Blinkbox
                 var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
 
                 // Build it
-                Notifications.AddMessage("Building " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
+                this.notificationService.AddMessage("Building " + Path.GetFileNameWithoutExtension(msbuildProject.FullPath));
                 var buildRequest = new BuildRequestData(msbuildProject, new string[] { });
 
                 var buildParams = new BuildParameters(projectCollection);
@@ -104,7 +104,7 @@ namespace GitScc.Blinkbox
                 }
 
                 // Launch urls in browser
-                Notifications.AddMessage("Launch urls...");
+                this.notificationService.AddMessage("Launch urls...");
                 var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
                 foreach (var launchItem in launchUrls)
                 {

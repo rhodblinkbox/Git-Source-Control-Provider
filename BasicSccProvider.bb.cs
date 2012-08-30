@@ -31,9 +31,14 @@ namespace GitScc
     {
 
         /// <summary>
-        /// Instance of the deployment service.
+        /// Instance of the  <see cref="DeploymentService"/>
         /// </summary>
         private DeploymentService deploymentService;
+
+        /// <summary>
+        /// Instance of the  <see cref="NotificationService"/>
+        /// </summary>
+        private NotificationService notificationService;
 
         /// <summary>
         /// Gets the current working directory.
@@ -85,6 +90,19 @@ namespace GitScc
             return (T)base.GetService(typeof(T));
         }
 
+        /// <summary>
+        /// Initialises the blinkbox extensions to BasicSccProvider.
+        /// </summary>
+        private void InitialiseBlinkboxExtensions()
+        {
+            // register services.
+            this.deploymentService = new DeploymentService(this);
+            ((IServiceContainer)this).AddService(typeof(DeploymentService), this.deploymentService, false);
+
+            this.notificationService = new NotificationService();
+            ((IServiceContainer)this).AddService(typeof(NotificationService), this.notificationService, false);
+        }
+
 
         /// <summary>
         /// Registers commands and services used by the extension.
@@ -106,16 +124,6 @@ namespace GitScc
                 this.RegisterCommandWithMenuService(menuService, CommandId.BlinkboxCommitAndDeployId, (sender, args) => this.CommitAndDeploy());
                 this.RegisterCommandWithMenuService(menuService, CommandId.BlinkboxDeployId, (sender, args) => this.ReDeploy());
             }
-        }
-
-        /// <summary>
-        /// Initialises the blinkbox extensions to BasicSccProvider.
-        /// </summary>
-        private void InitialiseBlinkboxExtensions()
-        {
-            // register services.
-            this.deploymentService = new DeploymentService(this);
-            ((IServiceContainer)this).AddService(typeof(DeploymentService), this.deploymentService, false);
         }
 
         /// <summary>
@@ -226,12 +234,12 @@ namespace GitScc
                         this.deploymentService.RunDeploy(commit);
                     };
 
-                Notifications.ClearMessages();
+                this.notificationService.ClearMessages();
                 new System.Threading.Tasks.Task(action).Start();
             }
             catch (Exception e)
             {
-                Notifications.DisplayException(e, "Deploy failed");
+                this.notificationService.DisplayException(e, "Deploy failed");
             }
         }
 
@@ -258,13 +266,13 @@ namespace GitScc
                         this.deploymentService.RunDeploy(commit);
                     };
 
-                    Notifications.ClearMessages();
+                    this.notificationService.ClearMessages();
                     new System.Threading.Tasks.Task(action).Start();
                 }
             }
             catch (Exception e)
             {
-                Notifications.DisplayException(e, "Commit and Deploy failed");
+                this.notificationService.DisplayException(e, "Commit and Deploy failed");
             }
         }
     }

@@ -67,7 +67,7 @@ namespace GitScc.Blinkbox
         {
             if (this.OutputMessage(importance))
             {
-                Notifications.AddMessage(message);
+                NotificationService.Instance.AddMessage(message);
             }
         }
 
@@ -81,7 +81,7 @@ namespace GitScc.Blinkbox
         {
             string template = Environment.NewLine + "Error: \"{0}\"" + NewLineIndent + "in file {1} line {2}" + NewLineIndent + "in project {3}" + Environment.NewLine;
             string message = string.Format(template, error.Message, error.File, error.LineNumber, error.ProjectFile);
-            Notifications.AddMessage(message);
+            NotificationService.Instance.AddMessage(message);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace GitScc.Blinkbox
         {
             string template = "Warning: \"{0}\"" + NewLineIndent + "in file {1} line {2}" + NewLineIndent + "in project {3}";
             string message = string.Format(template, warning.Message, warning.File, warning.LineNumber, warning.ProjectFile);
-            Notifications.AddMessage(message);
+            NotificationService.Instance.AddMessage(message);
         }
 
         /// <summary>

@@ -108,7 +108,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Blinkbox\DevelopmentProcess.cs" />
-    <Compile Include="Blinkbox\Notifications.cs" />
+    <Compile Include="Blinkbox\NotificationService.cs" />
     <Compile Include="Blinkbox\CommitData.cs" />
     <Compile Include="Blinkbox\GitTfsMenu.cs" />
     <Compile Include="Blinkbox\Options\BlinkboxSccOptions.cs" />

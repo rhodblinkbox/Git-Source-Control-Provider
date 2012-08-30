@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Notifications.cs" company="blinkbox">
+// <copyright file="NotificationService.cs" company="blinkbox">
 //   TODO: Update copyright text.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ namespace GitScc.Blinkbox
     /// <summary>
     /// Writes messages to the Pending changes window.
     /// </summary>
-    public class Notifications
+    public class NotificationService : IDisposable
     {
         /// <summary>
         /// Lock for singleton initialisation.
@@ -23,9 +23,14 @@ namespace GitScc.Blinkbox
         private static readonly object Sync = new object();
 
         /// <summary>
+        /// Flag indicating that notifications should be processed
+        /// </summary>
+        private static bool notificationsActive = false;
+
+        /// <summary>
         /// The singleton instance of the NotificationWriter.
         /// </summary>
-        private static Notifications instance = null;
+        private static NotificationService instance = null;
 
         /// <summary>
         /// A queue of the messages. 
@@ -38,30 +43,31 @@ namespace GitScc.Blinkbox
         private readonly Thread processingThread;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Notifications"/> class. 
+        /// Initializes a new instance of the <see cref="NotificationService"/> class. 
         /// </summary>
-        public Notifications()
+        public NotificationService()
         {
             this.processingThread = new Thread(this.ProcessMessages);
             this.processingThread.Start();
         }
 
         /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            // Stop notification processing. 
+            notificationsActive = false;
+        }
+
+        /// <summary>
         /// Gets a singleton Instance.
         /// </summary>
-        private static Notifications Instance
+        public static NotificationService Instance
         {
             get
             {
-                if (instance == null)
-                {
-                    lock (Sync)
-                    {
-                        instance = instance ?? new Notifications();
-                    }
-                }
-
-                return instance;
+                return BasicSccProvider.GetServiceEx<NotificationService>();
             }
         }
 
@@ -71,7 +77,7 @@ namespace GitScc.Blinkbox
         /// <param name="e">The exception.</param>
         /// <param name="title">The title.</param>
         /// <param name="message">The message.</param>
-        public static void DisplayException(Exception e, string title = null, string message = null)
+        public void DisplayException(Exception e, string title = null, string message = null)
         {
             message = (message ?? string.Empty) + Environment.NewLine + e.Message + Environment.NewLine + e.StackTrace;
             title = title ?? "An error occurred";
@@ -86,7 +92,7 @@ namespace GitScc.Blinkbox
         /// Writes a message into our output pane.
         /// </summary>
         /// <param name="message">Message to write.</param>
-        public static void AddMessage(string message)
+        public void AddMessage(string message)
         {
             Instance.messages.Enqueue(message);
         }
@@ -97,7 +103,7 @@ namespace GitScc.Blinkbox
         /// <param name="name">
         /// The name.
         /// </param>
-        public static void NewSection(string name)
+        public void NewSection(string name)
         {
             AddMessage(Environment.NewLine + "#### " + name + " ############################################");
         }
@@ -105,7 +111,7 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Clears the output pane. 
         /// </summary>
-        public static void ClearMessages()
+        public void ClearMessages()
         {
             PendingChangesView.ClearDiffEditor();
         }
@@ -115,7 +121,8 @@ namespace GitScc.Blinkbox
         /// </summary>
         private void ProcessMessages()
         {
-            while (true)
+            notificationsActive = true;
+            while (notificationsActive)
             {
                 this.WriteMessageQueue();
                 System.Threading.Thread.Sleep(500);

@@ -53,7 +53,7 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
-                Notifications.DisplayException(e, "Get Latest Failed");
+                NotificationService.Instance.DisplayException(e, "Get Latest Failed");
             }
         }
 
@@ -84,12 +84,12 @@ namespace GitScc.Blinkbox
                 }
                 else
                 {
-                    Notifications.AddMessage("No changes found to review");
+                    NotificationService.Instance.AddMessage("No changes found to review");
                 }
             }
             catch (Exception e)
             {
-                Notifications.DisplayException(e, "Get Latest Failed");
+                NotificationService.Instance.DisplayException(e, "Get Latest Failed");
             }
         }
 
@@ -123,7 +123,7 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
-                Notifications.DisplayException(e, OperationName + " Failed");
+                NotificationService.Instance.DisplayException(e, OperationName + " Failed");
             }
         }
 
@@ -155,7 +155,7 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
-                Notifications.DisplayException(e, OperationName + " Failed");
+                NotificationService.Instance.DisplayException(e, OperationName + " Failed");
             }
         }
 
@@ -175,8 +175,8 @@ namespace GitScc.Blinkbox
             // Create the tfs_merge branch (fails silently if it already exists)
             SourceControlHelper.RunGitCommand("branch refs/heads/" + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true, silent: true);
 
-            Notifications.ClearMessages();
-            Notifications.NewSection("Start " + operation);
+            NotificationService.Instance.ClearMessages();
+            NotificationService.Instance.NewSection("Start " + operation);
 
             return true;
         }
