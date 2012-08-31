@@ -99,7 +99,7 @@
                 priority="0x0107"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
-                    id="ToolsMenuGroup"/>
+                    id="igrpPendingChangesToolWindowToolbarGroup"/>
             <Icon guid="guidSccProviderImages"
                   id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
@@ -114,7 +114,7 @@
                 priority="0x0108"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
-                    id="ToolsMenuGroup"/>
+                    id="igrpPendingChangesToolWindowToolbarGroup"/>
             <Icon guid="guidSccProviderImages"
                   id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
@@ -131,7 +131,7 @@
                 priority="0x0110"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
-                    id="ToolsMenuGroup"/>
+                    id="igrpPendingChangesToolWindowToolbarGroup"/>
             <Icon guid="guidSccProviderImages"
                   id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
@@ -334,7 +334,7 @@
             <CommandFlag>DefaultInvisible</CommandFlag>
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
-                <ButtonText>Re-Deploy</ButtonText>
+                <ButtonText>Deploy</ButtonText>
             </Strings>
         </Button>
         
