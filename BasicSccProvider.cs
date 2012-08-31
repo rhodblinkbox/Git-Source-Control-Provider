@@ -211,10 +211,10 @@ namespace GitScc
             }
 
             // Call hook to query additional commands first. 
-            var result = QueryBlinkboxCommandStatus(guidCmdGroup, prgCmds, cmdf, pCmdText);
+            var result = this.QueryBlinkboxCommandStatus(guidCmdGroup, prgCmds, cmdf, pCmdText);
             if (result != (int)Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED)
             {
-                // Handled in the hook
+                // Handled by blinkbox extensions
                 return result;
             }
 

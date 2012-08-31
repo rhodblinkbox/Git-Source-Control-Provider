@@ -12,7 +12,6 @@ namespace GitScc.Blinkbox
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Web;
-    using System.Windows;
 
     using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
@@ -21,8 +20,6 @@ namespace GitScc.Blinkbox
     using Microsoft.Build.Execution;
     using Microsoft.Build.Framework;
     using Microsoft.VisualStudio.Shell.Interop;
-
-    using MessageBox = System.Windows.MessageBox;
 
     /// <summary>
     /// Performs deployments 

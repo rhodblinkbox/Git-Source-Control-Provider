@@ -32,6 +32,19 @@ namespace GitScc
     public partial class BasicSccProvider
     {
         /// <summary>
+        /// list of commands which are disabled during review
+        /// </summary>
+        private static List<uint> disabledCommandsDuringReview = new List<uint>
+        {
+            CommandId.BlinkboxDeployId,
+            CommandId.GitTfsGetLatestButtonId,
+            CommandId.icmdPendingChangesAmend,
+            CommandId.icmdPendingChangesCommit,
+            CommandId.icmdPendingChangesRefresh,
+            CommandId.icmdPendingChangesCommitToBranch
+        };
+
+        /// <summary>
         /// Instance of the  <see cref="NotificationService"/>
         /// </summary>
         private NotificationService notificationService;
@@ -209,14 +222,15 @@ namespace GitScc
         /// </returns>
         private int QueryBlinkboxCommandStatus(Guid commandGroupGuid, OLECMD[] commands, OLECMDF commandFlags, IntPtr commandText)
         {
+            var handled = false;
+            var commandId = commands[0].cmdID;
+
             // Process Blinkbox Commands
-            switch (commands[0].cmdID)
+            switch (commandId)
             {
                 case CommandId.BlinkboxDeployId:
-                    if (GitBash.Exists && this.DeployProjectAvailable())
-                    {
-                        commandFlags |= OLECMDF.OLECMDF_ENABLED;
-                    }
+                    handled = true;
+                    this.EnableCommand(ref commandFlags, this.sccService.IsSolutionGitControlled && this.DeployProjectAvailable());
                     break;
                 break;
 
@@ -227,17 +241,12 @@ namespace GitScc
                 case CommandId.GitTfsCancelReviewButtonId:
                 case CommandId.ToolsMenu:
                 case CommandId.ToolsMenuGroup:
-                    // Disable controls if git-tfs is not found. 
-                    if (this.IsSolutionGitTfsControlled() && this.sccService.IsSolutionGitControlled)
-                    {
-                        commandFlags |= OLECMDF.OLECMDF_ENABLED;
-                    }
-                    else
-                    {
-                        commandFlags &= ~OLECMDF.OLECMDF_ENABLED;
-                    }
+                    handled = true;
 
-                    var menuOption = this.gitTfsCommands.FirstOrDefault(x => x.CommandId == commands[0].cmdID);
+                    // Disable controls if git-tfs is not found. 
+                    this.EnableCommand(ref commandFlags, this.IsSolutionGitTfsControlled() && this.sccService.IsSolutionGitControlled);
+
+                    var menuOption = this.gitTfsCommands.FirstOrDefault(x => x.CommandId == commandId);
                     if (menuOption != null)
                     {
                         // If its a menu option set the text. 
@@ -245,15 +254,52 @@ namespace GitScc
                     }
 
                     break;
-
-                default:
-                    // Not one of our commands - return
-                    return (int)Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED;
             }
 
-            // command handled here
-            commands[0].cmdf = (uint)commandFlags;
-            return VSConstants.S_OK;
+            // Check whether the command needs to be disabled during review
+            if (this.developmentService.CurrentMode == DevelopmentService.DevMode.Reviewing)
+            {
+                if (disabledCommandsDuringReview.Contains(commandId))
+                {
+                    commandFlags &= ~OLECMDF.OLECMDF_SUPPORTED;
+                    commandFlags &= ~OLECMDF.OLECMDF_ENABLED;
+                    handled = true;
+                }
+            }
+            else
+            {
+                if (commandId == CommandId.GitTfsCancelReviewButtonId)
+                {
+                    commandFlags &= ~OLECMDF.OLECMDF_SUPPORTED;
+                    commandFlags &= ~OLECMDF.OLECMDF_ENABLED;
+                    handled = true;
+                }
+            }
+
+            if (handled)
+            {
+                commands[0].cmdf = (uint)commandFlags;
+                return VSConstants.S_OK;
+            }
+
+            return (int)Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED;
+        }
+
+        /// <summary>
+        /// Enables the specified command flags.
+        /// </summary>
+        /// <param name="commandFlags">The command flags.</param>
+        /// <param name="enable">if set to <c>true</c> [enable].</param>
+        private void EnableCommand(ref OLECMDF commandFlags, bool enable)
+        {
+            if (enable)
+            {
+                commandFlags |= OLECMDF.OLECMDF_ENABLED;
+            }
+            else
+            {
+                commandFlags &= ~OLECMDF.OLECMDF_ENABLED;
+            }
         }
 
         /// <summary>
