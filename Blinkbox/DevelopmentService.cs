@@ -144,7 +144,10 @@ namespace GitScc.Blinkbox
         /// </summary>
         public void CancelReview()
         {
+            var pendingChanges = BasicSccProvider.GetServiceEx<PendingChangesView>();
+            pendingChanges.EndReview();
             this.CurrentMode = DevMode.Working;
+           
             this.sccProvider.RefreshToolWindows();
         }
 
@@ -173,6 +176,10 @@ namespace GitScc.Blinkbox
             catch (Exception e)
             {
                 NotificationService.DisplayException(e, OperationName + " Failed");
+            }
+            finally
+            {
+                CancelReview();
             }
         }
 

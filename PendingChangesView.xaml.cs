@@ -61,7 +61,7 @@ namespace GitScc
             }
         }
 
-        private void SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void dataGrid1_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var fileName = GetSelectedFileName();
             if (fileName == null)
@@ -179,12 +179,6 @@ namespace GitScc
         DateTime lastTimeRefresh = DateTime.Now.AddDays(-1);
         internal void Refresh(GitFileStatusTracker tracker)
         {
-            if (this.Reviewing)
-            {
-                // We are currently showing the review list, so dont refresh the UI
-                return;
-            }
-
             this.tracker = tracker;
 
             if (!GitBash.Exists)
