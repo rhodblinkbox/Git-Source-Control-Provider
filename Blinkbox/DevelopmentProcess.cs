@@ -200,8 +200,6 @@ namespace GitScc.Blinkbox
             return SccHelperService.RunGitTfs("fetch", wait: true);
         }
 
-
-
         /// <summary>
         /// Merges if required.
         /// </summary>

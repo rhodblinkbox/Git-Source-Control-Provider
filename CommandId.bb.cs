@@ -22,14 +22,14 @@ namespace GitScc
         public const int BlinkboxDeployId = 0x118;
 
         /// <summary>
-        /// Identifies the GitTfsMenu command.
+        /// Identifies the ToolsMenu command.
         /// </summary>
-        public const int GitTfsMenu = 0x401;
+        public const int ToolsMenu = 0x401;
 
         /// <summary>
-        /// Identifies the GitTfsMenuGroup command.
+        /// Identifies the ToolsMenuGroup command.
         /// </summary>
-        public const int GitTfsMenuGroup = 0x402;
+        public const int ToolsMenuGroup = 0x402;
 
         /// <summary>
         /// Identifies the GitTfsCheckin command.

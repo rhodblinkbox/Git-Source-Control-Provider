@@ -229,8 +229,8 @@ namespace GitScc
                 case CommandId.GitTfsGetLatestButtonId:
                 case CommandId.GitTfsCleanWorkspacesButtonId:
                 case CommandId.GitTfsReviewButtonId:
-                case CommandId.GitTfsMenu:
-                case CommandId.GitTfsMenuGroup:
+                case CommandId.ToolsMenu:
+                case CommandId.ToolsMenuGroup:
                     // Disable controls if git-tfs is not found. 
                     if (this.IsSolutionGitTfsControlled() && this.sccService.IsSolutionGitControlled)
                     {

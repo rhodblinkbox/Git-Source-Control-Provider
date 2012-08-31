@@ -7,13 +7,13 @@
     <Menus>
 
         <Menu guid="guidSccProviderCmdSet"
-                id="GitTfsMenu"
+                id="ToolsMenu"
                 priority="0x0000"
                 type="Menu">
             <CommandFlag>TextChanges</CommandFlag>
             <Strings>
-                <ButtonText>Git-Tfs</ButtonText>
-                <CommandName>Git-Tfs</CommandName>
+                <ButtonText>Tools</ButtonText>
+                <CommandName>Tools</CommandName>
             </Strings>
         </Menu>
         
@@ -61,10 +61,10 @@
     <Groups>
 
         <Group guid="guidSccProviderCmdSet"
-                id="GitTfsMenuGroup"
+                id="ToolsMenuGroup"
                 priority="0x0000">
             <Parent guid="guidSccProviderCmdSet"
-                    id="GitTfsMenu"/>
+                    id="ToolsMenu"/>
         </Group>
         
       <Group guid="guidSccProviderCmdSet" id="igrpSourceControlCommands" priority="0x0000">
@@ -99,7 +99,7 @@
                 priority="0x0107"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
-                    id="GitTfsMenuGroup"/>
+                    id="ToolsMenuGroup"/>
             <Icon guid="guidSccProviderImages"
                   id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
@@ -114,7 +114,7 @@
                 priority="0x0108"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
-                    id="GitTfsMenuGroup"/>
+                    id="ToolsMenuGroup"/>
             <Icon guid="guidSccProviderImages"
                   id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
@@ -131,7 +131,7 @@
                 priority="0x0110"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
-                    id="GitTfsMenuGroup"/>
+                    id="ToolsMenuGroup"/>
             <Icon guid="guidSccProviderImages"
                   id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
@@ -146,7 +146,7 @@
                 priority="0x0111"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
-                    id="GitTfsMenuGroup"/>
+                    id="ToolsMenuGroup"/>
             <Icon guid="guidSccProviderImages"
                   id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
@@ -381,7 +381,7 @@
 
       <!-- Add the menu to the solution explorer context menus -->
       <CommandPlacement guid="guidSccProviderCmdSet"
-                        id="GitTfsMenu"
+                        id="ToolsMenu"
                         priority="0x0015">
           <Parent guid="guidSccProviderCmdSet"
                   id="igrpPendingChangesToolWindowToolbarGroup"/>
@@ -474,9 +474,9 @@
     <GuidSymbol name="guidSccProviderPkg" value="{C4128D99-2000-41D1-A6C3-704E6C1A3DE2}" />
     <GuidSymbol name="guidSccProviderCmdSet" value="{C4A089DA-E640-438d-A977-815C267CA76D}" >
         
-        <IDSymbol name="GitTfsMenu"
+        <IDSymbol name="ToolsMenu"
                   value="0x401"/>
-        <IDSymbol name="GitTfsMenuGroup"
+        <IDSymbol name="ToolsMenuGroup"
                   value="0x402"/>
         <IDSymbol name="GitTfsCheckinButtonId"
                   value="0x403"/>
