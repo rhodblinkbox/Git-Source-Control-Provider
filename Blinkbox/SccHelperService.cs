@@ -148,6 +148,36 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
+        /// Diffs the file.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="endRevision">To revision.</param>
+        /// <param name="startRevision">From revision.</param>
+        public void DiffFileInTortoise(string fileName, string endRevision = null, string startRevision = null)
+        {
+            var command = string.Format("diff /path:{0}", fileName);
+            
+            if (!string.IsNullOrEmpty(endRevision))
+            {
+                command += string.Format(" /startrev:{0} /endrev:{1}", string.IsNullOrEmpty(startRevision) ? BlinkboxSccOptions.WorkingDirectoryRevision : startRevision, endRevision);
+            }
+
+            this.RunTortoise(command);
+        }
+
+        /// <summary>
+        /// Diffs a file against the specified revision using git.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="revision">The revision.</param>
+        /// <returns>a text diff.</returns>
+        public string DiffFileWithGit(string fileName, string revision)
+        {
+            var diffCommand = SccHelperService.RunGitCommand(string.Format("diff {0} \"{1}\"", revision, fileName), silent: true);
+            return diffCommand.Output;
+        }
+
+        /// <summary>
         /// Checks out a branch.
         /// </summary>
         /// <param name="branch">The branch.</param>

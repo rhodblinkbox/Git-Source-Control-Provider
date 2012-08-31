@@ -179,7 +179,7 @@ namespace GitScc
         DateTime lastTimeRefresh = DateTime.Now.AddDays(-1);
         internal void Refresh(GitFileStatusTracker tracker)
         {
-            if (Reviewing)
+            if (this.Reviewing)
             {
                 // We are currently showing the review list, so dont refresh the UI
                 return;

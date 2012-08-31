@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="DevelopmentProcess.cs" company="blinkbox">
+// <copyright file="DevelopmentService.cs" company="blinkbox">
 // TODO: Update copyright text.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -9,49 +9,60 @@ namespace GitScc.Blinkbox
     using System;
     using System.Linq;
 
-    using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
 
     /// <summary>
     /// Implementation of common development processes.
     /// </summary>
-    public class DevelopmentProcess : IDisposable
+    public class DevelopmentService : IDisposable
     {
         /// <summary>
-        /// Instance of the  <see cref="NotificationService"/>
+        /// Instance of the  <see cref="notificationService"/>
         /// </summary>
-        private NotificationService notificationServiceInstance = null;
+        private readonly NotificationService notificationService;
 
         /// <summary>
         /// Instance of the  <see cref="SccHelperService"/>
         /// </summary>
-        private SccHelperService sccHelperInstance = null;
+        private readonly SccHelperService sccHelper;
 
         /// <summary>
-        /// Gets the notification service.
+        /// Initializes a new instance of the <see cref="DevelopmentService"/> class.
         /// </summary>
-        /// <value>The notification service.</value>
-        private NotificationService NotificationService
+        /// <param name="notificationService">The notification service.</param>
+        /// <param name="sccHelper">The SCC helper.</param>
+        public DevelopmentService(NotificationService notificationService, SccHelperService sccHelper)
         {
-            get
-            {
-                this.notificationServiceInstance = this.notificationServiceInstance ?? BasicSccProvider.GetServiceEx<NotificationService>();
-                return this.notificationServiceInstance;
-            }
+            this.notificationService = notificationService;
+            this.sccHelper = sccHelper;
         }
 
         /// <summary>
-        /// Gets the sccHelper service.
+        /// Describes the current use of the plugin.
         /// </summary>
-        /// <value>The sccHelper service.</value>
-        private SccHelperService SccHelper
+        public enum DevMode
         {
-            get
-            {
-                this.sccHelperInstance = this.sccHelperInstance ?? BasicSccProvider.GetServiceEx<SccHelperService>();
-                return this.sccHelperInstance;
-            }
+            /// <summary>
+            /// normal developing use
+            /// </summary>
+            Working = 0,
+
+            /// <summary>
+            /// Review in progress
+            /// </summary>
+            Reviewing = 1,
+
+            /// <summary>
+            /// Checking into TFS
+            /// </summary>
+            Checkin = 2
         }
+
+        /// <summary>
+        /// Gets or sets the current mode.
+        /// </summary>
+        /// <value>The current mode.</value>
+        public DevMode CurrentMode { get; set; }
 
         /// <summary>
         /// Get the latest from TFS
@@ -62,8 +73,8 @@ namespace GitScc.Blinkbox
 
             try
             {
-                this.NotificationService.ClearMessages();
-                this.NotificationService.NewSection("Start " + OperationName);
+                this.notificationService.ClearMessages();
+                this.notificationService.NewSection("Start " + OperationName);
 
                 if (!this.CheckWorkingDirectoryClean())
                 {
@@ -85,7 +96,7 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
-        /// Get the latest from TFS
+        /// Compare working directory with TFS
         /// </summary>
         public void Review()
         {
@@ -93,16 +104,18 @@ namespace GitScc.Blinkbox
 
             try
             {
+                this.notificationService.ClearMessages();
+                this.notificationService.NewSection("Start " + OperationName);
 
-                this.NotificationService.ClearMessages();
-                this.NotificationService.NewSection("Start " + OperationName);
-
-                var currentBranch = this.SccHelper.GetCurrentBranch();
+                var currentBranch = this.sccHelper.GetCurrentBranch();
 
                 if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
                 {
                     return;
                 }
+
+                // Switch to reviewing mode
+                this.CurrentMode = DevMode.Reviewing;
 
                 var diff = SccHelperService.DiffBranches(BlinkboxSccOptions.Current.TfsRemoteBranch, currentBranch);
 
@@ -114,8 +127,17 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
+                this.CancelReview();
                 NotificationService.DisplayException(e, OperationName + " Failed");
             }
+        }
+
+        /// <summary>
+        /// Cancels a review.
+        /// </summary>
+        public void CancelReview()
+        {
+            this.CurrentMode = DevMode.Working;
         }
 
         /// <summary>
@@ -127,10 +149,10 @@ namespace GitScc.Blinkbox
 
             try
             {
-                this.NotificationService.ClearMessages();
-                this.NotificationService.NewSection("Start " + OperationName);
+                this.notificationService.ClearMessages();
+                this.notificationService.NewSection("Start " + OperationName);
 
-                var currentBranch = this.SccHelper.GetCurrentBranch();
+                var currentBranch = this.sccHelper.GetCurrentBranch();
 
                 if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
                 {
@@ -160,7 +182,7 @@ namespace GitScc.Blinkbox
         /// <returns>true if successful</returns>
         private bool CheckWorkingDirectoryClean()
         {
-            if (!this.SccHelper.WorkingDirectoryClean())
+            if (!this.sccHelper.WorkingDirectoryClean())
             {
                 NotificationService.DisplayError("Cannot proceed", "There are uncommitted changes in your working directory");
                 return false;
@@ -187,7 +209,7 @@ namespace GitScc.Blinkbox
                 return false;
             }
 
-            NotificationService.AddMessage("current branch is " + aheadBehind.Ahead + " commits ahead of TFS");
+            this.notificationService.AddMessage("current branch is " + aheadBehind.Ahead + " commits ahead of TFS");
             return true;
         }
 
@@ -205,9 +227,9 @@ namespace GitScc.Blinkbox
         /// </summary>
         private void CommitIfRequired()
         {
-            if (!this.SccHelper.WorkingDirectoryClean())
+            if (!this.sccHelper.WorkingDirectoryClean())
             {
-                this.SccHelper.RunTortoise("commit");
+                this.sccHelper.RunTortoise("commit");
             }
         }
     }

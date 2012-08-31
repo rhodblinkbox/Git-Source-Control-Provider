@@ -119,7 +119,10 @@ namespace GitScc.Blinkbox
         /// </summary>
         public void ClearMessages()
         {
-            PendingChangesView.ClearDiffEditor();
+            if (this.PendingChangesView != null)
+            {
+                this.PendingChangesView.ClearDiffEditor();
+            }
         }
 
         /// <summary>
@@ -143,7 +146,7 @@ namespace GitScc.Blinkbox
             {
                 string message;
                 this.messages.TryDequeue(out message);
-                if (!string.IsNullOrEmpty(message))
+                if (!string.IsNullOrEmpty(message) && this.PendingChangesView != null)
                 {
                     this.PendingChangesView.WriteToDiffWindow(message);
                 }

@@ -32,10 +32,34 @@ namespace GitScc
         private string comparisonBranch = null;
 
         /// <summary>
+        /// instance of the <see cref="DevelopmentService"/>
+        /// </summary>
+        private DevelopmentService developmentServiceInstance = null;
+
+        /// <summary>
+        /// Gets the development service.
+        /// </summary>
+        /// <value>The development service.</value>
+        private DevelopmentService DevelopmentService
+        {
+            get
+            {
+                this.developmentServiceInstance = this.developmentServiceInstance ?? BasicSccProvider.GetServiceEx<DevelopmentService>();
+                return this.developmentServiceInstance;
+            }    
+        }
+
+        /// <summary>
         /// Gets a value indicating whether a review is currently in progress.
         /// </summary>
         /// <value><c>true</c> if reviewing; otherwise, <c>false</c>.</value>
-        public bool Reviewing { get; private set; }
+        public bool Reviewing 
+        { 
+            get
+            {
+                return this.DevelopmentService != null && this.DevelopmentService.CurrentMode == DevelopmentService.DevMode.Reviewing;
+            }
+        }
 
         /// <summary>
         /// Initialises the blinkbox extensions.
@@ -75,7 +99,6 @@ namespace GitScc
         public void CancelReview()
         {
             this.comparisonBranch = null;
-            this.Reviewing = false;
         }
 
         /// <summary>
@@ -139,9 +162,6 @@ namespace GitScc
         {
             Action act = () =>
             {
-                // Set the reviewing flag to prevent refreshes over-writing the review list with the pending changes list.
-                this.Reviewing = true;
-
                 if (!GitBash.Exists)
                 {
                     Settings.Show();
@@ -228,12 +248,9 @@ namespace GitScc
             {
                 var sccHelper = BasicSccProvider.GetServiceEx<SccHelperService>();
 
-                // Call tortoiseproc to compare.
+                // Diff the file in tortoise
                 var tfsRevision = sccHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsRemoteBranch);
-                var command = Reviewing
-                    ? string.Format("diff /path:{0} /startrev:{1} /endrev:{2}", fileName, "0000000000000000000000000000000000000000", tfsRevision)
-                    : string.Format("diff /path:{0}", fileName);
-                sccHelper.RunTortoise(command);
+                sccHelper.DiffFileInTortoise(fileName, tfsRevision, BlinkboxSccOptions.WorkingDirectoryRevision);
             });
         }
 
@@ -266,14 +283,13 @@ namespace GitScc
                         return;
                     }
 
+                    // Diff the selected file against the tfs version using git
                     var sccHelper = BasicSccProvider.GetServiceEx<SccHelperService>();
-
                     var fileNameRel = tracker.GetRelativeFileName(fileName);
                     var tfsRevision = sccHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsRemoteBranch);
-
-                    string diffCommand = string.Format("diff {0} \"{1}\"", tfsRevision, fileNameRel);
-                    var diff = SccHelperService.RunGitCommand(diffCommand, silent: true).Output;
+                    var diff = sccHelper.DiffFileWithGit(fileNameRel, tfsRevision);
                     
+                    // Show in the diff window
                     diffLines = diff.Split(Environment.NewLine.ToCharArray());
                     this.DiffEditor.SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.GetDefinitionByExtension(".diff");
                     this.ClearEditor();

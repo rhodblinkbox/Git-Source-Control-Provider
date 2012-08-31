@@ -25,6 +25,11 @@ namespace GitScc.Blinkbox.Options
         public const string HeadRevision = "HEAD";
 
         /// <summary>
+        /// The Guid of the working directory
+        /// </summary>
+        public const string WorkingDirectoryRevision = "0000000000000000000000000000000000000000";
+
+        /// <summary>
         /// The name of the config file
         /// </summary>
         private static string configFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "blinkboxScc.config");

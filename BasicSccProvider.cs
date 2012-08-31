@@ -339,7 +339,6 @@ namespace GitScc
 
         private void OnRefreshCommand(object sender, EventArgs e)
         {
-            this.HandleRefreshButton();
             sccService.NoRefresh = false;
             sccService.Refresh();
         }

@@ -318,7 +318,7 @@
             <CommandFlag>DefaultInvisible</CommandFlag>
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
-                <ButtonText>Deploy last commit</ButtonText>
+                <ButtonText>Deploy Last Commit</ButtonText>
             </Strings>
         </Button>
         

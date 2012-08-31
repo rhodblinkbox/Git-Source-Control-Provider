@@ -47,6 +47,11 @@ namespace GitScc
         private SccHelperService sccHelperService;
 
         /// <summary>
+        /// Instance of the  <see cref="DevelopmentService"/>
+        /// </summary>
+        private DevelopmentService developmentService;
+
+        /// <summary>
         /// Registers a service.
         /// </summary>
         /// <typeparam name="T">The thye of the service to register.</typeparam>
@@ -93,28 +98,18 @@ namespace GitScc
         }
 
         /// <summary>
-        /// Handles a refresh button click.
-        /// </summary>
-        private void HandleRefreshButton()
-        {
-            var pendingChangesWindow = this.GetService<PendingChangesView>();
-            if (pendingChangesWindow != null)
-            {
-                pendingChangesWindow.CancelReview();
-            }
-        }
-
-        /// <summary>
         /// Initialises the blinkbox extensions to BasicSccProvider.
         /// </summary>
         private void InitialiseBlinkboxExtensions()
         {
             this.notificationService = new NotificationService();
-            this.sccHelperService = new SccHelperService(this.sccService);
-
-            // register services required elsewhere.
             RegisterService(this.notificationService);
+
+            this.sccHelperService = new SccHelperService(this.sccService);
             RegisterService(this.sccHelperService);
+
+            this.developmentService = new DevelopmentService(this.notificationService, this.sccHelperService);
+            RegisterService(this.developmentService);
         }
 
         /// <summary>
@@ -153,21 +148,21 @@ namespace GitScc
             {
                 Name = "Review",
                 CommandId = CommandId.GitTfsReviewButtonId,
-                Handler = () => SccHelperService.RunAsync(() => new DevelopmentProcess().Review())
+                Handler = () => SccHelperService.RunAsync(() => this.developmentService.Review())
             });
 
             commands.Add(new GitTfsCommand
             {
                 Name = "Check in",
                 CommandId = CommandId.GitTfsCheckinButtonId,
-                Handler = () => SccHelperService.RunAsync(() => new DevelopmentProcess().Checkin())
+                Handler = () => SccHelperService.RunAsync(() => this.developmentService.Checkin())
             });
 
             commands.Add(new GitTfsCommand
             {
                 Name = "Get Latest",
                 CommandId = CommandId.GitTfsGetLatestButtonId,
-                Handler = () => SccHelperService.RunAsync(() => new DevelopmentProcess().GetLatest())
+                Handler = () => SccHelperService.RunAsync(() => this.developmentService.GetLatest())
             });
 
             commands.Add(new GitTfsCommand
