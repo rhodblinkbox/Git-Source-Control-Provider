@@ -6,7 +6,10 @@
 
 namespace GitScc.Blinkbox
 {
+    using System;
     using System.Diagnostics;
+
+    using GitScc.Blinkbox.Data;
 
     /// <summary>
     /// Runs a command in a new process.
@@ -72,40 +75,35 @@ namespace GitScc.Blinkbox
         /// </returns>
         public new SccCommand Start()
         {
-            if (!this.Silent)
+            try
             {
-                this.notificationService.AddMessage(System.IO.Path.GetFileName(this.StartInfo.FileName) + " " + this.StartInfo.Arguments);
+                if (!this.Silent)
+                {
+                    this.notificationService.AddMessage(System.IO.Path.GetFileName(this.StartInfo.FileName) + " " + this.StartInfo.Arguments);
+                }
+
+                base.Start();
+
+                if (this.WaitUntilFinished)
+                {
+                    this.WaitForExit();
+                }
+
+                this.Output = StandardOutput.ReadToEnd().TrimEnd("\n".ToCharArray());
+                this.Error = StandardError.ReadToEnd().TrimEnd("\n".ToCharArray());
+
+                if (!this.Silent)
+                {
+                    this.notificationService.AddMessage(this.Output);
+                    this.notificationService.AddMessage(this.Error);
+                }
             }
-
-            base.Start();
-
-            if (this.WaitUntilFinished)
+            catch (Exception e)
             {
-                this.WaitForExit();
-            }
-
-            this.Output = StandardOutput.ReadToEnd().TrimEnd("\n".ToCharArray());
-            this.Error = StandardError.ReadToEnd().TrimEnd("\n".ToCharArray());
-
-            if (!this.Silent)
-            {
-                this.notificationService.AddMessage(this.Output);
-                this.notificationService.AddMessage(this.Error);
+                throw new CommandException<SccCommand>(this, e);
             }
 
             return this;
-        }
-
-        /// <summary>
-        /// Executes the command and waits for it to return.
-        /// </summary>
-        /// <returns>
-        /// The command.
-        /// </returns>
-        public SccCommand StartAndWait()
-        {
-            this.WaitUntilFinished = true;
-            return this.Start();
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="DevelopmentProcessService.cs" company="blinkbox">
+// <copyright file="DevelopmentProcess.cs" company="blinkbox">
 // TODO: Update copyright text.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -8,8 +8,8 @@ namespace GitScc.Blinkbox
 {
     using System;
     using System.Linq;
-    using System.Windows;
 
+    using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
 
     /// <summary>
@@ -62,7 +62,10 @@ namespace GitScc.Blinkbox
 
             try
             {
-                if (!this.InitialChecks(OperationName))
+                this.NotificationService.ClearMessages();
+                this.NotificationService.NewSection("Start " + OperationName);
+
+                if (!this.CheckWorkingDirectoryClean())
                 {
                     return;
                 }
@@ -90,20 +93,23 @@ namespace GitScc.Blinkbox
 
             try
             {
-                if (!this.InitialChecks(OperationName))
+
+                this.NotificationService.ClearMessages();
+                this.NotificationService.NewSection("Start " + OperationName);
+
+                var currentBranch = this.SccHelper.GetCurrentBranch();
+
+                if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
                 {
                     return;
                 }
 
-                // store the name of the current branch
-                var currentBranch = this.SccHelper.GetCurrentBranch();
-
-                var diff = SccHelperService.DiffBranches(currentBranch, BlinkboxSccOptions.Current.TfsRemoteBranch);
+                var diff = SccHelperService.DiffBranches(BlinkboxSccOptions.Current.TfsRemoteBranch, currentBranch);
 
                 var pendingChangesView = BasicSccProvider.GetServiceEx<PendingChangesView>();
                 if (pendingChangesView != null)
                 {
-                    pendingChangesView.Review(diff.ToList(), BlinkboxSccOptions.Current.TfsMergeBranch);
+                    pendingChangesView.Review(diff.ToList(), BlinkboxSccOptions.Current.TfsRemoteBranch);
                 }
             }
             catch (Exception e)
@@ -121,7 +127,12 @@ namespace GitScc.Blinkbox
 
             try
             {
-                if (!this.InitialChecks(OperationName))
+                this.NotificationService.ClearMessages();
+                this.NotificationService.NewSection("Start " + OperationName);
+
+                var currentBranch = this.SccHelper.GetCurrentBranch();
+
+                if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
                 {
                     return;
                 }
@@ -146,24 +157,50 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Runs initial checks
         /// </summary>
-        /// <param name="operation">The operation.</param>
         /// <returns>true if successful</returns>
-        private bool InitialChecks(string operation)
+        private bool CheckWorkingDirectoryClean()
         {
             if (!this.SccHelper.WorkingDirectoryClean())
             {
-                NotificationService.DisplayError("Cannot " + operation, "There are uncommitted changes in your working directory");
+                NotificationService.DisplayError("Cannot proceed", "There are uncommitted changes in your working directory");
                 return false;
             }
 
-            // Create the tfs_merge branch (fails silently if it already exists)
-            SccHelperService.RunGitCommand("branch refs/heads/" + BlinkboxSccOptions.Current.TfsMergeBranch, wait: true, silent: true);
-
-            this.NotificationService.ClearMessages();
-            this.NotificationService.NewSection("Start " + operation);
-
             return true;
         }
+
+        /// <summary>
+        /// Checks whether the provided branch is ahead and/or behind tfs.
+        /// </summary>
+        /// <param name="currentBranch">The current branch.</param>
+        /// <returns> true if the current branch has the latest revisions from tfs.</returns>
+        private bool CheckLatestFromTfs(string currentBranch)
+        {
+            this.FetchFromTfs();
+            var aheadBehind = SccHelperService.BranchAheadOrBehind(currentBranch, BlinkboxSccOptions.Current.TfsRemoteBranch);
+            if (aheadBehind.Behind > 0)
+            {
+                NotificationService.DisplayError(
+                    "Cannot proceed", 
+                    "The current branch \""  + currentBranch + "\" is " + aheadBehind.Behind + " commits behind TFS. " + Environment.NewLine + "Please Get Latest and then try again.");
+
+                return false;
+            }
+
+            NotificationService.AddMessage("current branch is " + aheadBehind.Ahead + " commits ahead of TFS");
+            return true;
+        }
+
+        /// <summary>
+        /// Fetches from TFS into the tfs/default remote branch.
+        /// </summary>
+        /// <returns>the output from the git-tfs fetch command.</returns>
+        private string FetchFromTfs()
+        {
+            return SccHelperService.RunGitTfs("fetch", wait: true);
+        }
+
+
 
         /// <summary>
         /// Merges if required.

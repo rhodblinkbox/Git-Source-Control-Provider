@@ -9,8 +9,10 @@ namespace GitScc.Blinkbox
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
 
+    using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
 
     /// <summary>
@@ -61,26 +63,65 @@ namespace GitScc.Blinkbox
         /// <param name="wait">if set to <c>true</c> [wait].</param>
         /// <param name="silent">if set to <c>true</c> output is not sent to the notification window.</param>
         /// <returns>the output of the git command.</returns>
-        public static string RunGitCommand(string command, bool wait = false, bool silent = false)
+        public static GitCommand RunGitCommand(string command, bool wait = false, bool silent = false)
         {
-            var process = new GitCommand(command) { Silent = silent };
-            process = wait ? (GitCommand)process.StartAndWait() : (GitCommand)process.Start();
-            return process.Output;
+            var process = new GitCommand(command) { Silent = silent, WaitUntilFinished = wait };
+            process.Start();
+
+            if (!string.IsNullOrEmpty(process.Error))
+            {
+                throw new CommandException<GitCommand>(process);
+            }
+
+            return process;
         }
 
         /// <summary>
         /// Diffs the two branches.
         /// </summary>
-        /// <param name="fromBranch">From branch.</param>
-        /// <param name="toBranch">To branch.</param>
+        /// <param name="from">From branch.</param>
+        /// <param name="to">To branch.</param>
         /// <returns>A list of GitFiles</returns>
-        public static IEnumerable<GitFile> DiffBranches(string fromBranch, string toBranch)
+        public static IEnumerable<GitFile> DiffBranches(string from, string to)
         {
-            var diffText = SccHelperService.RunGitCommand("diff --name-status " + fromBranch + ".." + toBranch);
+            var diffText = SccHelperService.RunGitCommand("diff --name-status " + from + ".." + to).Output;
             var diffList = diffText.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
             var gitFiles = diffList.Select(GitFile.FromDiff);
 
             return gitFiles;
+        }
+
+        /// <summary>
+        /// Determines how many commits the from branch is ahead and/or behind the toBranch.
+        /// </summary>
+        /// <param name="from">From branch.</param>
+        /// <param name="to">To branch.</param>
+        /// <returns>A tuple(ahead, behind)</returns>
+        public static AheadBehind BranchAheadOrBehind(string from, string to)
+        {
+            var comparison = new AheadBehind();
+
+            // Gets a list of commits which are in one branch but not the other on separate lines. 
+            // if the commit is in the left branch but not the right the line start with "<", otherwise ">"
+            var status = RunGitCommand("rev-list --left-right " + from + "..." + to, silent: true).Output;
+
+            // Count the number of arrows. 
+            var lines = status.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries); 
+            foreach (var line in lines)
+            {
+                if (line.StartsWith(">"))
+                {
+                    // fromBranch is a commit behind the toBranch
+                    comparison.Behind++;
+                }
+                else if (line.StartsWith("<"))
+                {
+                    // fromBranch has a commit ahead of the toBranch
+                    comparison.Ahead++;
+                }
+            }
+
+            return comparison;
         }
 
         /// <summary>
@@ -91,7 +132,12 @@ namespace GitScc.Blinkbox
         /// <returns>the output from the git tfs command</returns>
         public static string RunGitTfs(string command, bool wait = false)
         {
-            var gitTfsCommand = new SccCommand("cmd.exe", "/k git tfs " + command).StartAndWait();
+            var gitTfsCommand = new SccCommand("cmd.exe", "/k git tfs " + command)
+                {
+                    WaitUntilFinished = wait
+                };
+
+            gitTfsCommand.Start();
 
             if (!string.IsNullOrEmpty(gitTfsCommand.Error))
             {
@@ -165,7 +211,7 @@ namespace GitScc.Blinkbox
         public string GetHeadRevisionHash(string branchName = null)
         {
             branchName = branchName ?? this.Tracker.CurrentBranch;
-            var revision = RunGitCommand("rev-parse " + branchName, wait: true, silent: true);
+            var revision = RunGitCommand("rev-parse " + branchName, wait: true, silent: true).Output;
             return revision.Replace("\n", string.Empty); // Git adds a return to the revision
         }
 

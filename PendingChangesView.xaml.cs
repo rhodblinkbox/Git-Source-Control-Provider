@@ -207,7 +207,7 @@ namespace GitScc
             {
 
                 service.NoRefresh = true;
-                ShowStatusMessage("Getting changed files ...");
+                ////ShowStatusMessage("Getting changed files ...");
 
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();

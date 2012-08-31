@@ -22,6 +22,19 @@ namespace GitScc.Blinkbox
             StartInfo.EnvironmentVariables.Add("TERM", "msys");
         }
 
+
+        /// <summary>
+        /// Gets GitBash output - which is often sent to Error.
+        /// </summary>
+        public new string Error
+        {
+            get
+            {
+                // Need to distinguish real errors from the output which often goes to error. 
+                return base.Error.StartsWith("fatal:") ? base.Error : null;
+            }
+        }
+
         /// <summary>
         /// Gets GitBash output - which is often sent to Error.
         /// </summary>
@@ -29,7 +42,7 @@ namespace GitScc.Blinkbox
         {
             get
             {
-                return base.Output + this.Error;
+                return base.Output + (base.Error.StartsWith("fatal:") ? string.Empty : base.Error);
             }
         }
     }

@@ -14,6 +14,7 @@ namespace GitScc.Blinkbox
     using System.Web;
     using System.Windows;
 
+    using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
 
     using Microsoft.Build.Evaluation;

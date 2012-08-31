@@ -96,6 +96,8 @@
     <Compile Include="BasicSccProvider.bb.cs">
       <DependentUpon>BasicSccProvider.cs</DependentUpon>
     </Compile>
+    <Compile Include="Blinkbox\Data\AheadBehind.cs" />
+    <Compile Include="Blinkbox\Data\CommandException.cs" />
     <Compile Include="CommandId.bb.cs">
       <DependentUpon>CommandId.cs</DependentUpon>
     </Compile>
@@ -109,7 +111,7 @@
     </Compile>
     <Compile Include="Blinkbox\DevelopmentProcess.cs" />
     <Compile Include="Blinkbox\NotificationService.cs" />
-    <Compile Include="Blinkbox\CommitData.cs" />
+    <Compile Include="Blinkbox\Data\CommitData.cs" />
     <Compile Include="Blinkbox\GitTfsCommand.cs" />
     <Compile Include="Blinkbox\Options\BlinkboxSccOptions.cs" />
     <Compile Include="Blinkbox\Options\BlinkboxOptionsControl.cs">

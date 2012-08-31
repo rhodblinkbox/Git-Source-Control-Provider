@@ -67,7 +67,7 @@ namespace GitScc.Blinkbox
         /// <param name="message">The message.</param>
         public static void DisplayException(Exception e, string title = null, string message = null)
         {
-            message = (message ?? string.Empty) + Environment.NewLine + e.Message + Environment.NewLine + e.StackTrace;
+            message = (message ?? string.Empty) + Environment.NewLine + e.Message + Environment.NewLine + Environment.NewLine + e.StackTrace;
             title = title ?? "An error occurred";
             DisplayError(title, message);
         }

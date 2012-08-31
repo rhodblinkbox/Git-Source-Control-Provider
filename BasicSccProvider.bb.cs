@@ -17,6 +17,7 @@ namespace GitScc
     using System.Linq;
 
     using GitScc.Blinkbox;
+    using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
 
     using Microsoft.VisualStudio;

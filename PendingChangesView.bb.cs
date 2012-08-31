@@ -159,7 +159,6 @@ namespace GitScc
                 }
 
                 service.NoRefresh = true;
-                ShowStatusMessage("Getting changed files ...");
 
                 var selectedFile = GetSelectedFileName();
                 var selectedFiles = this.dataGrid1.Items.Cast<GitFile>()
@@ -230,7 +229,7 @@ namespace GitScc
                 var sccHelper = BasicSccProvider.GetServiceEx<SccHelperService>();
 
                 // Call tortoiseproc to compare.
-                var tfsRevision = sccHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsMergeBranch);
+                var tfsRevision = sccHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsRemoteBranch);
                 var command = Reviewing
                     ? string.Format("diff /path:{0} /startrev:{1} /endrev:{2}", fileName, "0000000000000000000000000000000000000000", tfsRevision)
                     : string.Format("diff /path:{0}", fileName);
@@ -270,10 +269,10 @@ namespace GitScc
                     var sccHelper = BasicSccProvider.GetServiceEx<SccHelperService>();
 
                     var fileNameRel = tracker.GetRelativeFileName(fileName);
-                    var tfsRevision = sccHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsMergeBranch);
+                    var tfsRevision = sccHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsRemoteBranch);
 
                     string diffCommand = string.Format("diff {0} \"{1}\"", tfsRevision, fileNameRel);
-                    var diff = SccHelperService.RunGitCommand(diffCommand, silent: true);
+                    var diff = SccHelperService.RunGitCommand(diffCommand, silent: true).Output;
                     
                     diffLines = diff.Split(Environment.NewLine.ToCharArray());
                     this.DiffEditor.SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.GetDefinitionByExtension(".diff");

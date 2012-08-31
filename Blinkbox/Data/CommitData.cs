@@ -4,12 +4,12 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace GitScc.Blinkbox
+namespace GitScc.Blinkbox.Data
 {
     /// <summary>
     /// Contains properties of a commit.
     /// </summary>
-    public class CommitData
+    public struct CommitData
     {
         /// <summary>
         /// Gets or sets Message.

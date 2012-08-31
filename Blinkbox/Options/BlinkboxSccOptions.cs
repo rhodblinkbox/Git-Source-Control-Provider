@@ -66,11 +66,6 @@ namespace GitScc.Blinkbox.Options
         /// <summary>
         /// Gets or sets the name of the TFS merge branch.
         /// </summary>
-        public string TfsMergeBranch { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the TFS merge branch.
-        /// </summary>
         public string TfsRemoteBranch { get; set; }
 
         /// <summary>
@@ -161,7 +156,6 @@ namespace GitScc.Blinkbox.Options
             this.UrlToLaunchPropertyName = string.IsNullOrEmpty(this.UrlToLaunchPropertyName) ? "UrlToLaunch" : this.UrlToLaunchPropertyName;
             this.CommitGuidPropertyName = string.IsNullOrEmpty(this.CommitGuidPropertyName) ? "CommitGuid" : this.CommitGuidPropertyName;
             this.CommitCommentPropertyName = string.IsNullOrEmpty(this.CommitCommentPropertyName) ? "CommitComment" : this.CommitCommentPropertyName;
-            this.TfsMergeBranch = string.IsNullOrEmpty(this.TfsMergeBranch) ? "tfs_merge" : this.TfsMergeBranch;
             this.TfsRemoteBranch = string.IsNullOrEmpty(this.TfsRemoteBranch) ? "remotes/tfs/default" : this.TfsRemoteBranch;
         }
 
