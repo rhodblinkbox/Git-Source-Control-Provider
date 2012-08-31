@@ -158,13 +158,6 @@ namespace GitScc
 
             commands.Add(new GitTfsCommand
             {
-                Name = "Complete Review",
-                CommandId = CommandId.GitTfsCompleteReviewButtonId,
-                Handler = () => SccHelperService.RunAsync(() => new DevelopmentProcess().CompleteReview())
-            });
-
-            commands.Add(new GitTfsCommand
-            {
                 Name = "Check in",
                 CommandId = CommandId.GitTfsCheckinButtonId,
                 Handler = () => SccHelperService.RunAsync(() => new DevelopmentProcess().Checkin())
@@ -235,7 +228,6 @@ namespace GitScc
                 case CommandId.GitTfsGetLatestButtonId:
                 case CommandId.GitTfsCleanWorkspacesButtonId:
                 case CommandId.GitTfsReviewButtonId:
-                case CommandId.GitTfsCompleteReviewButtonId:
                 case CommandId.GitTfsMenu:
                 case CommandId.GitTfsMenuGroup:
                     // Disable controls if git-tfs is not found. 

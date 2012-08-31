@@ -6,9 +6,12 @@
 
 namespace GitScc.Blinkbox
 {
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+
+    using GitScc.Blinkbox.Options;
 
     /// <summary>
     /// Wrapper for Source control functionality.
@@ -66,13 +69,36 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
+        /// Diffs the two branches.
+        /// </summary>
+        /// <param name="fromBranch">From branch.</param>
+        /// <param name="toBranch">To branch.</param>
+        /// <returns>A list of GitFiles</returns>
+        public static IEnumerable<GitFile> DiffBranches(string fromBranch, string toBranch)
+        {
+            var diffText = SccHelperService.RunGitCommand("diff --name-status " + fromBranch + ".." + toBranch);
+            var diffList = diffText.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var gitFiles = diffList.Select(GitFile.FromDiff);
+
+            return gitFiles;
+        }
+
+        /// <summary>
         /// Runs a command in the git tfs commandline environment.
         /// </summary>
         /// <param name="command">The command.</param>
         /// <param name="wait">waits for the process to exit before continuing execution.</param>
-        public static void RunGitTfs(string command, bool wait = false)
+        /// <returns>the output from the git tfs command</returns>
+        public static string RunGitTfs(string command, bool wait = false)
         {
-            new SccCommand("cmd.exe", "/k git tfs " + command).StartAndWait();
+            var gitTfsCommand = new SccCommand("cmd.exe", "/k git tfs " + command).StartAndWait();
+
+            if (!string.IsNullOrEmpty(gitTfsCommand.Error))
+            {
+                throw new Exception(gitTfsCommand.Error);
+            }
+
+            return gitTfsCommand.Output;
         }
 
         /// <summary>

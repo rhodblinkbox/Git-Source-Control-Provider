@@ -57,8 +57,16 @@ namespace GitScc
         /// </param>
         public void Review(List<GitFile> changedFiles, string branchName)
         {
-            this.comparisonBranch = branchName;
-            this.DisplayReview(changedFiles);
+            if (changedFiles.Any())
+            {
+                this.comparisonBranch = branchName;
+                this.DisplayReview(changedFiles);
+            }
+            else
+            {
+                var notificationService = BasicSccProvider.GetServiceEx<NotificationService>();
+                notificationService.AddMessage("No changes found to review");
+            }
         }
 
         /// <summary>
@@ -109,7 +117,7 @@ namespace GitScc
                 }
                 catch (Exception ex)
                 {
-                    NotificationService.DisplayError(ex.Message, "Commit Failed");
+                    NotificationService.DisplayError("Commit Failed", ex.Message);
                     this.ShowStatusMessage(ex.Message);
                 }
             }

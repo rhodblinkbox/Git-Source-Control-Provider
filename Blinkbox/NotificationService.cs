@@ -69,7 +69,7 @@ namespace GitScc.Blinkbox
         {
             message = (message ?? string.Empty) + Environment.NewLine + e.Message + Environment.NewLine + e.StackTrace;
             title = title ?? "An error occurred";
-            DisplayError(message, title);
+            DisplayError(title, message);
         }
 
         /// <summary>
@@ -99,6 +99,7 @@ namespace GitScc.Blinkbox
         /// <param name="message">Message to write.</param>
         public void AddMessage(string message)
         {
+            Trace.WriteLine(message);
             this.messages.Enqueue(message);
         }
 

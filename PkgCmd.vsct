@@ -127,21 +127,6 @@
 
 
         <Button guid="guidSccProviderCmdSet"
-                id="GitTfsCompleteReviewButtonId"
-                priority="0x0109"
-                type="Button">
-            <Parent guid="guidSccProviderCmdSet"
-                    id="GitTfsMenuGroup"/>
-            <Icon guid="guidSccProviderImages"
-                  id="iconGitBash" />
-            <CommandFlag>IconAndText</CommandFlag>
-            <Strings>
-                <CommandName>GitTfsCompleteReviewButtonId</CommandName>
-                <ButtonText>Complete Review</ButtonText>
-            </Strings>
-        </Button>
-
-        <Button guid="guidSccProviderCmdSet"
                 id="GitTfsCheckinButtonId"
                 priority="0x0110"
                 type="Button">
@@ -501,8 +486,6 @@
                   value="0x405"/>
         <IDSymbol name="GitTfsReviewButtonId"
                   value="0x406"/>
-        <IDSymbol name="GitTfsCompleteReviewButtonId"
-                  value="0x407"/>
         
       <IDSymbol name="icmdSccCommandRefresh" value="0x101"/>
       <IDSymbol name="icmdSccCommandGitBash" value="0x102"/>

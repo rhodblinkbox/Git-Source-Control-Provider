@@ -67,19 +67,8 @@ namespace GitScc.Blinkbox
                     return;
                 }
 
-                // store the name of the current branch
-                var currentBranch = this.SccHelper.GetCurrentBranch();
-
-                // Switch to the tfs-merge branch 
-                this.SccHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
-
-                // Pull down changes into tfs remote branch, and tfs_merge branch
-                SccHelperService.RunGitTfs("pull");
-
-                this.CommitIfRequired();
-
-                // Switch back to current branch
-                this.SccHelper.CheckOutBranch(currentBranch);
+                // Pull down changes into tfs/default remote branch, and tfs_merge branch
+                SccHelperService.RunGitTfs("fetch");
 
                 // Merge without commit from tfs-merge to current branch. 
                 SccHelperService.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait: true);
@@ -109,56 +98,13 @@ namespace GitScc.Blinkbox
                 // store the name of the current branch
                 var currentBranch = this.SccHelper.GetCurrentBranch();
 
-                var diffText = SccHelperService.RunGitCommand("diff --name-status " + BlinkboxSccOptions.Current.TfsMergeBranch + ".." + currentBranch);
-                var diffList = diffText.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-                var gitFiles = diffList.Select(GitFile.FromDiff);
-                
-                if (gitFiles.Any())
+                var diff = SccHelperService.DiffBranches(currentBranch, BlinkboxSccOptions.Current.TfsRemoteBranch);
+
+                var pendingChangesView = BasicSccProvider.GetServiceEx<PendingChangesView>();
+                if (pendingChangesView != null)
                 {
-                    var pendingChangesView = BasicSccProvider.GetServiceEx<PendingChangesView>();
-                    if (pendingChangesView != null)
-                    {
-                        pendingChangesView.Review(gitFiles.ToList(), BlinkboxSccOptions.Current.TfsMergeBranch);
-                    }
+                    pendingChangesView.Review(diff.ToList(), BlinkboxSccOptions.Current.TfsMergeBranch);
                 }
-                else
-                {
-                    this.NotificationService.AddMessage("No changes found to review");
-                }
-            }
-            catch (Exception e)
-            {
-                NotificationService.DisplayException(e, "Get Latest Failed");
-            }
-        }
-
-        /// <summary>
-        /// Merges the current working branch into tfs_merge branch
-        /// </summary>
-        public void CompleteReview()
-        {
-            const string OperationName = "Complete Review";
-
-            try
-            {
-                if (!this.InitialChecks(OperationName))
-                {
-                    return;
-                }
-
-                // store the name of the current branch
-                var currentBranch = this.SccHelper.GetCurrentBranch();
-
-                // Switch to the tfs-merge branch 
-                this.SccHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
-
-                // Merge without commit from tfs-merge to current branch. 
-                SccHelperService.RunGitCommand("merge " + currentBranch, wait: true);
-
-                this.CommitIfRequired();
-
-                // Switch back to the current branch 
-                this.SccHelper.CheckOutBranch(currentBranch);
             }
             catch (Exception e)
             {
@@ -180,17 +126,8 @@ namespace GitScc.Blinkbox
                     return;
                 }
 
-                // store the name of the current branch
-                var currentBranch = this.SccHelper.GetCurrentBranch();
-
-                // Switch to the tfs-merge branch 
-                this.SccHelper.CheckOutBranch(BlinkboxSccOptions.Current.TfsMergeBranch);
-
                 // Checkin from tfs-merge branch
-                SccHelperService.RunGitTfs("checkintool");
-
-                // Switch back to the current Branch 
-                this.SccHelper.CheckOutBranch(currentBranch);
+                var checkin = SccHelperService.RunGitTfs("checkintool");
             }
             catch (Exception e)
             {
@@ -215,7 +152,7 @@ namespace GitScc.Blinkbox
         {
             if (!this.SccHelper.WorkingDirectoryClean())
             {
-                NotificationService.DisplayError("Cannot " + operation + " - there are uncommitted changes in your working directory", "Cannot " + operation);
+                NotificationService.DisplayError("Cannot " + operation, "There are uncommitted changes in your working directory");
                 return false;
             }
 

@@ -50,10 +50,5 @@ namespace GitScc
         /// Identifies the GitTfs Review command.
         /// </summary>
         public const int GitTfsReviewButtonId = 0x406;
-
-        /// <summary>
-        /// Identifies the GitTfs Complete Review command.
-        /// </summary>
-        public const int GitTfsCompleteReviewButtonId = 0x407;
     }
 }
