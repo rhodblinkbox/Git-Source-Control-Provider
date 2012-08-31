@@ -11,6 +11,8 @@ namespace GitScc.Blinkbox
 
     using GitScc.Blinkbox.Options;
 
+    using Microsoft.VisualStudio.Shell.Interop;
+
     /// <summary>
     /// Implementation of common development processes.
     /// </summary>
@@ -131,6 +133,13 @@ namespace GitScc.Blinkbox
                 {
                     pendingChangesView.Review(diff.ToList(), BlinkboxSccOptions.Current.TfsRemoteBranch);
                 }
+
+                // force the commands to update
+                var shell = BasicSccProvider.GetServiceEx<IVsUIShell>();
+                if (shell != null)
+                {
+                    shell.UpdateCommandUI(0);
+                }
             }
             catch (Exception e)
             {
@@ -147,7 +156,14 @@ namespace GitScc.Blinkbox
             var pendingChanges = BasicSccProvider.GetServiceEx<PendingChangesView>();
             pendingChanges.EndReview();
             this.CurrentMode = DevMode.Working;
-           
+
+            // force the commands to update
+            var shell = BasicSccProvider.GetServiceEx<IVsUIShell>();
+            if (shell != null)
+            {
+                shell.UpdateCommandUI(0);
+            }
+
             this.sccProvider.RefreshToolWindows();
         }
 

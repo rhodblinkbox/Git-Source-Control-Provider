@@ -34,10 +34,11 @@ namespace GitScc
         /// <summary>
         /// list of commands which are disabled during review
         /// </summary>
-        private static List<uint> disabledCommandsDuringReview = new List<uint>
+        private static readonly List<uint> DisabledCommandsDuringReview = new List<uint>
         {
             CommandId.BlinkboxDeployId,
             CommandId.GitTfsGetLatestButtonId,
+            CommandId.GitTfsReviewButtonId,
             CommandId.icmdPendingChangesAmend,
             CommandId.icmdPendingChangesCommit,
             CommandId.icmdPendingChangesRefresh,
@@ -131,7 +132,6 @@ namespace GitScc
         /// <param name="menuService">The menu service.</param>
         private void RegisterComponents(MsVsShell.OleMenuCommandService menuService)
         {
-
             this.gitTfsCommands = this.DefineGitTfsCommands();
 
             if (menuService != null)
@@ -225,56 +225,8 @@ namespace GitScc
             var handled = false;
             var commandId = commands[0].cmdID;
 
-            // Process Blinkbox Commands
-            switch (commandId)
-            {
-                case CommandId.BlinkboxDeployId:
-                    handled = true;
-                    this.EnableCommand(ref commandFlags, this.sccService.IsSolutionGitControlled && this.DeployProjectAvailable());
-                    break;
-                break;
-
-                case CommandId.GitTfsCheckinButtonId:
-                case CommandId.GitTfsGetLatestButtonId:
-                case CommandId.GitTfsCleanWorkspacesButtonId:
-                case CommandId.GitTfsReviewButtonId:
-                case CommandId.GitTfsCancelReviewButtonId:
-                case CommandId.ToolsMenu:
-                case CommandId.ToolsMenuGroup:
-                    handled = true;
-
-                    // Disable controls if git-tfs is not found. 
-                    this.EnableCommand(ref commandFlags, this.IsSolutionGitTfsControlled() && this.sccService.IsSolutionGitControlled);
-
-                    var menuOption = this.gitTfsCommands.FirstOrDefault(x => x.CommandId == commandId);
-                    if (menuOption != null)
-                    {
-                        // If its a menu option set the text. 
-                        this.SetOleCmdText(commandText, menuOption.Name);
-                    }
-
-                    break;
-            }
-
-            // Check whether the command needs to be disabled during review
-            if (this.developmentService.CurrentMode == DevelopmentService.DevMode.Reviewing)
-            {
-                if (disabledCommandsDuringReview.Contains(commandId))
-                {
-                    commandFlags &= ~OLECMDF.OLECMDF_SUPPORTED;
-                    commandFlags &= ~OLECMDF.OLECMDF_ENABLED;
-                    handled = true;
-                }
-            }
-            else
-            {
-                if (commandId == CommandId.GitTfsCancelReviewButtonId)
-                {
-                    commandFlags &= ~OLECMDF.OLECMDF_SUPPORTED;
-                    commandFlags &= ~OLECMDF.OLECMDF_ENABLED;
-                    handled = true;
-                }
-            }
+            handled = this.IsSupported(commandId, ref commandFlags, commandText);
+            handled = this.SwitchForReview(commandId, ref commandFlags) || handled;
 
             if (handled)
             {
@@ -286,20 +238,93 @@ namespace GitScc
         }
 
         /// <summary>
+        /// Determines whether the specified command id is supported.
+        /// </summary>
+        /// <param name="commandId">The command id.</param>
+        /// <param name="commandFlags">The command flags.</param>
+        /// <param name="commandText">The command text.</param>
+        /// <returns>true if the command was handled</returns>
+        private bool IsSupported(uint commandId, ref OLECMDF commandFlags, IntPtr commandText)
+        {
+            var enabled = false;
+
+            // Process Blinkbox Commands
+            switch (commandId)
+            {
+                case CommandId.BlinkboxDeployId:
+                    // Enabled if git and a deploy project is available
+                    enabled = this.sccService.IsSolutionGitControlled && this.DeployProjectAvailable();
+                    this.SetCommandFlag(ref commandFlags, enabled);
+                    
+                    return true;
+
+                case CommandId.GitTfsCheckinButtonId:
+                case CommandId.GitTfsGetLatestButtonId:
+                case CommandId.GitTfsCleanWorkspacesButtonId:
+                case CommandId.GitTfsReviewButtonId:
+                case CommandId.GitTfsCancelReviewButtonId:
+                case CommandId.ToolsMenu:
+                case CommandId.ToolsMenuGroup:
+
+                    // Enable controls if git-tfs is available. 
+                    enabled = this.IsSolutionGitTfsControlled() && this.sccService.IsSolutionGitControlled;
+                    this.SetCommandFlag(ref commandFlags, enabled);
+
+                    var menuOption = this.gitTfsCommands.FirstOrDefault(x => x.CommandId == commandId);
+                    if (menuOption != null)
+                    {
+                        // If its a menu option set the text. 
+                        this.SetOleCmdText(commandText, menuOption.Name);
+                    }
+
+                    return true;
+
+                default:
+                    // Not handled
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Enable or disable buttons depending on the dev mode..
+        /// </summary>
+        /// <param name="commandId">The command id.</param>
+        /// <param name="commandFlags">The command flags.</param>
+        /// <returns></returns>
+        private bool SwitchForReview(uint commandId, ref OLECMDF commandFlags)
+        {
+            var reviewing = this.developmentService.CurrentMode == DevelopmentService.DevMode.Reviewing;
+
+            // Check whether the command needs to be disabled during review
+            if (reviewing && DisabledCommandsDuringReview.Contains(commandId))
+            {
+                // Not enabled
+                commandFlags = commandFlags & ~OLECMDF.OLECMDF_ENABLED;
+                return true;
+            }
+
+            if (commandId == CommandId.GitTfsCancelReviewButtonId || commandId == CommandId.GitTfsCheckinButtonId)
+            {
+                // Enabled for review if generally enabled, otherwise disabled.
+                commandFlags = reviewing
+                    ? commandFlags & OLECMDF.OLECMDF_ENABLED
+                    : commandFlags & ~OLECMDF.OLECMDF_ENABLED;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Enables the specified command flags.
         /// </summary>
         /// <param name="commandFlags">The command flags.</param>
         /// <param name="enable">if set to <c>true</c> [enable].</param>
-        private void EnableCommand(ref OLECMDF commandFlags, bool enable)
+        private void SetCommandFlag(ref OLECMDF commandFlags, bool enable)
         {
-            if (enable)
-            {
-                commandFlags |= OLECMDF.OLECMDF_ENABLED;
-            }
-            else
-            {
-                commandFlags &= ~OLECMDF.OLECMDF_ENABLED;
-            }
+            commandFlags = enable
+                ? commandFlags | OLECMDF.OLECMDF_ENABLED
+                : commandFlags & ~OLECMDF.OLECMDF_ENABLED;
         }
 
         /// <summary>
