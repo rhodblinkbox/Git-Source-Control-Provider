@@ -108,7 +108,7 @@ namespace GitScc
             this.sccHelperService = new SccHelperService(this.sccService);
             RegisterService(this.sccHelperService);
 
-            this.developmentService = new DevelopmentService(this.notificationService, this.sccHelperService);
+            this.developmentService = new DevelopmentService(this.sccService, this.notificationService, this.sccHelperService);
             RegisterService(this.developmentService);
         }
 
@@ -146,6 +146,13 @@ namespace GitScc
 
             commands.Add(new GitTfsCommand
             {
+                Name = "Get Latest",
+                CommandId = CommandId.GitTfsGetLatestButtonId,
+                Handler = () => SccHelperService.RunAsync(() => this.developmentService.GetLatest())
+            });
+
+            commands.Add(new GitTfsCommand
+            {
                 Name = "Review",
                 CommandId = CommandId.GitTfsReviewButtonId,
                 Handler = () => SccHelperService.RunAsync(() => this.developmentService.Review())
@@ -153,16 +160,16 @@ namespace GitScc
 
             commands.Add(new GitTfsCommand
             {
-                Name = "Check in",
-                CommandId = CommandId.GitTfsCheckinButtonId,
-                Handler = () => SccHelperService.RunAsync(() => this.developmentService.Checkin())
+                Name = "Cancel Review",
+                CommandId = CommandId.GitTfsCancelReviewButtonId,
+                Handler = () => SccHelperService.RunAsync(() => this.developmentService.CancelReview())
             });
 
             commands.Add(new GitTfsCommand
             {
-                Name = "Get Latest",
-                CommandId = CommandId.GitTfsGetLatestButtonId,
-                Handler = () => SccHelperService.RunAsync(() => this.developmentService.GetLatest())
+                Name = "Check in",
+                CommandId = CommandId.GitTfsCheckinButtonId,
+                Handler = () => SccHelperService.RunAsync(() => this.developmentService.Checkin())
             });
 
             commands.Add(new GitTfsCommand
@@ -217,6 +224,7 @@ namespace GitScc
                 case CommandId.GitTfsGetLatestButtonId:
                 case CommandId.GitTfsCleanWorkspacesButtonId:
                 case CommandId.GitTfsReviewButtonId:
+                case CommandId.GitTfsCancelReviewButtonId:
                 case CommandId.ToolsMenu:
                 case CommandId.ToolsMenuGroup:
                     // Disable controls if git-tfs is not found. 

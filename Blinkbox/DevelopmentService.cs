@@ -27,12 +27,19 @@ namespace GitScc.Blinkbox
         private readonly SccHelperService sccHelper;
 
         /// <summary>
+        /// Instance of the  <see cref="SccProviderService"/>
+        /// </summary>
+        private readonly SccProviderService sccProvider;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DevelopmentService"/> class.
         /// </summary>
+        /// <param name="sccProvider">The SCC provider.</param>
         /// <param name="notificationService">The notification service.</param>
         /// <param name="sccHelper">The SCC helper.</param>
-        public DevelopmentService(NotificationService notificationService, SccHelperService sccHelper)
+        public DevelopmentService(SccProviderService sccProvider, NotificationService notificationService, SccHelperService sccHelper)
         {
+            this.sccProvider = sccProvider;
             this.notificationService = notificationService;
             this.sccHelper = sccHelper;
         }
@@ -138,6 +145,7 @@ namespace GitScc.Blinkbox
         public void CancelReview()
         {
             this.CurrentMode = DevMode.Working;
+            this.sccProvider.RefreshToolWindows();
         }
 
         /// <summary>

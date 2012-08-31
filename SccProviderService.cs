@@ -1133,7 +1133,7 @@ _ReSharper*/
         } 
         #endregion
 
-        private void RefreshToolWindows()
+        public void RefreshToolWindows()
         {
             var window = this._sccProvider.FindToolWindow(typeof(PendingChangesToolWindow), 0, false) 
                 as PendingChangesToolWindow;
