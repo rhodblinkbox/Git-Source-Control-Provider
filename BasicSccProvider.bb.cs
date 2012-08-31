@@ -322,8 +322,9 @@ namespace GitScc
         /// <param name="enable">if set to <c>true</c> [enable].</param>
         private void SetCommandFlag(ref OLECMDF commandFlags, bool enable)
         {
+            commandFlags |= OLECMDF.OLECMDF_SUPPORTED;
             commandFlags = enable
-                ? commandFlags | OLECMDF.OLECMDF_ENABLED
+                ? commandFlags | OLECMDF.OLECMDF_ENABLED 
                 : commandFlags & ~OLECMDF.OLECMDF_ENABLED;
         }
 
