@@ -137,7 +137,6 @@ namespace GitScc
                 }
 
                 // Commit and test button
-                this.RegisterCommandWithMenuService(menuService, CommandId.BlinkboxCommitAndDeployId, (sender, args) => this.CommitAndDeploy());
                 this.RegisterCommandWithMenuService(menuService, CommandId.BlinkboxDeployId, (sender, args) => this.ReDeploy());
             }
         }
@@ -217,12 +216,6 @@ namespace GitScc
                         commandFlags |= OLECMDF.OLECMDF_ENABLED;
                     }
                     break;
-
-                case CommandId.BlinkboxCommitAndDeployId:
-                    if (GitBash.Exists && this.sccService.IsSolutionGitControlled && this.DeployProjectAvailable())
-                    {
-                        commandFlags |= OLECMDF.OLECMDF_ENABLED;
-                    }
                 break;
 
                 case CommandId.GitTfsCheckinButtonId:
@@ -299,39 +292,6 @@ namespace GitScc
             catch (Exception e)
             {
                 NotificationService.DisplayException(e, "Deploy failed");
-            }
-        }
-
-        /// <summary>
-        /// Handles the "Commit and Deploy button". Builds and deploys the projects listed in the solution file under DevBuildProjectNames. 
-        /// </summary>
-        private void CommitAndDeploy()
-        {
-            try
-            {
-                // Commit to git repository
-                var commitSuccessful = this.GetToolWindowPane<PendingChangesToolWindow>().BlinkboxCommit();
-
-                if (commitSuccessful)
-                {
-                    // Run the following action asynchronously
-                    Action action = () =>
-                    {
-                        var commit = new CommitData
-                            {
-                                Hash = sccHelperService.GetHeadRevisionHash(),
-                                Message = sccHelperService.GetLastCommitMessage()
-                            };
-                        new Deployment(this).RunDeploy(commit);
-                    };
-
-                    this.notificationService.ClearMessages();
-                    new System.Threading.Tasks.Task(action).Start();
-                }
-            }
-            catch (Exception e)
-            {
-                NotificationService.DisplayException(e, "Commit and Deploy failed");
             }
         }
     }

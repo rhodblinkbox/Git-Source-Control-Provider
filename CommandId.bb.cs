@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="CommandId.cs" company="blinkbox">
+// <copyright file="CommandId.bb.cs" company="blinkbox">
 //   TODO: Update copyright text.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
@@ -12,14 +12,9 @@ namespace GitScc
     public static partial class CommandId
     {
         /// <summary>
-        /// Identifies the CommitAndDeploy command.
-        /// </summary>
-        public const int BlinkboxCommitAndDeployId = 0x117;
-
-        /// <summary>
         /// Identifies the Deploy command.
         /// </summary>
-        public const int BlinkboxDeployId = 0x118;
+        public const int BlinkboxDeployId = 0x117;
 
         /// <summary>
         /// Identifies the ToolsMenu command.
