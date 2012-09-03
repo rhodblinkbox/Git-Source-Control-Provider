@@ -10,6 +10,7 @@ namespace GitScc.Blinkbox
     using System.Collections.Concurrent;
     using System.Diagnostics;
     using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows;
 
     /// <summary>
@@ -18,19 +19,19 @@ namespace GitScc.Blinkbox
     public class NotificationService : IDisposable
     {
         /// <summary>
-        /// Instance of the  <see cref="SccProviderService"/>
-        /// </summary>
-        private bool processEnabled = true;
-
-        /// <summary>
         /// A queue of the messages. 
         /// </summary>
         private readonly ConcurrentQueue<string> messages = new ConcurrentQueue<string>();
 
         /// <summary>
-        /// A thread for writing messages to the output window. 
+        /// Instance of the pending changes view
         /// </summary>
-        private readonly Thread processingThread;
+        private readonly System.Threading.CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
+
+        /// <summary>
+        /// Instance of the pending changes view
+        /// </summary>
+        private readonly System.Threading.Tasks.Task messageTask;
 
         /// <summary>
         /// Instance of the pending changes view
@@ -42,8 +43,7 @@ namespace GitScc.Blinkbox
         /// </summary>
         public NotificationService()
         {
-            this.processingThread = new Thread(this.ProcessMessages);
-            this.processingThread.Start();
+            this.messageTask = new System.Threading.Tasks.TaskFactory().StartNew(this.ProcessMessages, this.cancelTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         /// <summary>
@@ -89,8 +89,7 @@ namespace GitScc.Blinkbox
         /// </summary>
         public void Dispose()
         {
-            this.processEnabled = false;
-            this.processingThread.Abort();
+            this.cancelTokenSource.Cancel();
         }
 
         /// <summary>
@@ -130,7 +129,7 @@ namespace GitScc.Blinkbox
         /// </summary>
         private void ProcessMessages()
         {
-            while (this.processEnabled)
+            while (!this.messageTask.IsCanceled)
             {
                 this.WriteMessageQueue();
                 System.Threading.Thread.Sleep(500);

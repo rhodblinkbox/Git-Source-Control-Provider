@@ -8,6 +8,7 @@ namespace GitScc.Blinkbox
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
 
     using GitScc.Blinkbox.Options;
 
@@ -74,34 +75,58 @@ namespace GitScc.Blinkbox
         public DevMode CurrentMode { get; set; }
 
         /// <summary>
+        /// Runs the a command asyncronously.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="finalAction">The final action.</param>
+        public void RunAsync(System.Action action, string operation, Action<System.Threading.Tasks.Task> finalAction = null)
+        {
+            var task = new System.Threading.Tasks.TaskFactory().StartNew(action, TaskCreationOptions.LongRunning)
+                .ContinueWith(t =>
+                    {
+                        if (t.Exception != null)
+                        {
+                            NotificationService.DisplayException(t.Exception, "Get Latest Failed");
+                            throw new Exception(operation + " failed", t.Exception);
+                        }
+
+                        if (finalAction != null)
+                        {
+                            finalAction(t);
+                        }
+
+                        t.Dispose();
+                    });
+        }
+
+        /// <summary>
         /// Get the latest from TFS
         /// </summary>
         public void GetLatest()
         {
             const string OperationName = "Get Latest";
 
-            try
-            {
-                this.notificationService.ClearMessages();
-                this.notificationService.NewSection("Start " + OperationName);
-
-                if (!this.CheckWorkingDirectoryClean())
+            Action action = () =>
                 {
-                    return;
-                }
+                    this.notificationService.ClearMessages();
+                    this.notificationService.NewSection("Start " + OperationName);
 
-                // Pull down changes into tfs/default remote branch, and tfs_merge branch
-                SccHelperService.RunGitTfs("fetch");
+                    if (!this.CheckWorkingDirectoryClean())
+                    {
+                        return;
+                    }
 
-                // Merge without commit from tfs-merge to current branch. 
-                SccHelperService.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait: true);
+                    // Pull down changes into tfs/default remote branch, and tfs_merge branch
+                    SccHelperService.RunGitTfs("fetch");
 
-                this.CommitIfRequired();
-            }
-            catch (Exception e)
-            {
-                NotificationService.DisplayException(e, "Get Latest Failed");
-            }
+                    // Merge without commit from tfs-merge to current branch. 
+                    SccHelperService.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait: true);
+
+                    this.CommitIfRequired();
+                };
+
+            this.RunAsync(action, OperationName);
         }
 
         /// <summary>
@@ -111,41 +136,38 @@ namespace GitScc.Blinkbox
         {
             const string OperationName = "Review";
 
-            try
-            {
-                this.notificationService.ClearMessages();
-                this.notificationService.NewSection("Start " + OperationName);
-
-                var currentBranch = this.sccHelper.GetCurrentBranch();
-
-                if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
+            Action action = () =>
                 {
-                    return;
-                }
+                    this.notificationService.ClearMessages();
+                    this.notificationService.NewSection("Start " + OperationName);
 
-                // Switch to reviewing mode
-                this.CurrentMode = DevMode.Reviewing;
+                    var currentBranch = this.sccHelper.GetCurrentBranch();
 
-                var diff = SccHelperService.DiffBranches(BlinkboxSccOptions.Current.TfsRemoteBranch, currentBranch);
+                    if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
+                    {
+                        return;
+                    }
 
-                var pendingChangesView = BasicSccProvider.GetServiceEx<PendingChangesView>();
-                if (pendingChangesView != null)
-                {
-                    pendingChangesView.Review(diff.ToList(), BlinkboxSccOptions.Current.TfsRemoteBranch);
-                }
+                    // Switch to reviewing mode
+                    this.CurrentMode = DevMode.Reviewing;
 
-                // force the commands to update
-                var shell = BasicSccProvider.GetServiceEx<IVsUIShell>();
-                if (shell != null)
-                {
-                    shell.UpdateCommandUI(0);
-                }
-            }
-            catch (Exception e)
-            {
-                this.CancelReview();
-                NotificationService.DisplayException(e, OperationName + " Failed");
-            }
+                    var diff = SccHelperService.DiffBranches(BlinkboxSccOptions.Current.TfsRemoteBranch, currentBranch);
+
+                    var pendingChangesView = BasicSccProvider.GetServiceEx<PendingChangesView>();
+                    if (pendingChangesView != null)
+                    {
+                        pendingChangesView.Review(diff.ToList(), BlinkboxSccOptions.Current.TfsRemoteBranch);
+                    }
+
+                    // force the commands to update
+                    var shell = BasicSccProvider.GetServiceEx<IVsUIShell>();
+                    if (shell != null)
+                    {
+                        shell.UpdateCommandUI(0);
+                    }
+                };
+
+            this.RunAsync(action, OperationName);
         }
 
         /// <summary>
@@ -174,29 +196,23 @@ namespace GitScc.Blinkbox
         {
             const string OperationName = "Check in";
 
-            try
-            {
-                this.notificationService.ClearMessages();
-                this.notificationService.NewSection("Start " + OperationName);
-
-                var currentBranch = this.sccHelper.GetCurrentBranch();
-
-                if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
+            Action action = () =>
                 {
-                    return;
-                }
+                    this.notificationService.ClearMessages();
+                    this.notificationService.NewSection("Start " + OperationName);
 
-                // Checkin from tfs-merge branch
-                var checkin = SccHelperService.RunGitTfs("checkintool");
-            }
-            catch (Exception e)
-            {
-                NotificationService.DisplayException(e, OperationName + " Failed");
-            }
-            finally
-            {
-                CancelReview();
-            }
+                    var currentBranch = this.sccHelper.GetCurrentBranch();
+
+                    if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
+                    {
+                        return;
+                    }
+
+                    // Checkin from tfs-merge branch
+                    var checkin = SccHelperService.RunGitTfs("checkintool");
+                };
+
+            this.RunAsync(action, OperationName, (t) => this.CancelReview());
         }
 
         /// <summary>

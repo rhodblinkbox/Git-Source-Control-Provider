@@ -161,28 +161,28 @@ namespace GitScc
             {
                 Name = "Get Latest",
                 CommandId = CommandId.GitTfsGetLatestButtonId,
-                Handler = () => SccHelperService.RunAsync(() => this.developmentService.GetLatest())
+                Handler = this.developmentService.GetLatest
             });
 
             commands.Add(new GitTfsCommand
             {
                 Name = "Review",
                 CommandId = CommandId.GitTfsReviewButtonId,
-                Handler = () => SccHelperService.RunAsync(() => this.developmentService.Review())
+                Handler = this.developmentService.Review
             });
 
             commands.Add(new GitTfsCommand
             {
                 Name = "Cancel Review",
                 CommandId = CommandId.GitTfsCancelReviewButtonId,
-                Handler = () => SccHelperService.RunAsync(() => this.developmentService.CancelReview())
+                Handler = this.developmentService.CancelReview
             });
 
             commands.Add(new GitTfsCommand
             {
                 Name = "Check in",
                 CommandId = CommandId.GitTfsCheckinButtonId,
-                Handler = () => SccHelperService.RunAsync(() => this.developmentService.Checkin())
+                Handler = this.developmentService.Checkin
             });
 
             commands.Add(new GitTfsCommand
