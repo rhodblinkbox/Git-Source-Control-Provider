@@ -112,7 +112,7 @@ namespace GitScc
         {
             Action action = () =>
                 {
-                    var text = aheadBehind.Ahead == 0 && aheadBehind.Behind == 0 ? string.Empty : string.Format("{0} ahead, {1} behind TFS", aheadBehind.Ahead, aheadBehind.Behind);
+                    var text = string.Format("{0} ahead, {1} behind TFS", aheadBehind.Ahead, aheadBehind.Behind);
                     TfsStatusLabel.Content = text;
                     TfsStatusLabel.Foreground = aheadBehind.Behind == 0 ? System.Windows.Media.Brushes.DarkGreen : System.Windows.Media.Brushes.DarkRed;
                 };
