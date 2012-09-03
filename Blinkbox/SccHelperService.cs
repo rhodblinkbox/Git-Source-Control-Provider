@@ -146,14 +146,17 @@ namespace GitScc.Blinkbox
         /// <param name="startRevision">From revision.</param>
         public void DiffFileInTortoise(string fileName, string endRevision = null, string startRevision = null)
         {
-            var command = string.Format("diff /path:{0}", fileName);
-            
-            if (!string.IsNullOrEmpty(endRevision))
+            if (System.IO.File.Exists(GitSccOptions.Current.TortoiseGitPath))
             {
-                command += string.Format(" /startrev:{0} /endrev:{1}", string.IsNullOrEmpty(startRevision) ? BlinkboxSccOptions.WorkingDirectoryRevision : startRevision, endRevision);
-            }
+                var command = string.Format("diff /path:{0}", fileName);
 
-            this.RunTortoise(command);
+                if (!string.IsNullOrEmpty(endRevision))
+                {
+                    command += string.Format(" /startrev:{0} /endrev:{1}", string.IsNullOrEmpty(startRevision) ? BlinkboxSccOptions.WorkingDirectoryRevision : startRevision, endRevision);
+                }
+
+                this.RunTortoise(command);
+            }
         }
 
         /// <summary>
