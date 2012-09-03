@@ -100,8 +100,6 @@
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="igrpPendingChangesToolWindowToolbarGroup"/>
-            <Icon guid="guidSccProviderImages"
-                  id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsGetLatestButtonId</CommandName>
@@ -115,8 +113,6 @@
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="igrpPendingChangesToolWindowToolbarGroup"/>
-            <Icon guid="guidSccProviderImages"
-                  id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsReviewButtonId</CommandName>
@@ -130,8 +126,6 @@
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="igrpPendingChangesToolWindowToolbarGroup"/>
-            <Icon guid="guidSccProviderImages"
-                  id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsCancelReviewButtonId</CommandName>
@@ -145,8 +139,6 @@
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="igrpPendingChangesToolWindowToolbarGroup"/>
-            <Icon guid="guidSccProviderImages"
-                  id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsCheckinButtonId</CommandName>
@@ -160,8 +152,6 @@
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="ToolsMenuGroup"/>
-            <Icon guid="guidSccProviderImages"
-                  id="iconGitBash" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsCleanWorkspacesButtonId</CommandName>
