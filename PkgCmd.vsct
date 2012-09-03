@@ -100,6 +100,8 @@
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="igrpPendingChangesToolWindowToolbarGroup"/>
+            <Icon guid="guidSccProviderImages"
+                  id="iconTfs" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsGetLatestButtonId</CommandName>
@@ -113,6 +115,8 @@
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="igrpPendingChangesToolWindowToolbarGroup"/>
+            <Icon guid="guidSccProviderImages"
+                  id="iconTfs" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsReviewButtonId</CommandName>
@@ -126,6 +130,8 @@
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="igrpPendingChangesToolWindowToolbarGroup"/>
+            <Icon guid="guidSccProviderImages"
+                  id="iconTfs" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsCancelReviewButtonId</CommandName>
@@ -139,6 +145,8 @@
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="igrpPendingChangesToolWindowToolbarGroup"/>
+            <Icon guid="guidSccProviderImages"
+                  id="iconTfs" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsCheckinButtonId</CommandName>
@@ -152,6 +160,8 @@
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="ToolsMenuGroup"/>
+            <Icon guid="guidSccProviderImages"
+                  id="iconTfs" />
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsCleanWorkspacesButtonId</CommandName>
@@ -361,8 +371,8 @@
     </Buttons>
     
     <Bitmaps>
-      <Bitmap guid="guidSccProviderImages" href="Resources\Images_32bit.bmp" 
-              usedList="iconGitBash, iconGitExt, iconUncheckout, iconCompare, iconRefresh, iconOpenIgnoreFile, iconGitTor, iconGitInit"/>
+      <Bitmap guid="guidSccProviderImages" href="Resources\Images_32bit.png" 
+              usedList="iconGitBash, iconGitExt, iconUncheckout, iconCompare, iconRefresh, iconOpenIgnoreFile, iconGitTor, iconGitInit, iconTfs"/>
     </Bitmaps>
   </Commands>
   
@@ -524,6 +534,7 @@
       <IDSymbol name="iconOpenIgnoreFile" value="6"/>
       <IDSymbol name="iconGitTor" value="7"/>
       <IDSymbol name="iconGitInit" value="8"/>
+      <IDSymbol name="iconTfs" value="9"/>
     </GuidSymbol>
   </Symbols>
 </CommandTable>
