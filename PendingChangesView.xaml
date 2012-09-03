@@ -9,7 +9,7 @@
 
 	<Grid x:Name="Main" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 		
-        <TabControl >
+        <TabControl Padding="0,0,0,0">
             <TabItem Header="Git" Name="gitTab" >
 
                 <Grid x:Name="GitTabGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -51,10 +51,10 @@
                         <GridSplitter Grid.Row="1" Grid.ColumnSpan="2"
 					      VerticalAlignment="Top" HorizontalAlignment="Stretch" Name="gridSplitter2" Height="4" />
 
-                        <Label Content="Uncomitted Files" Height="28" HorizontalAlignment="Left" Name="label3" VerticalAlignment="Center" 
-			       Margin="12,0,0,0" Foreground="#FF333333" Grid.Row="2" Width="105" ToolTip="select file to commit, or right click to stage/unstage file" />
+                        <Label Content="Uncomitted Files" Height="20" HorizontalAlignment="Left" Name="label3" VerticalAlignment="Center" 
+			       Margin="12,0,0,0" Padding="0,2,0,0" Foreground="#FF333333" Grid.Row="2" Width="105" ToolTip="select file to commit, or right click to stage/unstage file" />
 
-                        <RichTextBox HorizontalAlignment="Stretch" Name="textBoxComments" VerticalAlignment="Stretch" Margin="10,0,10,10" 
+                        <RichTextBox HorizontalAlignment="Stretch" Name="textBoxComments" VerticalAlignment="Stretch" Margin="2,2,2,2" 
 					     AcceptsReturn="True" VerticalScrollBarVisibility="Visible" SpellCheck.IsEnabled="True">
                             <RichTextBox.Resources>
                                 <Style TargetType="{x:Type Paragraph}">
@@ -169,6 +169,10 @@
             </TabItem>
             
         </TabControl>
-		
+        <Label Name="TfsStatusLabel" Height="20" Width="155" 
+               HorizontalAlignment="Right" 
+               VerticalAlignment="Top" 
+               Padding="0,2,0,0"
+               HorizontalContentAlignment="Right"></Label>
     </Grid>
 </UserControl>

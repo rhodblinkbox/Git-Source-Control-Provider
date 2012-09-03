@@ -9,7 +9,6 @@ namespace GitScc.Blinkbox
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.IO;
     using System.Linq;
 
     using GitScc.Blinkbox.Data;
@@ -38,7 +37,7 @@ namespace GitScc.Blinkbox
         /// Gets the tracker.
         /// </summary>
         /// <value>The tracker.</value>
-        private GitFileStatusTracker Tracker
+        internal GitFileStatusTracker Tracker
         {
             get
             {

@@ -341,6 +341,10 @@ namespace GitScc
         {
             sccService.NoRefresh = false;
             sccService.Refresh();
+            if (this.OnRefreshButton != null)
+            {
+                this.OnRefreshButton(sender, e);
+            }
         }
 
         private void OnCompareCommand(object sender, EventArgs e)

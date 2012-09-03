@@ -66,6 +66,16 @@ namespace GitScc
         private DevelopmentService developmentService;
 
         /// <summary>
+        /// Occurs when a checkout occurs.
+        /// </summary>
+        public event EventHandler OnCheckout;
+
+        /// <summary>
+        /// Occurs when the refresh button is clicked.
+        /// </summary>
+        public event EventHandler OnRefreshButton; 
+
+        /// <summary>
         /// Registers a service.
         /// </summary>
         /// <typeparam name="T">The thye of the service to register.</typeparam>
@@ -81,24 +91,16 @@ namespace GitScc
         }
 
         /// <summary>
-        /// Determines whether the solution is git TFS controlled.
+        /// Triggers the on checkout event.
         /// </summary>
-        /// <returns>
-        /// <c>true</c> if the solution is git TFS controlled.
-        /// </returns>
-        public bool IsSolutionGitTfsControlled()
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        public void TriggerOnCheckout(object sender, EventArgs e)
         {
-            if (this.sccService.Active && this.sccService.SolutionOpen)
+            if (this.OnCheckout != null)
             {
-                var repositoryDirectory = GitFileStatusTracker.GetRepositoryDirectory(this.sccService.GetSolutionDirectory());
-                if (!string.IsNullOrEmpty(repositoryDirectory))
-                {
-                    var expectedGitTfsDirectory = repositoryDirectory + "\\.git\\tfs";
-                    return Directory.Exists(expectedGitTfsDirectory);
-                }
+                this.OnCheckout(sender, e);
             }
-
-            return false;
         }
 
         /// <summary>
@@ -122,7 +124,7 @@ namespace GitScc
             this.sccHelperService = new SccHelperService(this.sccService);
             RegisterService(this.sccHelperService);
 
-            this.developmentService = new DevelopmentService(this.sccService, this.notificationService, this.sccHelperService);
+            this.developmentService = new DevelopmentService(this, this.sccService, this.notificationService, this.sccHelperService);
             RegisterService(this.developmentService);
         }
 
@@ -267,7 +269,7 @@ namespace GitScc
                 case CommandId.ToolsMenuGroup:
 
                     // Enable controls if git-tfs is available. 
-                    enabled = this.IsSolutionGitTfsControlled() && this.sccService.IsSolutionGitControlled;
+                    enabled = this.sccService.IsSolutionGitTfsControlled() && this.sccService.IsSolutionGitControlled;
                     this.SetCommandFlag(ref commandFlags, enabled);
 
                     var menuOption = this.gitTfsCommands.FirstOrDefault(x => x.CommandId == commandId);

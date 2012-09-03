@@ -19,6 +19,7 @@ namespace GitScc
     using System.Windows.Threading;
 
     using GitScc.Blinkbox;
+    using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
 
     /// <summary>
@@ -74,11 +75,6 @@ namespace GitScc
                 this.comparisonBranch = branchName;
                 this.DisplayReview(changedFiles);
             }
-            else
-            {
-                var notificationService = BasicSccProvider.GetServiceEx<NotificationService>();
-                notificationService.AddMessage("No changes found to review");
-            }
         }
 
         /// <summary>
@@ -106,6 +102,21 @@ namespace GitScc
         {
             var action = new Action(() => this.DiffEditor.Clear());
             this.DiffEditor.Dispatcher.BeginInvoke(action);
+        }
+
+        /// <summary>
+        /// Updates the TFS status.
+        /// </summary>
+        /// <param name="aheadBehind">The ahead behind.</param>
+        public void UpdateTfsStatus(AheadBehind aheadBehind)
+        {
+            Action action = () =>
+                {
+                    var text = aheadBehind.Ahead == 0 && aheadBehind.Behind == 0 ? string.Empty : string.Format("{0} ahead, {1} behind TFS", aheadBehind.Ahead, aheadBehind.Behind);
+                    TfsStatusLabel.Content = text;
+                    TfsStatusLabel.Foreground = aheadBehind.Behind == 0 ? System.Windows.Media.Brushes.DarkGreen : System.Windows.Media.Brushes.DarkRed;
+                };
+            this.Dispatcher.BeginInvoke(action, DispatcherPriority.ApplicationIdle);
         }
 
         /// <summary>

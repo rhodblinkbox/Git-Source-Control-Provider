@@ -7,7 +7,9 @@
 namespace GitScc.Blinkbox
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using GitScc.Blinkbox.Options;
@@ -35,16 +37,30 @@ namespace GitScc.Blinkbox
         private readonly SccProviderService sccProvider;
 
         /// <summary>
+        /// Instance of the  <see cref="SccProviderService"/>
+        /// </summary>
+        private readonly CancellationTokenSource cancelRunAsync = new CancellationTokenSource();
+
+        /// <summary>
+        /// Keeps the time of the last tfs Update. 
+        /// </summary>
+        private DateTime lastTfsFetch = DateTime.Now;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DevelopmentService"/> class.
         /// </summary>
+        /// <param name="basicSccProvider">The basic SCC provider.</param>
         /// <param name="sccProvider">The SCC provider.</param>
         /// <param name="notificationService">The notification service.</param>
         /// <param name="sccHelper">The SCC helper.</param>
-        public DevelopmentService(SccProviderService sccProvider, NotificationService notificationService, SccHelperService sccHelper)
+        public DevelopmentService(BasicSccProvider basicSccProvider, SccProviderService sccProvider, NotificationService notificationService, SccHelperService sccHelper)
         {
             this.sccProvider = sccProvider;
             this.notificationService = notificationService;
             this.sccHelper = sccHelper;
+            //// this.sccProvider.OnRefresh += (s, e) => this.RefreshTfsStatus();
+            basicSccProvider.OnRefreshButton += (s, e) => this.UpdateTfsStatus();
+            basicSccProvider.OnCheckout += (s, e) => this.UpdateTfsStatus();
         }
 
         /// <summary>
@@ -75,29 +91,24 @@ namespace GitScc.Blinkbox
         public DevMode CurrentMode { get; set; }
 
         /// <summary>
-        /// Runs the a command asyncronously.
+        /// Runs the provided action asyncronously.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="operation">The operation.</param>
-        /// <param name="finalAction">The final action.</param>
-        public void RunAsync(System.Action action, string operation, Action<System.Threading.Tasks.Task> finalAction = null)
+        /// <returns>The task.</returns>
+        public Task RunAsync(Action action, string operation)
         {
-            var task = new System.Threading.Tasks.TaskFactory().StartNew(action, TaskCreationOptions.LongRunning)
-                .ContinueWith(t =>
+            var task = new TaskFactory().StartNew(action, this.cancelRunAsync.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+            task.ContinueWith(t =>
+                {
+                    if (t.Exception != null)
                     {
-                        if (t.Exception != null)
-                        {
-                            NotificationService.DisplayException(t.Exception, "Get Latest Failed");
-                            throw new Exception(operation + " failed", t.Exception);
-                        }
+                        NotificationService.DisplayException(t.Exception, operation + " failed");
+                    }
+                });
 
-                        if (finalAction != null)
-                        {
-                            finalAction(t);
-                        }
-
-                        t.Dispose();
-                    });
+            return task;
         }
 
         /// <summary>
@@ -148,22 +159,29 @@ namespace GitScc.Blinkbox
                         return;
                     }
 
-                    // Switch to reviewing mode
-                    this.CurrentMode = DevMode.Reviewing;
-
                     var diff = SccHelperService.DiffBranches(BlinkboxSccOptions.Current.TfsRemoteBranch, currentBranch);
 
-                    var pendingChangesView = BasicSccProvider.GetServiceEx<PendingChangesView>();
-                    if (pendingChangesView != null)
+                    if (diff.Any())
                     {
-                        pendingChangesView.Review(diff.ToList(), BlinkboxSccOptions.Current.TfsRemoteBranch);
-                    }
+                        // Switch to reviewing mode
+                        this.CurrentMode = DevMode.Reviewing;
 
-                    // force the commands to update
-                    var shell = BasicSccProvider.GetServiceEx<IVsUIShell>();
-                    if (shell != null)
+                        var pendingChangesView = BasicSccProvider.GetServiceEx<PendingChangesView>();
+                        if (pendingChangesView != null)
+                        {
+                            pendingChangesView.Review(diff.ToList(), BlinkboxSccOptions.Current.TfsRemoteBranch);
+                        }
+
+                        // force the commands to update
+                        var shell = BasicSccProvider.GetServiceEx<IVsUIShell>();
+                        if (shell != null)
+                        {
+                            shell.UpdateCommandUI(0);
+                        }
+                    }
+                    else
                     {
-                        shell.UpdateCommandUI(0);
+                        notificationService.AddMessage("No changes found to review");
                     }
                 };
 
@@ -209,10 +227,10 @@ namespace GitScc.Blinkbox
                     }
 
                     // Checkin from tfs-merge branch
-                    var checkin = SccHelperService.RunGitTfs("checkintool");
+                    SccHelperService.RunGitTfs("checkintool");
                 };
 
-            this.RunAsync(action, OperationName, (t) => this.CancelReview());
+            this.RunAsync(action, OperationName).ContinueWith(t => this.CancelReview());
         }
 
         /// <summary>
@@ -220,7 +238,39 @@ namespace GitScc.Blinkbox
         /// </summary>
         public void Dispose()
         {
-            // NOop
+            // Stop and dispose all running tasks (should be none)
+            this.cancelRunAsync.Cancel();
+        }
+
+        /// <summary>
+        /// Updates the TFS status and displays in the pending changes window.
+        /// </summary>
+        public void UpdateTfsStatus()
+        {
+            Action update = () =>
+                {
+                    this.lastTfsFetch = DateTime.Now;
+                    this.FetchFromTfs();
+                    var aheadBehind = SccHelperService.BranchAheadOrBehind(this.sccHelper.GetCurrentBranch(), BlinkboxSccOptions.Current.TfsRemoteBranch);
+                    var pendingChanges = BasicSccProvider.GetServiceEx<PendingChangesView>();
+                    if (pendingChanges != null)
+                    {
+                        pendingChanges.UpdateTfsStatus(aheadBehind);
+                    }
+                };
+
+            this.RunAsync(update, "UpdateTfsStatus");
+        }
+
+        /// <summary>
+        /// Updates the TFS status and displays in the pending changes window.
+        /// </summary>
+        public void RefreshTfsStatus()
+        {
+            if (this.sccProvider.IsSolutionGitTfsControlled() && DateTime.Now.Subtract(this.lastTfsFetch).Minutes > 0)
+            {
+                this.UpdateTfsStatus();
+            }
         }
 
         /// <summary>
@@ -263,10 +313,9 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Fetches from TFS into the tfs/default remote branch.
         /// </summary>
-        /// <returns>the output from the git-tfs fetch command.</returns>
-        private string FetchFromTfs()
+        private void FetchFromTfs()
         {
-            return SccHelperService.RunGitTfs("fetch", wait: true);
+            SccHelperService.RunGitTfs("fetch", wait: true);
         }
 
         /// <summary>
@@ -274,7 +323,7 @@ namespace GitScc.Blinkbox
         /// </summary>
         private void CommitIfRequired()
         {
-            if (!this.sccHelper.WorkingDirectoryClean())
+            if (!this.sccHelper.WorkingDirectoryClean() || this.sccHelper.Tracker.IsInTheMiddleOfMerge)
             {
                 this.sccHelper.RunTortoise("commit");
             }

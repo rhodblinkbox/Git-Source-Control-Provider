@@ -27,9 +27,9 @@ namespace GitScc
         private string solutionDirectory = null;
 
         /// <summary>
-        /// Occurs when the source control provider is activated or deactivated.
+        /// Occurs when the source control provider refreshes.
         /// </summary>
-        public event EventHandler SourceControlActivatedOrDeactivated;
+        public event EventHandler OnRefresh;
 
         /// <summary>
         /// Gets a value indicating whether a solution is oen].
@@ -60,6 +60,27 @@ namespace GitScc
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Determines whether the solution is git TFS controlled.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> if the solution is git TFS controlled.
+        /// </returns>
+        public bool IsSolutionGitTfsControlled()
+        {
+            if (this.Active && this.SolutionOpen)
+            {
+                var repositoryDirectory = GitFileStatusTracker.GetRepositoryDirectory(this.GetSolutionDirectory());
+                if (!string.IsNullOrEmpty(repositoryDirectory))
+                {
+                    var expectedGitTfsDirectory = repositoryDirectory + "\\.git\\tfs";
+                    return Directory.Exists(expectedGitTfsDirectory);
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

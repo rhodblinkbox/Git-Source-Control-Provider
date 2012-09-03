@@ -26,7 +26,7 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Instance of the pending changes view
         /// </summary>
-        private readonly System.Threading.CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
+        private readonly System.Threading.CancellationTokenSource cancelProcessMessages = new CancellationTokenSource();
 
         /// <summary>
         /// Instance of the pending changes view
@@ -43,7 +43,7 @@ namespace GitScc.Blinkbox
         /// </summary>
         public NotificationService()
         {
-            this.messageTask = new System.Threading.Tasks.TaskFactory().StartNew(this.ProcessMessages, this.cancelTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            this.messageTask = new System.Threading.Tasks.TaskFactory().StartNew(this.ProcessMessages, this.cancelProcessMessages.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace GitScc.Blinkbox
         /// </summary>
         public void Dispose()
         {
-            this.cancelTokenSource.Cancel();
+            this.cancelProcessMessages.Cancel();
         }
 
         /// <summary>

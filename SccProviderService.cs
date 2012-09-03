@@ -944,6 +944,11 @@ Note: you will need to click 'Show All Files' in solution explorer to see the fi
                     nextTimeRefresh = DateTime.Now;
                 }
             }
+
+            if (this.OnRefresh != null)
+            {
+                this.OnRefresh.Invoke(this, new EventArgs());
+            }
         }
 
         public void UpdateNodesGlyphs()
