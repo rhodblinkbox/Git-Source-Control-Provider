@@ -83,8 +83,8 @@ namespace GitScc.UI
 
                 window.DialogResult = true;
 
-                var sccProvider = BasicSccProvider.GetServiceEx<BasicSccProvider>();
-                sccProvider.TriggerOnCheckout(sender, e);
+                var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
+                sccProvider.Refresh(true);
             }
             catch (Exception ex)
             {

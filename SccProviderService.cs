@@ -17,6 +17,8 @@ using System.Windows.Threading;
 
 namespace GitScc
 {
+    using GitScc.Blinkbox.Data;
+
     [Guid("C4128D99-1000-41D1-A6C3-704E6C1A3DE2")]
     public partial class SccProviderService : IVsSccProvider,
         IVsSccManager2,
@@ -932,7 +934,7 @@ Note: you will need to click 'Show All Files' in solution explorer to see the fi
         internal DateTime lastTimeRefresh = DateTime.Now.AddDays(-1);
         internal DateTime nextTimeRefresh = DateTime.Now;
 
-        internal void Refresh()
+        public void Refresh(bool updateUI = false)
         {
             if (!NoRefresh)
             {
@@ -947,7 +949,7 @@ Note: you will need to click 'Show All Files' in solution explorer to see the fi
 
             if (this.OnRefresh != null)
             {
-                this.OnRefresh.Invoke(this, new EventArgs());
+                this.OnRefresh.Invoke(this, new RefreshArgs(updateUI));
             }
         }
 

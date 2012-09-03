@@ -340,11 +340,7 @@ namespace GitScc
         private void OnRefreshCommand(object sender, EventArgs e)
         {
             sccService.NoRefresh = false;
-            sccService.Refresh();
-            if (this.OnRefreshButton != null)
-            {
-                this.OnRefreshButton(sender, e);
-            }
+            sccService.Refresh(true);
         }
 
         private void OnCompareCommand(object sender, EventArgs e)
@@ -492,11 +488,13 @@ namespace GitScc
         private void OnCommitCommand(object sender, EventArgs e)
         {
             GetToolWindowPane<PendingChangesToolWindow>().OnCommitCommand();
+            this.sccService.Refresh(true);
         }
 
         private void OnAmendCommitCommand(object sender, EventArgs e)
         {
             GetToolWindowPane<PendingChangesToolWindow>().OnAmendCommitCommand();
+            this.sccService.Refresh(true);
         }
 
         #endregion

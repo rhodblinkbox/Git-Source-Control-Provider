@@ -58,9 +58,7 @@ namespace GitScc.Blinkbox
             this.sccProvider = sccProvider;
             this.notificationService = notificationService;
             this.sccHelper = sccHelper;
-            //// this.sccProvider.OnRefresh += (s, e) => this.RefreshTfsStatus();
-            basicSccProvider.OnRefreshButton += (s, e) => this.UpdateTfsStatus();
-            basicSccProvider.OnCheckout += (s, e) => this.UpdateTfsStatus();
+            this.sccProvider.OnRefresh += (s, e) => this.RefreshTfsStatus(e.ForceUpdate);
         }
 
         /// <summary>
@@ -104,7 +102,7 @@ namespace GitScc.Blinkbox
                 {
                     if (t.Exception != null)
                     {
-                        NotificationService.DisplayException(t.Exception, operation + " failed");
+                        NotificationService.DisplayException(t.Exception.Flatten().InnerException, operation + " failed");
                     }
                 });
 
@@ -135,6 +133,8 @@ namespace GitScc.Blinkbox
                     SccHelperService.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait: true);
 
                     this.CommitIfRequired();
+
+                    this.sccProvider.Refresh(true);
                 };
 
             this.RunAsync(action, OperationName);
@@ -228,6 +228,8 @@ namespace GitScc.Blinkbox
 
                     // Checkin from tfs-merge branch
                     SccHelperService.RunGitTfs("checkintool");
+
+                    this.sccProvider.Refresh(true);
                 };
 
             this.RunAsync(action, OperationName).ContinueWith(t => this.CancelReview());
@@ -268,9 +270,10 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Updates the TFS status and displays in the pending changes window.
         /// </summary>
-        public void RefreshTfsStatus()
+        /// <param name="forceUpdate">if set to <c>true</c> [force update].</param>
+        public void RefreshTfsStatus(bool forceUpdate)
         {
-            if (this.sccProvider.IsSolutionGitTfsControlled() && DateTime.Now.Subtract(this.lastTfsFetch).Minutes > 0)
+            if (this.sccProvider.IsSolutionGitTfsControlled() && (forceUpdate || DateTime.Now.Subtract(this.lastTfsFetch).Minutes > 0))
             {
                 this.UpdateTfsStatus();
             }

@@ -66,16 +66,6 @@ namespace GitScc
         private DevelopmentService developmentService;
 
         /// <summary>
-        /// Occurs when a checkout occurs.
-        /// </summary>
-        public event EventHandler OnCheckout;
-
-        /// <summary>
-        /// Occurs when the refresh button is clicked.
-        /// </summary>
-        public event EventHandler OnRefreshButton; 
-
-        /// <summary>
         /// Registers a service.
         /// </summary>
         /// <typeparam name="T">The thye of the service to register.</typeparam>
@@ -88,19 +78,6 @@ namespace GitScc
             }
 
             ((IServiceContainer)_SccProvider).AddService(typeof(T), instance, false);
-        }
-
-        /// <summary>
-        /// Triggers the on checkout event.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        public void TriggerOnCheckout(object sender, EventArgs e)
-        {
-            if (this.OnCheckout != null)
-            {
-                this.OnCheckout(sender, e);
-            }
         }
 
         /// <summary>

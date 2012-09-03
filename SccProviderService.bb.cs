@@ -13,6 +13,8 @@ namespace GitScc
     using System.IO;
     using System.Runtime.InteropServices;
 
+    using GitScc.Blinkbox.Data;
+
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.Shell.Interop;
 
@@ -29,7 +31,7 @@ namespace GitScc
         /// <summary>
         /// Occurs when the source control provider refreshes.
         /// </summary>
-        public event EventHandler OnRefresh;
+        public event EventHandler<RefreshArgs> OnRefresh;
 
         /// <summary>
         /// Gets a value indicating whether a solution is oen].
