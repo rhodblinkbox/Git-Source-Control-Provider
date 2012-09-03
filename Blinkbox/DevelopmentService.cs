@@ -7,6 +7,7 @@
 namespace GitScc.Blinkbox
 {
     using System;
+    using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -328,7 +329,14 @@ namespace GitScc.Blinkbox
         {
             if (!this.sccHelper.WorkingDirectoryClean() || this.sccHelper.IsMerging())
             {
-                this.sccHelper.RunTortoise("commit");
+                if (File.Exists(GitSccOptions.Current.TortoiseGitPath))
+                {
+                    this.sccHelper.RunTortoise("commit");
+                }
+                else
+                {
+                    NotificationService.DisplayError("Manual commit required", "The latest changes could not be automatically merged, possibly due to conflicts. Please commit manually.");
+                }
             }
         }
     }
