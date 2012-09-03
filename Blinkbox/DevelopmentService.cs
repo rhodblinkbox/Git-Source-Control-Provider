@@ -247,19 +247,22 @@ namespace GitScc.Blinkbox
         /// </summary>
         public void UpdateTfsStatus()
         {
-            Action update = () =>
-                {
-                    this.lastTfsFetch = DateTime.Now;
-                    this.FetchFromTfs(silent: true);
-                    var aheadBehind = SccHelperService.BranchAheadOrBehind(this.sccHelper.GetCurrentBranch(), BlinkboxSccOptions.Current.TfsRemoteBranch);
-                    var pendingChanges = BasicSccProvider.GetServiceEx<PendingChangesView>();
-                    if (pendingChanges != null)
+            if (!this.sccHelper.IsMerging())
+            {
+                Action update = () =>
                     {
-                        pendingChanges.UpdateTfsStatus(aheadBehind);
-                    }
-                };
+                        this.lastTfsFetch = DateTime.Now;
+                        this.FetchFromTfs(silent: true);
+                        var aheadBehind = SccHelperService.BranchAheadOrBehind(this.sccHelper.GetCurrentBranch(), BlinkboxSccOptions.Current.TfsRemoteBranch);
+                        var pendingChanges = BasicSccProvider.GetServiceEx<PendingChangesView>();
+                        if (pendingChanges != null)
+                        {
+                            pendingChanges.UpdateTfsStatus(aheadBehind);
+                        }
+                    };
 
-            this.RunAsync(update, "UpdateTfsStatus");
+                this.RunAsync(update, "UpdateTfsStatus");
+            }
         }
 
         /// <summary>
@@ -324,7 +327,7 @@ namespace GitScc.Blinkbox
         /// </summary>
         private void CommitIfRequired()
         {
-            if (!this.sccHelper.WorkingDirectoryClean() || this.sccHelper.Tracker.IsInTheMiddleOfMerge)
+            if (!this.sccHelper.WorkingDirectoryClean() || this.sccHelper.IsMerging())
             {
                 this.sccHelper.RunTortoise("commit");
             }

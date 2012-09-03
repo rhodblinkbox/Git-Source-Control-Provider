@@ -37,7 +37,7 @@ namespace GitScc.Blinkbox
         /// Gets the tracker.
         /// </summary>
         /// <value>The tracker.</value>
-        internal GitFileStatusTracker Tracker
+        private GitFileStatusTracker Tracker
         {
             get
             {
@@ -166,6 +166,17 @@ namespace GitScc.Blinkbox
         {
             var diffCommand = SccHelperService.RunGitCommand(string.Format("diff {0} \"{1}\"", revision, fileName), silent: true);
             return diffCommand.Output;
+        }
+
+        /// <summary>
+        /// Determines whether this branch is merging.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> if a merge is in progress
+        /// </returns>
+        public bool IsMerging()
+        {
+            return this.Tracker.IsInTheMiddleOfMerge;
         }
 
         /// <summary>
