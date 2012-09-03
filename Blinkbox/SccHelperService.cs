@@ -118,12 +118,14 @@ namespace GitScc.Blinkbox
         /// </summary>
         /// <param name="command">The command.</param>
         /// <param name="wait">waits for the process to exit before continuing execution.</param>
+        /// <param name="silent">if set to <c>true</c> [silent].</param>
         /// <returns>the output from the git tfs command</returns>
-        public static string RunGitTfs(string command, bool wait = false)
+        public static string RunGitTfs(string command, bool wait = false, bool silent = false)
         {
             var gitTfsCommand = new SccCommand("cmd.exe", "/k git tfs " + command)
                 {
-                    WaitUntilFinished = wait
+                    WaitUntilFinished = wait,
+                    Silent = silent
                 };
 
             gitTfsCommand.Start();

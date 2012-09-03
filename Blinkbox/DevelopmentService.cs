@@ -129,7 +129,7 @@ namespace GitScc.Blinkbox
                     }
 
                     // Pull down changes into tfs/default remote branch, and tfs_merge branch
-                    SccHelperService.RunGitTfs("fetch");
+                    this.FetchFromTfs();
 
                     // Merge without commit from tfs-merge to current branch. 
                     SccHelperService.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait: true);
@@ -250,7 +250,7 @@ namespace GitScc.Blinkbox
             Action update = () =>
                 {
                     this.lastTfsFetch = DateTime.Now;
-                    this.FetchFromTfs();
+                    this.FetchFromTfs(silent: true);
                     var aheadBehind = SccHelperService.BranchAheadOrBehind(this.sccHelper.GetCurrentBranch(), BlinkboxSccOptions.Current.TfsRemoteBranch);
                     var pendingChanges = BasicSccProvider.GetServiceEx<PendingChangesView>();
                     if (pendingChanges != null)
@@ -295,7 +295,7 @@ namespace GitScc.Blinkbox
         /// <returns> true if the current branch has the latest revisions from tfs.</returns>
         private bool CheckLatestFromTfs(string currentBranch)
         {
-            this.FetchFromTfs();
+            this.FetchFromTfs(silent: true);
             var aheadBehind = SccHelperService.BranchAheadOrBehind(currentBranch, BlinkboxSccOptions.Current.TfsRemoteBranch);
             if (aheadBehind.Behind > 0)
             {
@@ -313,9 +313,10 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Fetches from TFS into the tfs/default remote branch.
         /// </summary>
-        private void FetchFromTfs()
+        /// <param name="silent">if set to <c>true</c> [silent].</param>
+        private void FetchFromTfs(bool silent = false)
         {
-            SccHelperService.RunGitTfs("fetch", wait: true);
+            SccHelperService.RunGitTfs("fetch", wait: true, silent: silent);
         }
 
         /// <summary>

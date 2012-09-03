@@ -95,8 +95,9 @@ namespace GitScc.Blinkbox
                 if (!this.Silent)
                 {
                     this.notificationService.AddMessage(this.Output);
-                    this.notificationService.AddMessage(this.Error);
                 }
+
+                this.notificationService.AddMessage(this.Error);
             }
             catch (Exception e)
             {
