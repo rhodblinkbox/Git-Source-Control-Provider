@@ -214,25 +214,22 @@ namespace GitScc.Blinkbox
         {
             const string OperationName = "Check in";
 
-            Action action = () =>
-                {
-                    this.notificationService.ClearMessages();
-                    this.notificationService.NewSection("Start " + OperationName);
+            this.notificationService.ClearMessages();
+            this.notificationService.NewSection("Start " + OperationName);
 
-                    var currentBranch = this.sccHelper.GetCurrentBranch();
+            var currentBranch = this.sccHelper.GetCurrentBranch();
 
-                    if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
-                    {
-                        return;
-                    }
+            if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
+            {
+                return;
+            }
 
-                    // Checkin from tfs-merge branch
-                    SccHelperService.RunGitTfs("checkintool");
+            // Checkin from tfs-merge branch
+            SccHelperService.RunGitTfs("checkintool");
 
-                    this.sccProvider.Refresh(true);
-                };
+            this.CancelReview();
 
-            this.RunAsync(action, OperationName).ContinueWith(t => this.CancelReview());
+            this.RunAsync(() => this.sccProvider.Refresh(true), OperationName);
         }
 
         /// <summary>
