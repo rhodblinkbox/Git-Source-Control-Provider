@@ -216,7 +216,7 @@ namespace GitScc.Blinkbox
         /// <returns>The working directory</returns>
         public bool WorkingDirectoryClean()
         {
-            return !this.Tracker.ChangedFiles.Any();
+            return !this.Tracker.ChangedFiles.Any(); 
         }
 
         /// <summary>
@@ -230,12 +230,12 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
-        /// Gets the current branch.
+        /// Gets the current branch clean of any operation status.
         /// </summary>
         /// <returns>The branch</returns>
         public string GetCurrentBranch()
         {
-            return this.Tracker.CurrentBranch;
+            return this.sccProvider.CleanBranchName(this.Tracker.CurrentBranch);
         }
 
         /// <summary>
@@ -245,7 +245,7 @@ namespace GitScc.Blinkbox
         /// <returns>the hash of the latest revision.</returns>
         public string GetHeadRevisionHash(string branchName = null)
         {
-            branchName = branchName ?? this.Tracker.CurrentBranch;
+            branchName = branchName ?? this.GetCurrentBranch();
             var revision = RunGitCommand("rev-parse " + branchName, wait: true, silent: true).Output;
             return revision.Replace("\n", string.Empty); // Git adds a return to the revision
         }

@@ -40,6 +40,17 @@ namespace GitScc
         public bool SolutionOpen { get; private set; }
 
         /// <summary>
+        /// Returns true if a merge, patch, bisect or rebase operation is in progress.
+        /// This are treated as external operations and are not implemented by the plugin. 
+        /// </summary>
+        /// <returns>true if an external git operation is in progress. </returns>
+        public bool OperationInProgress()
+        {
+            return this.CurrentTracker.IsInTheMiddleOfBisect || this.CurrentTracker.IsInTheMiddleOfMerge || this.CurrentTracker.IsInTheMiddleOfPatch || this.CurrentTracker.IsInTheMiddleOfRebase
+                   || this.CurrentTracker.IsInTheMiddleOfRebaseI;
+        }
+
+        /// <summary>
         /// Gets the solution directory.
         /// </summary>
         /// <returns>the path to the solution.</returns>
@@ -100,6 +111,23 @@ namespace GitScc
                 this.CurrentTracker.SaveFileFromRepository(fileName, tempFile, branchName);
                 this._sccProvider.RunDiffCommand(tempFile, fileName);
             }
+        }
+
+        /// <summary>
+        /// Removes the suffix applied to branches when a merge, bisect, patch or rebase operation is in progress.
+        /// </summary>
+        /// <param name="branchName">Name of the branch.</param>
+        /// <returns>the clean branchnameas used by git.</returns>
+        public string CleanBranchName(string branchName)
+        {
+            if (this.OperationInProgress())
+            {
+                // the plugin appends an operation code to the branch name - remove it.
+                var parts = branchName.Split(new string[] { " | ", "|" }, StringSplitOptions.RemoveEmptyEntries);
+                return parts[0];
+            }
+
+            return branchName;
         }
 
         #region IVsSolutionEvents interface functions

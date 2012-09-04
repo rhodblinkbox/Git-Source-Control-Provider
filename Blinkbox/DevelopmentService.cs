@@ -246,22 +246,19 @@ namespace GitScc.Blinkbox
         /// </summary>
         public void UpdateTfsStatus()
         {
-            if (!this.sccHelper.IsMerging())
-            {
-                Action update = () =>
+            Action update = () =>
+                {
+                    this.lastTfsFetch = DateTime.Now;
+                    this.FetchFromTfs(silent: true);
+                    var aheadBehind = SccHelperService.BranchAheadOrBehind(this.sccHelper.GetCurrentBranch(), BlinkboxSccOptions.Current.TfsRemoteBranch);
+                    var pendingChanges = BasicSccProvider.GetServiceEx<PendingChangesView>();
+                    if (pendingChanges != null)
                     {
-                        this.lastTfsFetch = DateTime.Now;
-                        this.FetchFromTfs(silent: true);
-                        var aheadBehind = SccHelperService.BranchAheadOrBehind(this.sccHelper.GetCurrentBranch(), BlinkboxSccOptions.Current.TfsRemoteBranch);
-                        var pendingChanges = BasicSccProvider.GetServiceEx<PendingChangesView>();
-                        if (pendingChanges != null)
-                        {
-                            pendingChanges.UpdateTfsStatus(aheadBehind);
-                        }
-                    };
+                        pendingChanges.UpdateTfsStatus(aheadBehind);
+                    }
+                };
 
-                this.RunAsync(update, "UpdateTfsStatus");
-            }
+            this.RunAsync(update, "UpdateTfsStatus");
         }
 
         /// <summary>
@@ -277,7 +274,7 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
-        /// Runs initial checks
+        /// Checks whether the working directory has any unchanged files or is in the middle of a merge. 
         /// </summary>
         /// <returns>true if successful</returns>
         private bool CheckWorkingDirectoryClean()
@@ -285,6 +282,12 @@ namespace GitScc.Blinkbox
             if (!this.sccHelper.WorkingDirectoryClean())
             {
                 NotificationService.DisplayError("Cannot proceed", "There are uncommitted changes in your working directory");
+                return false;
+            }
+
+            if (this.sccProvider.OperationInProgress())
+            {
+                NotificationService.DisplayError("Cannot proceed", "A merge, bisect, rebase or patch operation is currently in progress. Please complete this operation before continuing");
                 return false;
             }
 
