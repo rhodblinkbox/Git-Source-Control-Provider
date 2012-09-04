@@ -567,11 +567,14 @@ namespace GitScc
                         else
                         {
                             IVsHierarchy hierarchy = (IVsHierarchy)Marshal.GetObjectForIUnknown(hierarchyPtr);
-                            // Single item selection
-                            VSITEMSELECTION vsItemSelection;
-                            vsItemSelection.pHier = hierarchy;
-                            vsItemSelection.itemid = itemid;
-                            selectedNodes.Add(vsItemSelection);
+                            if (hierarchy != null)
+                            {
+                                // Single item selection
+                                VSITEMSELECTION vsItemSelection;
+                                vsItemSelection.pHier = hierarchy;
+                                vsItemSelection.itemid = itemid;
+                                selectedNodes.Add(vsItemSelection);
+                            }
                         }
                     }
                 }
