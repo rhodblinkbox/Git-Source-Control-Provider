@@ -375,6 +375,7 @@ namespace GitScc
             dte.Windows.Item(EnvDTE.Constants.vsWindowKindSolutionExplorer).Caption = message;
         }
 
+
         /// <summary>
         /// Returns the filename of the solution
         /// </summary>
@@ -382,7 +383,7 @@ namespace GitScc
         {
             IVsSolution sol = (IVsSolution)_sccProvider.GetService(typeof(SVsSolution));
             string solutionDirectory, solutionFile, solutionUserOptions;
-            if (sol.GetSolutionInfo(out solutionDirectory, out solutionFile, out solutionUserOptions) == VSConstants.S_OK)
+            if (sol != null && sol.GetSolutionInfo(out solutionDirectory, out solutionFile, out solutionUserOptions) == VSConstants.S_OK)
             {
                 return solutionFile;
             }

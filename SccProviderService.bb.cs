@@ -46,8 +46,9 @@ namespace GitScc
         /// <returns>true if an external git operation is in progress. </returns>
         public bool OperationInProgress()
         {
-            return this.CurrentTracker.IsInTheMiddleOfBisect || this.CurrentTracker.IsInTheMiddleOfMerge || this.CurrentTracker.IsInTheMiddleOfPatch || this.CurrentTracker.IsInTheMiddleOfRebase
-                   || this.CurrentTracker.IsInTheMiddleOfRebaseI;
+            var tracker = this.GetSolutionTracker();
+            return tracker.IsInTheMiddleOfBisect || tracker.IsInTheMiddleOfMerge || tracker.IsInTheMiddleOfPatch || tracker.IsInTheMiddleOfRebase
+                   || tracker.IsInTheMiddleOfRebaseI;
         }
 
         /// <summary>
