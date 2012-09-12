@@ -41,7 +41,7 @@ namespace GitScc.Blinkbox
         {
             get
             {
-                return this.sccProvider.GetSolutionTracker();
+                return this.sccProvider.GetSolutionTracker() ?? this.sccProvider.CurrentTracker;
             }
         }
 
@@ -198,7 +198,11 @@ namespace GitScc.Blinkbox
         /// <returns>The working directory</returns>
         public string GetWorkingDirectory()
         {
-            return this.Tracker.GitWorkingDirectory;
+            var directory = this.Tracker == null ? null : this.Tracker.GitWorkingDirectory;
+            directory = !string.IsNullOrEmpty(directory)
+                ? directory
+                : GitFileStatusTracker.GetRepositoryDirectory(this.sccProvider.GetSolutionDirectory());
+            return directory;
         }
 
         /// <summary>
