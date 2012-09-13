@@ -436,6 +436,17 @@
       <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_SOLUTION_SCC"/>
     </CommandPlacement>  
 
+
+    <CommandPlacement guid="guidSccProviderCmdSet" id="icmdSccCommandRefresh" priority="0x0004">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_ITEM_SCC"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidSccProviderCmdSet" id="icmdSccCommandRefresh" priority="0x0004">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_PROJECT_SCC"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidSccProviderCmdSet" id="icmdSccCommandRefresh" priority="0x0004">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_SOLUTION_SCC"/>
+    </CommandPlacement>
+
     <CommandPlacement guid="guidSccProviderCmdSet" id="icmdSccCommandRefresh" priority="0x0008">
       <Parent guid="guidSccProviderCmdSet" id="igrpPendingChangesToolWindowToolbarGroup"/>
     </CommandPlacement>
