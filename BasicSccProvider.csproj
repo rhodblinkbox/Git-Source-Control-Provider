@@ -125,9 +125,6 @@
     <Compile Include="SccProviderService.bb.cs">
       <DependentUpon>SccProviderService.cs</DependentUpon>
     </Compile>
-    <Compile Include="PendingChangesToolWindow.bb.cs">
-      <DependentUpon>PendingChangesToolWindow.cs</DependentUpon>
-    </Compile>
     <Compile Include="PendingChangesView.bb.cs">
       <DependentUpon>PendingChangesView.xaml</DependentUpon>
     </Compile>

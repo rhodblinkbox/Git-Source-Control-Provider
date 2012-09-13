@@ -329,7 +329,7 @@ namespace GitScc
                 return true;
         }
 
-        /* Implemented in the blinkbox extensions
+
         internal void Commit()
         {
             service.NoRefresh = true;
@@ -352,7 +352,6 @@ namespace GitScc
             //service.lastTimeRefresh = DateTime.Now;
             service.NodesGlyphsDirty = true; // force refresh
         }
-        */
 
         internal void AmendCommit()
         {
