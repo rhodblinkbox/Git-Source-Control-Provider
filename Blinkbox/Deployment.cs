@@ -79,7 +79,10 @@ namespace GitScc.Blinkbox
                 var globalProperties = new Dictionary<string, string>
                     {
                         { BlinkboxSccOptions.Current.CommitGuidPropertyName, commit.Hash }, 
-                        { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment }
+                        { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment },
+                        { "TestSwarmUsername", SolutionSettings.Current.TestSwarmUsername },
+                        { "TestSwarmPassword", SolutionSettings.Current.TestSwarmPassword },
+                        { "TestSwarmTags", SolutionSettings.Current.TestSwarmTags }
                     };
                 var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
 

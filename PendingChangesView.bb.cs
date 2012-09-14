@@ -38,6 +38,11 @@ namespace GitScc
         private DevelopmentService developmentServiceInstance = null;
 
         /// <summary>
+        /// instance of the <see cref="SccProviderService"/>
+        /// </summary>
+        private SccProviderService sccProviderInstance = null;
+
+        /// <summary>
         /// Gets the development service.
         /// </summary>
         /// <value>The development service.</value>
@@ -51,12 +56,59 @@ namespace GitScc
         }
 
         /// <summary>
+        /// Gets the development service.
+        /// </summary>
+        /// <value>The development service.</value>
+        private SccProviderService SccProvider
+        {
+            get
+            {
+                this.sccProviderInstance = this.sccProviderInstance ?? BasicSccProvider.GetServiceEx<SccProviderService>();
+                return this.sccProviderInstance;
+            }
+        }
+
+        /// <summary>
+        /// Gets the solution settings.
+        /// </summary>
+        /// <value>The solution settings.</value>
+        public SolutionSettings solutionSettings
+        {
+            get
+            {
+                return this.SccProvider.SolutionOpen ? SolutionSettings.Current : null;
+            }
+        }
+
+        /// <summary>
         /// Initialises the blinkbox extensions.
         /// </summary>
         public void InitialiseBlinkboxExtensions()
         {
+            // Allow binding to local properties
+            DataContext = this;
+
             // Register this component as a service so that we can use it externally. 
             BasicSccProvider.RegisterService(this);
+            var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
+            if (sccProvider != null)
+            {
+                sccProvider.OnSolutionOpen += (s, a) => this.PopulateDeployTab();
+            }
+        }
+
+        private void PopulateDeployTab()
+        {
+            if (SolutionSettings.Current != null)
+            {
+                Action action = () =>
+                    {
+                        testSwarmPassword.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
+                        testSwarmTags.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
+                        testSwarmUsername.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
+                    };
+                this.Dispatcher.BeginInvoke(action, DispatcherPriority.ApplicationIdle);
+            }
         }
 
         /// <summary>

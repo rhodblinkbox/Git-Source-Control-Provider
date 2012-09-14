@@ -17,7 +17,7 @@ namespace GitScc.Blinkbox.Options
     /// SccOptions specific to the blinkbox implementation
     /// </summary>
     [Serializable]
-    public class BlinkboxSccOptions
+    public class BlinkboxSccOptions : SettingsBase
     {
         /// <summary>
         /// The name of the tfs remote branch
@@ -32,20 +32,12 @@ namespace GitScc.Blinkbox.Options
         /// <summary>
         /// The name of the config file
         /// </summary>
-        private static string configFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "blinkboxScc.config");
+        private static string configFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "blinkboxScc.config");
         
         /// <summary>
         /// private instance of BlinkboxSccOptions.
         /// </summary>
         private static BlinkboxSccOptions sccOptions;
-
-        /// <summary>
-        /// Prevents a default instance of the <see cref="BlinkboxSccOptions"/> class from being created. 
-        /// Initializes a new instance of the <see cref="BlinkboxSccOptions"/> class.
-        /// </summary>
-        private BlinkboxSccOptions()
-        {
-        }
 
         /// <summary>
         /// Gets Current.
@@ -56,7 +48,7 @@ namespace GitScc.Blinkbox.Options
             {
                 if (sccOptions == null)
                 {
-                    sccOptions = LoadFromConfig();
+                    sccOptions = SettingsBase.LoadFromConfig<BlinkboxSccOptions>(configFileName);
                 }
 
                 return sccOptions;
@@ -114,47 +106,14 @@ namespace GitScc.Blinkbox.Options
         }
 
         /// <summary>
-        /// Loads settings from a config file.
-        /// </summary>
-        /// <returns>a BlinkboxSccOptions instance.</returns>
-        internal static BlinkboxSccOptions LoadFromConfig()
-        {
-            BlinkboxSccOptions options = null;
-            
-            if (File.Exists(configFileName))
-            {
-                try
-                {
-                    var serializer = new XmlSerializer(typeof(BlinkboxSccOptions));
-                    using (TextReader tr = new StreamReader(configFileName))
-                    {
-                        options = (BlinkboxSccOptions)serializer.Deserialize(tr);
-                    }
-                }
-                catch (Exception)
-                {
-                }
-            }
-
-            if (options == null)
-            {
-                options = new BlinkboxSccOptions();
-            }
-
-            options.Init();
-
-            return options;
-        }
-
-        /// <summary>
         /// Inits this instance.
         /// </summary>
-        private void Init()
+        protected override void Init()
         {
             if (string.IsNullOrEmpty(this.GitTfsPath))
             {
                 var possibleLocations = new string[] { @"C:\Program Files\Git-tfs\git-tfs.exe", @"C:\Program Files (x86)\Git-tfs\git-tfs.exe", };
-                this.GitTfsPath = this.TryFindFile(possibleLocations);
+                this.GitTfsPath = SettingsBase.TryFindFile(possibleLocations);
             }
 
             this.PostCommitDeployProjectName = string.IsNullOrEmpty(this.PostCommitDeployProjectName) ? "postCommitDeploy.proj" : this.PostCommitDeployProjectName;
@@ -162,36 +121,6 @@ namespace GitScc.Blinkbox.Options
             this.CommitGuidPropertyName = string.IsNullOrEmpty(this.CommitGuidPropertyName) ? "CommitGuid" : this.CommitGuidPropertyName;
             this.CommitCommentPropertyName = string.IsNullOrEmpty(this.CommitCommentPropertyName) ? "CommitComment" : this.CommitCommentPropertyName;
             this.TfsRemoteBranch = string.IsNullOrEmpty(this.TfsRemoteBranch) ? "remotes/tfs/default" : this.TfsRemoteBranch;
-        }
-
-        /// <summary>
-        /// Saves the config file.
-        /// </summary>
-        internal void SaveConfig()
-        {
-            var serialiser = new XmlSerializer(typeof(BlinkboxSccOptions));
-            using (TextWriter tw = new StreamWriter(configFileName))
-            {
-                serialiser.Serialize(tw, this);
-            }
-        }
-
-        /// <summary>
-        /// Tries the find file.
-        /// </summary>
-        /// <param name="paths">The paths.</param>
-        /// <returns>the path if the file is found.</returns>
-        private string TryFindFile(string[] paths)
-        {
-            foreach (var path in paths)
-            {
-                if (File.Exists(path))
-                {
-                    return path;
-                }
-            }
-
-            return null;
         }
     }
 }

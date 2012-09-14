@@ -98,6 +98,8 @@
     </Compile>
     <Compile Include="Blinkbox\Data\AheadBehind.cs" />
     <Compile Include="Blinkbox\Data\CommandException.cs" />
+    <Compile Include="Blinkbox\Options\SettingsBase.cs" />
+    <Compile Include="Blinkbox\Options\SolutionSettings.cs" />
     <Compile Include="Blinkbox\Data\RefreshArgs.cs" />
     <Compile Include="CommandId.bb.cs">
       <DependentUpon>CommandId.cs</DependentUpon>
@@ -250,7 +252,9 @@
       <Name>Sharpen</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Blinkbox\UI\" />
+  </ItemGroup>
   <PropertyGroup>
     <!--
     To specify a different registry root to register your package, uncomment the TargetRegistryRoot

@@ -612,7 +612,7 @@ Note: if the file is included project, you need to delete the file from project 
                 {
                     if (string.Compare(item.FileNames[0], fileName, true) == 0)
                     {
-                        dynamic  wnd = item.Open(EnvDTE.Constants.vsViewKindPrimary);
+                        dynamic wnd = item.Open(EnvDTE.Constants.vsViewKindPrimary);
                         wnd.Activate();
                         opened = true;
                         break;
@@ -623,7 +623,6 @@ Note: if the file is included project, you need to delete the file from project 
 
             if (!opened) dte.ItemOperations.OpenFile(fileName);
         }
-
     }
 
     public static class ExtHelper

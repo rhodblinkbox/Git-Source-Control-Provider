@@ -34,6 +34,11 @@ namespace GitScc
         public event EventHandler<RefreshArgs> OnRefresh;
 
         /// <summary>
+        /// Occurs when the source control provider refreshes.
+        /// </summary>
+        public event EventHandler<EventArgs> OnSolutionOpen;
+
+        /// <summary>
         /// Gets a value indicating whether a solution is oen].
         /// </summary>
         /// <value><c>true</c> if [solution open]; otherwise, <c>false</c>.</value>
@@ -155,6 +160,10 @@ namespace GitScc
             }
 
             this.Refresh();
+            if (this.OnSolutionOpen != null)
+            {
+                this.OnSolutionOpen(this, new EventArgs());
+            }
             return VSConstants.S_OK;
         }
 
