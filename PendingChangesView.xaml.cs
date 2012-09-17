@@ -598,7 +598,7 @@ Note: if the file is included project, you need to delete the file from project 
             });
         }
 
-        private void OpenFile(string fileName)
+        internal void OpenFile(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName)) return;
 

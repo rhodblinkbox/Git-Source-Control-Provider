@@ -57,17 +57,18 @@ namespace GitScc.Blinkbox.UI
 
         public void Commit()
         {
-            
+            pendingChangesView.Commit();
         }
 
         public void AmendCommit()
         {
-            
+            pendingChangesView.AmendCommit();
         }
 
         public void RefreshPendingChanges(GitFileStatusTracker tracker)
         {
             this.tracker = tracker;
+            pendingChangesView.Refresh(tracker);
         }
 
         public GitFileStatusTracker GetTracker()
@@ -77,7 +78,7 @@ namespace GitScc.Blinkbox.UI
 
         public void OpenFile(string fileName)
         {
-            // Call pending changes version
+            pendingChangesView.OpenFile(fileName);
         }
 
         public void Review(List<GitFile> changedFiles, string branchName = null)

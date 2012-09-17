@@ -10,16 +10,9 @@
 namespace GitScc
 {
     using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Windows.Controls;
-    using System.Windows.Data;
     using System.Windows.Input;
-    using System.Windows.Threading;
 
     using GitScc.Blinkbox;
-    using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
 
     /// <summary>
