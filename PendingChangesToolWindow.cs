@@ -69,12 +69,12 @@ namespace GitScc
 
         internal void OnCommitCommand()
         {
-            ((PendingChangesView)control).Commit();
+            ((BBPendingChanges)control).Commit();
         }
 
         internal void OnAmendCommitCommand()
         {
-            ((PendingChangesView)control).AmendCommit();
+            ((BBPendingChanges)control).AmendCommit();
         }
 
         //private void OnRefreshCommand(object sender, EventArgs e)
@@ -98,7 +98,7 @@ namespace GitScc
 
                 if (!GitSccOptions.Current.DisableAutoRefresh || force || tracker == null)
                 {
-                    ((PendingChangesView)control).Refresh(tracker);
+                    ((BBPendingChanges)control).RefreshPendingChanges(tracker);
                 }
                 if (GitSccOptions.Current.DisableAutoRefresh)
                 {

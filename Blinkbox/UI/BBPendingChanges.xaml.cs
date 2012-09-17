@@ -23,5 +23,20 @@ namespace GitScc.Blinkbox.UI
         {
             InitializeComponent();
         }
+
+        public void Commit()
+        {
+            
+        }
+
+        public void AmendCommit()
+        {
+            
+        }
+
+        public void RefreshPendingChanges(GitFileStatusTracker tracker)
+        {
+            
+        }
     }
 }
