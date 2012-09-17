@@ -104,6 +104,9 @@
     <Compile Include="Blinkbox\UI\BBPendingChanges.xaml.cs">
       <DependentUpon>BBPendingChanges.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Blinkbox\UI\deployTab.xaml.cs">
+      <DependentUpon>deployTab.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Blinkbox\UI\ReviewTab.xaml.cs">
       <DependentUpon>ReviewTab.xaml</DependentUpon>
     </Compile>
@@ -220,6 +223,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Blinkbox\UI\BBPendingChanges.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Blinkbox\UI\deployTab.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
