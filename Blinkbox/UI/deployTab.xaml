@@ -5,7 +5,35 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
-            
+    <Grid Name="deployTabGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="130" />
+            <ColumnDefinition Width="126" />
+            <ColumnDefinition Width="668" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="29" />
+            <RowDefinition Height="29" />
+            <RowDefinition Height="29" />
+            <RowDefinition Height="250*" />
+        </Grid.RowDefinitions>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="#FFC5E8F8" Offset="1" />
+                <GradientStop Color="White" Offset="0" />
+            </LinearGradientBrush>
+        </Grid.Background>
+        <Label Name="deployTabTestSwarmUsernameLabel" Content="TestSwarm username:" Grid.Row="0"  />
+        <Label Name="deployTabTestSwarmPasswordLabel" Content="TestSwarm password:" Grid.Row="1" />
+        <Label Name="deployTabTestSwarmTagsLabel" Content="TestSwarm tags:" Grid.Row="2" />
+
+        <TextBox Name="testSwarmUsername" Grid.Row="0" Grid.Column="1" 
+                             Text="{Binding Path=solutionSettings.TestSwarmUsername}" />
+        <TextBox Name="testSwarmPassword"  Grid.Row="1" Grid.Column="1" 
+                             Text="{Binding Path=solutionSettings.TestSwarmPassword}" />
+        <TextBox Name="testSwarmTags" Grid.Row="2" Grid.Column="1" 
+                             Text="{Binding Path=solutionSettings.TestSwarmTags}" />
     </Grid>
 </UserControl>
