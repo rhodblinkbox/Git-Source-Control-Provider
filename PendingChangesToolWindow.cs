@@ -8,6 +8,8 @@ using System.Windows.Controls;
 
 namespace GitScc
 {
+    using GitScc.Blinkbox.UI;
+
     /// <summary>
     /// Summary description for SccProviderToolWindow.
     /// </summary>
@@ -33,7 +35,7 @@ namespace GitScc
         protected override void Initialize()
         {
             base.Initialize();
-            control = new PendingChangesView();
+            control = new BBPendingChanges();
 
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
