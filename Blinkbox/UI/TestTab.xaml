@@ -1,0 +1,56 @@
+﻿<UserControl x:Class="GitScc.Blinkbox.UI.TestTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="130" />
+            <ColumnDefinition Width="126" />
+            <ColumnDefinition Width="668" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="#FFC5E8F8" Offset="1" />
+                <GradientStop Color="White" Offset="0" />
+            </LinearGradientBrush>
+        </Grid.Background>
+        
+        <Button Name="SaveButton" Content="Save" Click="SaveButton_Click" />
+        
+        <Label Content="TestSwarm username:" Grid.Row="1"  />
+        <Label Content="TestSwarm password:" Grid.Row="2" />
+        <Label Content="TestSwarm tags:" Grid.Row="3" />
+        <Label Content="TestSwarm Url:" Grid.Row="4" />
+        <Label Content="Feature Files:" Grid.Row="5" />
+        <Label Content="Browser Sets:" Grid.Row="6" />
+        <Label Content="Runner mode:" Grid.Row="7" />
+
+        <TextBox Name="testSwarmUsername" Grid.Row="1" Grid.Column="1" 
+                             Text="{Binding Path=solutionUserSettings.TestSwarmUsername}" />
+        <TextBox Name="testSwarmPassword"  Grid.Row="2" Grid.Column="1" 
+                             Text="{Binding Path=solutionUserSettings.TestSwarmPassword}" />
+        <TextBox Name="testSwarmTags" Grid.Row="3" Grid.Column="1" 
+                             Text="{Binding Path=solutionUserSettings.TestSwarmTags}" />
+        <TextBox Name="testSwarmUrl" Grid.Row="4" Grid.Column="1" 
+                             Text="{Binding Path=solutionSettings.TestSwarmUrl}" />
+        <TextBox Name="featurePath" Grid.Row="5" Grid.Column="1" 
+                             Text="{Binding Path=solutionSettings.FeaturePath}" />
+        <TextBox Name="browserSets" Grid.Row="6" Grid.Column="1" 
+                             Text="{Binding Path=solutionSettings.TestBrowserSets}" />
+        <TextBox Name="runnerMode" Grid.Row="7" Grid.Column="1" 
+                             Text="{Binding Path=solutionSettings.TestRunnerMode}" />
+    </Grid>
+</UserControl>

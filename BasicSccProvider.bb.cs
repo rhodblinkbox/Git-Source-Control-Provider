@@ -42,7 +42,8 @@ namespace GitScc
             CommandId.icmdPendingChangesAmend,
             CommandId.icmdPendingChangesCommit,
             CommandId.icmdPendingChangesRefresh,
-            CommandId.icmdPendingChangesCommitToBranch
+            CommandId.icmdPendingChangesCommitToBranch,
+            CommandId.SubmitTestButtonId
         };
 
         /// <summary>
@@ -122,9 +123,6 @@ namespace GitScc
                     Action handler = () => currentMenuOption.Handler();
                     this.RegisterCommandWithMenuService(menuService, menuOption.CommandId, (sender, args) => handler());
                 }
-
-                // Commit and test button
-                this.RegisterCommandWithMenuService(menuService, CommandId.BlinkboxDeployId, (sender, args) => this.ReDeploy());
             }
         }
 
@@ -169,6 +167,20 @@ namespace GitScc
                 Name = "Clean Workspace",
                 CommandId = CommandId.GitTfsCleanWorkspacesButtonId,
                 Handler = () => SccHelperService.RunGitTfs("cleanup-workspaces")
+            });
+
+            commands.Add(new GitTfsCommand
+            {
+                Name = "Submit Tests",
+                CommandId = CommandId.SubmitTestButtonId,
+                Handler = () => new Deployment(this).SubmitTests()
+            });
+
+            commands.Add(new GitTfsCommand
+            {
+                Name = "Deploy",
+                CommandId = CommandId.BlinkboxDeployId,
+                Handler = this.ReDeploy
             });
 
             return commands;
@@ -242,6 +254,7 @@ namespace GitScc
                 case CommandId.GitTfsCleanWorkspacesButtonId:
                 case CommandId.GitTfsReviewButtonId:
                 case CommandId.GitTfsCancelReviewButtonId:
+                case CommandId.SubmitTestButtonId:
                 case CommandId.ToolsMenu:
                 case CommandId.ToolsMenuGroup:
 

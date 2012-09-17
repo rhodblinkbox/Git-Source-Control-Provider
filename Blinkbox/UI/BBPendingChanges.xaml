@@ -23,7 +23,17 @@
             </TabItem>
 
             <TabItem Header="Deploy" Name="deployTabItem" IsEnabled="true" ToolTip="Deployment Settings" >
-                <!--<my:deployTab x:Name="deployTab"/>-->
+                <my:deployTab x:Name="deployTab"/>
+            </TabItem>
+
+            <TabItem Header="Test" Name="testTabItem" IsEnabled="true" ToolTip="Test Settings" >
+                
+                <my:TestTab x:Name="testTab" />
+            </TabItem>
+
+            <TabItem Header="Settings" Name="settingsTabItem" IsEnabled="true" ToolTip="Settings" >
+
+                <my:SettingsTab x:Name="settingsTab" />
             </TabItem>
         </TabControl>
         <Label Name="TfsStatusLabel" Height="20" Width="155" 

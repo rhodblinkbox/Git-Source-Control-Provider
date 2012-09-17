@@ -98,6 +98,7 @@
     </Compile>
     <Compile Include="Blinkbox\Data\AheadBehind.cs" />
     <Compile Include="Blinkbox\Data\CommandException.cs" />
+    <Compile Include="Blinkbox\Options\SolutionUserSettings.cs" />
     <Compile Include="Blinkbox\Options\SettingsBase.cs" />
     <Compile Include="Blinkbox\Options\SolutionSettings.cs" />
     <Compile Include="Blinkbox\Data\RefreshArgs.cs" />
@@ -109,6 +110,12 @@
     </Compile>
     <Compile Include="Blinkbox\UI\ReviewTab.xaml.cs">
       <DependentUpon>ReviewTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Blinkbox\UI\SettingsTab.xaml.cs">
+      <DependentUpon>SettingsTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Blinkbox\UI\TestTab.xaml.cs">
+      <DependentUpon>TestTab.xaml</DependentUpon>
     </Compile>
     <Compile Include="CommandId.bb.cs">
       <DependentUpon>CommandId.cs</DependentUpon>
@@ -231,6 +238,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Blinkbox\UI\ReviewTab.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Blinkbox\UI\SettingsTab.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Blinkbox\UI\TestTab.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

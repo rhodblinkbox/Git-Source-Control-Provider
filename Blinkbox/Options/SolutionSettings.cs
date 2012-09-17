@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="DeploySettings.cs" company="">
+// <copyright file="DeploySettings.cs" company="blinkbox">
 // TODO: Update copyright text.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -23,10 +23,12 @@ namespace GitScc.Blinkbox.Options
         /// </summary>
         private static SolutionSettings sccOptions;
 
-        public string TestSwarmUsername { get; set; }
-        public string TestSwarmPassword { get; set; }
-        public string TestSwarmTags { get; set; }
-
+        public string TestSwarmUrl { get; set; }
+        public string FeaturePath { get; set; }
+        public string TestBrowserSets { get; set; }
+        public string CurrentBranch { get; set; }
+        public string TestRunnerMode { get; set; }
+        
         /// <summary>
         /// Gets Current.
         /// </summary>
@@ -37,12 +39,12 @@ namespace GitScc.Blinkbox.Options
                 if (sccOptions == null)
                 {
                     var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
+                    var solutionDirectory = sccProvider.GetSolutionDirectory();
                     var solutionFileName = sccProvider.GetSolutionFileName();
                     if (!string.IsNullOrEmpty(solutionFileName))
                     {
                         // Solution is open. 
-                        string configFileName = Path.Combine(
-                            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Path.GetFileNameWithoutExtension(sccProvider.GetSolutionFileName()) + ".user.settings");
+                        string configFileName = Path.Combine(solutionDirectory, Path.GetFileNameWithoutExtension(sccProvider.GetSolutionFileName()) + ".settings");
 
                         sccOptions = SettingsBase.LoadFromConfig<SolutionSettings>(configFileName);
                     }
@@ -57,10 +59,11 @@ namespace GitScc.Blinkbox.Options
         /// </summary>
         protected override void Init()
         {
-            // this.TfsRemoteBranch = string.IsNullOrEmpty(this.TfsRemoteBranch) ? "remotes/tfs/default" : this.TfsRemoteBranch;
-            this.TestSwarmPassword = string.IsNullOrEmpty(this.TestSwarmPassword) ? "1234$abcd" : this.TestSwarmPassword;
-            this.TestSwarmTags = string.IsNullOrEmpty(this.TestSwarmTags) ? "devcomplete" : this.TestSwarmTags;
-            this.TestSwarmUsername = string.IsNullOrEmpty(this.TestSwarmUsername) ? Environment.UserName : this.TestSwarmUsername;
+            this.TestSwarmUrl = string.IsNullOrEmpty(this.TestSwarmUrl) ? Environment.UserName : this.TestSwarmUrl;
+            this.FeaturePath = string.IsNullOrEmpty(this.FeaturePath) ? ".\\test\\AngularClient.Test.Artefacts\\Features" : this.FeaturePath;
+            this.TestBrowserSets = string.IsNullOrEmpty(this.TestBrowserSets) ? "default,currentDesktop" : this.TestBrowserSets;
+            this.CurrentBranch = string.IsNullOrEmpty(this.CurrentBranch) ? "v0" : this.CurrentBranch;
+            this.TestRunnerMode = string.IsNullOrEmpty(this.TestRunnerMode) ? "appfirst" : this.TestRunnerMode;
         }
     }
 }

@@ -10,6 +10,8 @@ namespace GitScc.Blinkbox
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Net;
+    using System.Text;
     using System.Text.RegularExpressions;
     using System.Web;
 
@@ -80,9 +82,9 @@ namespace GitScc.Blinkbox
                     {
                         { BlinkboxSccOptions.Current.CommitGuidPropertyName, commit.Hash }, 
                         { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment },
-                        { "TestSwarmUsername", SolutionSettings.Current.TestSwarmUsername },
-                        { "TestSwarmPassword", SolutionSettings.Current.TestSwarmPassword },
-                        { "TestSwarmTags", SolutionSettings.Current.TestSwarmTags }
+                        { "TestSwarmUsername", SolutionUserSettings.Current.TestSwarmUsername },
+                        { "TestSwarmPassword", SolutionUserSettings.Current.TestSwarmPassword },
+                        { "TestSwarmTags", SolutionUserSettings.Current.TestSwarmTags }
                     };
                 var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
 
@@ -119,6 +121,75 @@ namespace GitScc.Blinkbox
             }
 
             return true;
+        }
+
+        public string SubmitTests()
+        {
+            var sccHelperService = BasicSccProvider.GetServiceEx<SccHelperService>();
+            var form = new StringBuilder();
+            var tag = SolutionUserSettings.Current.TestSwarmTags;
+            var featurePath = this.sccProviderService.GetSolutionDirectory() + "\\" + SolutionSettings.Current.FeaturePath;
+            var testSwarmUrl = SolutionSettings.Current.TestSwarmUrl.TrimEnd("/".ToCharArray());
+            var testUrl = string.Format(
+                "{0}/Client/{1}/Test/Index.html?tags={2}&runnerMode={3}", 
+                testSwarmUrl,
+                sccHelperService.GetHeadRevisionHash(),
+                tag,
+                SolutionSettings.Current.TestRunnerMode);
+
+            // get all feature files containing the specified tag.
+            var featureFiles = Directory.GetFiles(featurePath, "*.feature", SearchOption.AllDirectories).AsEnumerable();
+            if (!string.IsNullOrEmpty(tag))
+            {
+                featureFiles = featureFiles.Where(f => File.ReadAllText(f).Contains(tag));
+            }
+
+            // Build up the form
+            form.Append(string.Format("jobName={0}&runMax={1}", sccHelperService.GetLastCommitMessage(), 3));
+
+            foreach (var browserSet in SolutionSettings.Current.TestBrowserSets.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries))
+            {
+                form.Append("&browserSets[]=").Append(browserSet);
+            }
+
+            foreach (var file in featureFiles)
+            {
+                var featureName = file.Replace(featurePath, string.Empty);
+                form.Append("&runNames[]=").Append(featureName);
+                form.Append("&runUrls[]=").Append(System.Web.HttpUtility.UrlEncode(testUrl + "&featurepath=" + featureName));
+            }
+
+            // Login to testswarm
+            var login = this.Request(testSwarmUrl + "/login", string.Format("username={0}&password={1}", SolutionUserSettings.Current.TestSwarmUsername, SolutionUserSettings.Current.TestSwarmPassword));
+            var authCookie = login.Headers["Set-Cookie"];
+
+            // Submit the jbo.
+            var job = this.Request(testSwarmUrl + "/addjob", form.ToString(), authCookie);
+            var jobId = job.Headers["X-TestSwarm-JobId"];
+            return jobId;
+        }
+
+        private System.Net.HttpWebResponse Request(string url, string content, string authCookie = null)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.Method = "POST";
+            request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.89 Safari/537.1";
+            request.AllowAutoRedirect = false;
+
+            if (!string.IsNullOrEmpty(authCookie))
+            {
+                request.Headers.Add("Cookie", authCookie); 
+            }
+
+            var contentBytes = System.Text.Encoding.UTF8.GetBytes(content);
+            request.ContentLength = contentBytes.Length;
+            var requestStream = request.GetRequestStream();
+            requestStream.Write(contentBytes, 0, contentBytes.Length);
+            requestStream.Close();
+
+            var response = request.GetResponse();
+            return (HttpWebResponse)response;
         }
 
         /// <summary>

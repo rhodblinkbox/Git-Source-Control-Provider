@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="deployTab.xaml.cs" company="blinkbox">
+//   TODO: add comment
+// </copyright>
+// <summary>
+//   Interaction logic for deployTab.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace GitScc.Blinkbox.UI
 {
+    using System;
+    using System.Windows.Controls;
     using System.Windows.Threading;
 
     using GitScc.Blinkbox.Options;
@@ -21,10 +18,8 @@ namespace GitScc.Blinkbox.UI
     /// <summary>
     /// Interaction logic for deployTab.xaml
     /// </summary>
-    public partial class deployTab : UserControl
+    public partial class deployTab
     {
-
-
         /// <summary>
         /// instance of the <see cref="DevelopmentService"/>
         /// </summary>
@@ -35,20 +30,22 @@ namespace GitScc.Blinkbox.UI
         /// </summary>
         private SccProviderService sccProviderInstance = null;
 
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="deployTab"/> class.
+        /// </summary>
         public deployTab()
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
             // Allow binding to local properties
-            DataContext = this;
+            this.DataContext = this;
 
             // Register this component as a service so that we can use it externally. 
             BasicSccProvider.RegisterService(this);
             var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
             if (sccProvider != null)
             {
-                sccProvider.OnSolutionOpen += (s, a) => this.PopulateDeployTab();
+                sccProvider.OnSolutionOpen += (s, a) => this.GetBindingExpression(TextBox.TextProperty).UpdateTarget(); 
             }
         }
 
@@ -87,21 +84,6 @@ namespace GitScc.Blinkbox.UI
             get
             {
                 return this.SccProvider.SolutionOpen ? SolutionSettings.Current : null;
-            }
-        }
-
-
-        private void PopulateDeployTab()
-        {
-            if (SolutionSettings.Current != null)
-            {
-                Action action = () =>
-                {
-                    testSwarmPassword.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
-                    testSwarmTags.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
-                    testSwarmUsername.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
-                };
-                this.Dispatcher.BeginInvoke(action, DispatcherPriority.ApplicationIdle);
             }
         }
     }

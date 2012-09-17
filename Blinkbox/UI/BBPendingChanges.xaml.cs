@@ -53,6 +53,7 @@ namespace GitScc.Blinkbox.UI
         public BBPendingChanges()
         {
             InitializeComponent();
+            BasicSccProvider.RegisterService(this);
         }
 
         public void Commit()

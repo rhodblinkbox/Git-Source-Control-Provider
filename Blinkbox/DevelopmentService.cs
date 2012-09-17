@@ -233,6 +233,11 @@ namespace GitScc.Blinkbox
             this.RunAsync(() => this.sccProvider.Refresh(true), OperationName);
         }
 
+        public void SubmitTests()
+        {
+            
+        }
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>

@@ -334,6 +334,22 @@
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <ButtonText>Deploy Last Commit</ButtonText>
+                <ToolTipText>Deploy working directory to a website named with the latest commit hash.</ToolTipText>
+            </Strings>
+        </Button>
+
+        <Button guid="guidSccProviderCmdSet"
+                id="BlinkboxSubmitTestsId"
+                priority="0x0000"
+                type="Button">
+            <Parent guid="guidSccProviderCmdSet"
+                    id="igrpPendingChangesToolWindowToolbarGroup"/>
+            <CommandFlag>DynamicVisibility</CommandFlag>
+            <CommandFlag>DefaultInvisible</CommandFlag>
+            <CommandFlag>IconAndText</CommandFlag>
+            <Strings>
+                <ButtonText>Submit Tests</ButtonText>
+                <ToolTipText>Submit the last deploy to testswarm.</ToolTipText>
             </Strings>
         </Button>
         
@@ -520,8 +536,9 @@
       <IDSymbol name="icmdHistoryViewRefresh" value="0x115"/>  
       <IDSymbol name="icmdSccCommandAbout" value="0x116"/>
       <IDSymbol name="BlinkboxDeployId" value="0x117"/>
-      
-      <IDSymbol name="igrpGitExtCommands" value="0x800"/>
+      <IDSymbol name="BlinkboxSubmitTestsId" value="0x118"/>
+        
+        <IDSymbol name="igrpGitExtCommands" value="0x800"/>
       <IDSymbol name="imnuGitExtMenu" value="0x801"/>
       <IDSymbol name="igrpGitTorCommands" value="0x900"/>
       <IDSymbol name="imnuGitTorMenu" value="0x901"/>
