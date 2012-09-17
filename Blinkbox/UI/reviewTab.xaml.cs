@@ -14,19 +14,149 @@ using System.Windows.Shapes;
 
 namespace GitScc.Blinkbox.UI
 {
+    using System.ComponentModel;
+    using System.Windows.Threading;
+
+    using GitScc.Blinkbox.Data;
+    using GitScc.Blinkbox.Options;
+
     /// <summary>
     /// Interaction logic for reviewTab.xaml
     /// </summary>
     public partial class reviewTab : UserControl
     {
+        private string[] diffLines;
+        private string sortMemberPath = "FileName";
+        private ListSortDirection sortDirection = ListSortDirection.Ascending;
+        private SccProviderService service;
+
+
         public reviewTab()
         {
             InitializeComponent();
+
+            this.service = BasicSccProvider.GetServiceEx<SccProviderService>();
         }
 
         private void reviewList_Sorting(object sender, DataGridSortingEventArgs e)
         {
 
+        }
+
+
+        /// <summary>
+        /// The name of the branch to be used for reviewing
+        /// </summary>
+        private string comparisonBranch = null;
+
+        /// <summary>
+        /// instance of the <see cref="DevelopmentService"/>
+        /// </summary>
+        private DevelopmentService developmentServiceInstance = null;
+
+        /// <summary>
+        /// instance of the <see cref="SccProviderService"/>
+        /// </summary>
+        private SccProviderService sccProviderInstance = null;
+
+        /// <summary>
+        /// instance of the <see cref="SccProviderService"/>
+        /// </summary>
+        private BBPendingChanges bbPendingChanges = null;
+
+        /// <summary>
+        /// Gets the development service.
+        /// </summary>
+        /// <value>The development service.</value>
+        private BBPendingChanges BBPendingChanges
+        {
+            get
+            {
+                this.bbPendingChanges = this.bbPendingChanges ?? BasicSccProvider.GetServiceEx<BBPendingChanges>();
+                return this.bbPendingChanges;
+            }
+        }
+
+        /// <summary>
+        /// Gets the development service.
+        /// </summary>
+        /// <value>The development service.</value>
+        private DevelopmentService DevelopmentService
+        {
+            get
+            {
+                this.developmentServiceInstance = this.developmentServiceInstance ?? BasicSccProvider.GetServiceEx<DevelopmentService>();
+                return this.developmentServiceInstance;
+            }
+        }
+
+        /// <summary>
+        /// Gets the development service.
+        /// </summary>
+        /// <value>The development service.</value>
+        private SccProviderService SccProvider
+        {
+            get
+            {
+                this.sccProviderInstance = this.sccProviderInstance ?? BasicSccProvider.GetServiceEx<SccProviderService>();
+                return this.sccProviderInstance;
+            }
+        }
+
+        /// <summary>
+        /// Initialises the blinkbox extensions.
+        /// </summary>
+        public void InitialiseBlinkboxExtensions()
+        {
+            // Register this component as a service so that we can use it externally. 
+            BasicSccProvider.RegisterService(this);
+        }
+
+     
+
+        /// <summary>
+        /// Show a list of files for review.
+        /// </summary>
+        /// <param name="changedFiles">
+        /// The changed files.
+        /// </param>
+        /// <param name="branchName">
+        /// The branch Name.
+        /// </param>
+        public void Review(List<GitFile> changedFiles, string branchName)
+        {
+            if (changedFiles.Any())
+            {
+                this.comparisonBranch = branchName;
+                this.DisplayReview(changedFiles);
+            }
+        }
+
+        /// <summary>
+        /// Cancel the current review and enable the pending changes list. 
+        /// </summary>
+        public void CancelReview()
+        {
+            this.comparisonBranch = null;
+        }
+
+        /// <summary>
+        /// Writes a message to the diff editor
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public void WriteToDiffWindow(string message)
+        {
+            var action = new Action(() => this.ReviewDiff.AppendText(Environment.NewLine + message));
+            this.ReviewDiff.Dispatcher.BeginInvoke(action);
+        }
+
+        /// <summary>
+        /// Clears the diff editor.
+        /// </summary>
+        public void ClearDiffEditor()
+        {
+            var action = new Action(() => this.ReviewDiff.Clear());
+            this.ReviewDiff.Dispatcher.BeginInvoke(action);
         }
 
         /// <summary>
@@ -37,17 +167,16 @@ namespace GitScc.Blinkbox.UI
         /// </param>
         internal void DisplayReview(List<GitFile> changedFiles)
         {
-            /*
             Action act = () =>
             {
                 if (!GitBash.Exists)
                 {
-                    Settings.Show();
+                    ////Settings.Show();
                     return;
                 }
 
-                Settings.Hide();
-                reviewTab.IsEnabled = true;
+                ////Settings.Hide();
+                BBPendingChanges.ReviewTab.IsEnabled = true;
 
                 //////if (tracker == null)
                 //////{
@@ -88,23 +217,22 @@ namespace GitScc.Blinkbox.UI
                     ////    }
                     ////});
 
-                    ShowStatusMessage(string.Empty);
+                    ////ShowStatusMessage(string.Empty);
                 }
                 catch (Exception ex)
                 {
-                    ShowStatusMessage(ex.Message);
+                   //// ShowStatusMessage(ex.Message);
                 }
 
                 this.reviewList.EndInit();
 
-                reviewTab.Focus();
+                BBPendingChanges.ReviewTab.Focus();
 
                 service.NoRefresh = false;
                 service.lastTimeRefresh = DateTime.Now;
             };
 
             this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
-             * */
         }
 
         /// <summary>
@@ -112,15 +240,13 @@ namespace GitScc.Blinkbox.UI
         /// </summary>
         public void EndReview()
         {
-            /*
             Action act = () =>
             {
-                reviewTab.IsEnabled = false;
-                gitTab.Focus();
+                BBPendingChanges.ReviewTab.IsEnabled = false;
+                BBPendingChanges.GitTab.Focus();
             };
 
             this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
-             * */
         }
 
         /// <summary>
@@ -130,7 +256,6 @@ namespace GitScc.Blinkbox.UI
         /// <param name="e">The <see cref="System.Windows.Controls.SelectionChangedEventArgs"/> instance containing the event data.</param>
         public void Review_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            /*
             Action act = () =>
             {
                 service.NoRefresh = true;
@@ -147,7 +272,7 @@ namespace GitScc.Blinkbox.UI
 
                     // Diff the selected file against the tfs version using git
                     var sccHelper = BasicSccProvider.GetServiceEx<SccHelperService>();
-                    var fileNameRel = tracker.GetRelativeFileName(reviewItem.FileName);
+                    var fileNameRel = BBPendingChanges.GetTracker().GetRelativeFileName(reviewItem.FileName);
                     var tfsRevision = sccHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsRemoteBranch);
                     var diff = sccHelper.DiffFileWithGit(fileNameRel, tfsRevision);
 
@@ -158,14 +283,13 @@ namespace GitScc.Blinkbox.UI
                 }
                 catch (Exception ex)
                 {
-                    ShowStatusMessage(ex.Message);
+                    ////ShowStatusMessage(ex.Message);
                 }
 
                 service.NoRefresh = false;
             };
 
             this.Dispatcher.BeginInvoke(act, DispatcherPriority.ApplicationIdle);
-             * */
         }
 
         /// <summary>
@@ -175,16 +299,15 @@ namespace GitScc.Blinkbox.UI
         /// <param name="e">The <see cref="System.Windows.Input.MouseButtonEventArgs"/> instance containing the event data.</param>
         private void Review_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            /*
             // Otherwise, use tortiose git to provide the diff.
             var reviewItem = this.GetSelectedReviewItem();
             if (reviewItem != null && !string.IsNullOrEmpty(reviewItem.FileName))
             {
-                var fileName = System.IO.Path.Combine(this.tracker.GitWorkingDirectory, reviewItem.FileName);
+                var fileName = System.IO.Path.Combine(BBPendingChanges.GetTracker().GitWorkingDirectory, reviewItem.FileName);
 
                 if (reviewItem.Status == GitFileStatus.Added)
                 {
-                    this.OpenFile(fileName);
+                    BBPendingChanges.OpenFile(fileName);
                     return;
                 }
 
@@ -194,56 +317,6 @@ namespace GitScc.Blinkbox.UI
                 var tfsRevision = sccHelper.GetHeadRevisionHash(BlinkboxSccOptions.Current.TfsRemoteBranch);
                 sccHelper.DiffFileInTortoise(fileName, tfsRevision, BlinkboxSccOptions.WorkingDirectoryRevision);
             }
-             * */
-        }
-
-        private void DiffEditor_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            /*
-            int start = 1, column = 1;
-            try
-            {
-                if (diffLines != null && diffLines.Length > 0)
-                {
-                    int line = this.DiffEditor.TextArea.Caret.Line;
-                    column = this.DiffEditor.TextArea.Caret.Column;
-
-                    string text = diffLines[line];
-                    while (line >= 0)
-                    {
-                        var match = Regex.Match(text, "^@@(.+)@@");
-                        if (match.Success)
-                        {
-                            var s = match.Groups[1].Value;
-                            s = s.Substring(s.IndexOf('+') + 1);
-                            s = s.Substring(0, s.IndexOf(','));
-                            start += Convert.ToInt32(s) - 2;
-                            break;
-                        }
-                        else if (text.StartsWith("-"))
-                        {
-                            start--;
-                        }
-
-                        start++;
-                        --line;
-                        text = line >= 0 ? diffLines[line] : "";
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ShowStatusMessage(ex.Message);
-                Log.WriteLine("Pending Changes View - DiffEditor_MouseDoubleClick: {0}", ex.ToString());
-            }
-            GetSelectedFileFullName((fileName) =>
-            {
-                OpenFile(fileName);
-                var dte = BasicSccProvider.GetServiceEx<EnvDTE.DTE>();
-                var selection = dte.ActiveDocument.Selection as EnvDTE.TextSelection;
-                selection.MoveToLineAndOffset(start - 1, column);
-            });
-            */
         }
 
         /// <summary>

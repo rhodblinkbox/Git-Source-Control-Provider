@@ -14,11 +14,42 @@ using System.Windows.Shapes;
 
 namespace GitScc.Blinkbox.UI
 {
+    using System.Windows.Threading;
+
+    using GitScc.Blinkbox.Data;
+
     /// <summary>
     /// Interaction logic for BBPendingChanges.xaml
     /// </summary>
     public partial class BBPendingChanges : UserControl
     {
+
+        private GitFileStatusTracker tracker;
+
+        public TabItem ReviewTab
+        {
+            get
+            {
+                return reviewTab;
+            }
+        }
+
+        public TabItem GitTab
+        {
+            get
+            {
+                return gitTab;
+            }
+        }
+
+        public TabItem DeployTab
+        {
+            get
+            {
+                return deployTab;
+            }
+        }
+
         public BBPendingChanges()
         {
             InitializeComponent();
@@ -36,7 +67,32 @@ namespace GitScc.Blinkbox.UI
 
         public void RefreshPendingChanges(GitFileStatusTracker tracker)
         {
-            
+            this.tracker = tracker;
+        }
+
+        public GitFileStatusTracker GetTracker()
+        {
+            return this.tracker;
+        }
+
+        public void OpenFile(string fileName)
+        {
+            // Call pending changes version
+        }
+
+        /// <summary>
+        /// Updates the TFS status.
+        /// </summary>
+        /// <param name="aheadBehind">The ahead behind.</param>
+        public void UpdateTfsStatus(AheadBehind aheadBehind)
+        {
+            Action action = () =>
+            {
+                var text = string.Format("{0} ahead, {1} behind TFS", aheadBehind.Ahead, aheadBehind.Behind);
+                TfsStatusLabel.Content = text;
+                TfsStatusLabel.Foreground = aheadBehind.Behind == 0 ? System.Windows.Media.Brushes.DarkGreen : System.Windows.Media.Brushes.DarkRed;
+            };
+            this.Dispatcher.BeginInvoke(action, DispatcherPriority.ApplicationIdle);
         }
     }
 }
