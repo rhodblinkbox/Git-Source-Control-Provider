@@ -101,6 +101,9 @@
     <Compile Include="Blinkbox\Options\SettingsBase.cs" />
     <Compile Include="Blinkbox\Options\SolutionSettings.cs" />
     <Compile Include="Blinkbox\Data\RefreshArgs.cs" />
+    <Compile Include="Blinkbox\UI\BBPendingChanges.xaml.cs">
+      <DependentUpon>BBPendingChanges.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CommandId.bb.cs">
       <DependentUpon>CommandId.cs</DependentUpon>
     </Compile>
@@ -213,6 +216,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Blinkbox\UI\BBPendingChanges.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="PendingChangesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -252,9 +259,7 @@
       <Name>Sharpen</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Blinkbox\UI\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <!--
     To specify a different registry root to register your package, uncomment the TargetRegistryRoot
