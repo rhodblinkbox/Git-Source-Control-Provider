@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="GitScc.Blinkbox.UI.reviewTab"
+﻿<UserControl x:Class="GitScc.Blinkbox.UI.ReviewTab"
 			 xmlns:avalonEdit="clr-namespace:ICSharpCode.AvalonEdit;assembly=ICSharpCode.AvalonEdit"     
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"

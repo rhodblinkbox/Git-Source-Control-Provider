@@ -9,18 +9,18 @@
     <Grid x:Name="Main" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
         <TabControl Padding="0,0,0,0">
-            <TabItem Header="Git" Name="gitTab" >
+            <TabItem Header="Git" Name="gitTabItem" >
 
         
             </TabItem>
 
-            <TabItem Header="Review" Name="reviewTab" IsEnabled="false" ToolTip="Review committed changes in thes branch against TFS" >
+            <TabItem Header="Review" Name="reviewTabItem" IsEnabled="false" ToolTip="Review committed changes in thes branch against TFS" >
 
-                <my:reviewTab />
+                <my:ReviewTab x:Name="reviewTab"/>
             </TabItem>
 
-            <TabItem Header="Deploy" Name="deployTab" IsEnabled="true" ToolTip="Deployment Settings" >
-                <my:deployTab />
+            <TabItem Header="Deploy" Name="deployTabItem" IsEnabled="true" ToolTip="Deployment Settings" >
+                <my:deployTab x:Name="deployTab"/>
             </TabItem>
         </TabControl>
         <Label Name="TfsStatusLabel" Height="20" Width="155" 

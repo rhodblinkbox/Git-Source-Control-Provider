@@ -13,6 +13,7 @@ namespace GitScc.Blinkbox
     using System.Threading.Tasks;
 
     using GitScc.Blinkbox.Options;
+    using GitScc.Blinkbox.UI;
 
     using Microsoft.VisualStudio.Shell.Interop;
 
@@ -166,7 +167,7 @@ namespace GitScc.Blinkbox
                         // Switch to reviewing mode
                         this.CurrentMode = DevMode.Reviewing;
 
-                        var pendingChangesView = BasicSccProvider.GetServiceEx<PendingChangesView>();
+                        var pendingChangesView = BasicSccProvider.GetServiceEx<BBPendingChanges>();
                         if (pendingChangesView != null)
                         {
                             pendingChangesView.Review(diff.ToList(), BlinkboxSccOptions.Current.TfsRemoteBranch);
@@ -193,7 +194,7 @@ namespace GitScc.Blinkbox
         /// </summary>
         public void CancelReview()
         {
-            var pendingChanges = BasicSccProvider.GetServiceEx<PendingChangesView>();
+            var pendingChanges = BasicSccProvider.GetServiceEx<BBPendingChanges>();
             pendingChanges.EndReview();
             this.CurrentMode = DevMode.Working;
 
@@ -251,7 +252,7 @@ namespace GitScc.Blinkbox
                     this.lastTfsFetch = DateTime.Now;
                     this.FetchFromTfs(silent: true);
                     var aheadBehind = SccHelperService.BranchAheadOrBehind(this.sccHelper.GetCurrentBranch(), BlinkboxSccOptions.Current.TfsRemoteBranch);
-                    var pendingChanges = BasicSccProvider.GetServiceEx<PendingChangesView>();
+                    var pendingChanges = BasicSccProvider.GetServiceEx<BBPendingChanges>();
                     if (pendingChanges != null)
                     {
                         pendingChanges.UpdateTfsStatus(aheadBehind);

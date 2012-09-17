@@ -23,7 +23,7 @@ namespace GitScc.Blinkbox.UI
     /// <summary>
     /// Interaction logic for reviewTab.xaml
     /// </summary>
-    public partial class reviewTab : UserControl
+    public partial class ReviewTab : UserControl
     {
         private string[] diffLines;
         private string sortMemberPath = "FileName";
@@ -31,7 +31,7 @@ namespace GitScc.Blinkbox.UI
         private SccProviderService service;
 
 
-        public reviewTab()
+        public ReviewTab()
         {
             InitializeComponent();
 

@@ -30,7 +30,7 @@ namespace GitScc.Blinkbox.UI
         {
             get
             {
-                return reviewTab;
+                return reviewTabItem;
             }
         }
 
@@ -38,7 +38,7 @@ namespace GitScc.Blinkbox.UI
         {
             get
             {
-                return gitTab;
+                return gitTabItem;
             }
         }
 
@@ -46,7 +46,7 @@ namespace GitScc.Blinkbox.UI
         {
             get
             {
-                return deployTab;
+                return deployTabItem;
             }
         }
 
@@ -78,6 +78,21 @@ namespace GitScc.Blinkbox.UI
         public void OpenFile(string fileName)
         {
             // Call pending changes version
+        }
+
+        public void Review(List<GitFile> changedFiles, string branchName = null)
+        {
+            if (changedFiles.Any())
+            {
+                ////this.comparisonBranch = branchName;
+                reviewTab.DisplayReview(changedFiles);
+            }
+            
+        }
+
+        public void EndReview()
+        {
+            reviewTab.EndReview();
         }
 
         /// <summary>
