@@ -104,6 +104,9 @@
     <Compile Include="Blinkbox\UI\BBPendingChanges.xaml.cs">
       <DependentUpon>BBPendingChanges.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Blinkbox\UI\ReviewTab.xaml.cs">
+      <DependentUpon>ReviewTab.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CommandId.bb.cs">
       <DependentUpon>CommandId.cs</DependentUpon>
     </Compile>
@@ -217,6 +220,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Blinkbox\UI\BBPendingChanges.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Blinkbox\UI\ReviewTab.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

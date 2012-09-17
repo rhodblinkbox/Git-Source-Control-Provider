@@ -14,9 +14,9 @@
         
             </TabItem>
 
-            <TabItem Header="Review" Name="reviewTab" IsEnabled="false" ToolTip="Review committed changes in thes branch against TFS" >
+            <TabItem Header="Review" Name="reviewTab" IsEnabled="true" ToolTip="Review committed changes in thes branch against TFS" >
 
-          
+                <my:reviewTab />
             </TabItem>
 
             <TabItem Header="Deploy" Name="deployTab" IsEnabled="true" ToolTip="Deployment Settings" >

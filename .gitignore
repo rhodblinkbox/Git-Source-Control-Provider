@@ -31,3 +31,4 @@ Publish*/
 GitUI/Resources/*.dll
 GitUI/Resources/*.xml
 *.pkg
+BasicSccProvider.suo
