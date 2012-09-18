@@ -59,8 +59,8 @@ namespace GitScc.Blinkbox.Options
         /// </summary>
         protected override void Init()
         {
-            this.TestSwarmUrl = string.IsNullOrEmpty(this.TestSwarmUrl) ? Environment.UserName : this.TestSwarmUrl;
-            this.FeaturePath = string.IsNullOrEmpty(this.FeaturePath) ? ".\\test\\AngularClient.Test.Artefacts\\Features" : this.FeaturePath;
+            this.TestSwarmUrl = string.IsNullOrEmpty(this.TestSwarmUrl) ? "http://battleship/testswarm" : this.TestSwarmUrl;
+            this.FeaturePath = string.IsNullOrEmpty(this.FeaturePath) ? "\\test\\AngularClient.Test.Artefacts\\Features" : this.FeaturePath;
             this.TestBrowserSets = string.IsNullOrEmpty(this.TestBrowserSets) ? "default,currentDesktop" : this.TestBrowserSets;
             this.CurrentBranch = string.IsNullOrEmpty(this.CurrentBranch) ? "v0" : this.CurrentBranch;
             this.TestRunnerMode = string.IsNullOrEmpty(this.TestRunnerMode) ? "appfirst" : this.TestRunnerMode;

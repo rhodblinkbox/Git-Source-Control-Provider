@@ -128,7 +128,9 @@ namespace GitScc.Blinkbox
             var sccHelperService = BasicSccProvider.GetServiceEx<SccHelperService>();
             var form = new StringBuilder();
             var tag = SolutionUserSettings.Current.TestSwarmTags;
-            var featurePath = this.sccProviderService.GetSolutionDirectory() + "\\" + SolutionSettings.Current.FeaturePath;
+            var featurePath = SolutionSettings.Current.FeaturePath.StartsWith("\\")
+                ? this.sccProviderService.GetSolutionDirectory() + "\\" + SolutionSettings.Current.FeaturePath
+                : SolutionSettings.Current.FeaturePath;
             var testSwarmUrl = SolutionSettings.Current.TestSwarmUrl.TrimEnd("/".ToCharArray());
             var testUrl = string.Format(
                 "{0}/Client/{1}/Test/Index.html?tags={2}&runnerMode={3}", 

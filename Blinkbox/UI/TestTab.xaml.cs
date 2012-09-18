@@ -40,14 +40,17 @@ namespace GitScc.Blinkbox.UI
             InitializeComponent();
 
             // Allow binding to local properties
-            this.DataContext = this;
+            grid.DataContext = this;
 
             // Register this component as a service so that we can use it externally. 
             BasicSccProvider.RegisterService(this);
             var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
             if (sccProvider != null)
             {
-                sccProvider.OnSolutionOpen += (s, a) => this.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
+                sccProvider.OnSolutionOpen += (s, a) =>
+                    { 
+                        this.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
+                    };
             }
         }
 

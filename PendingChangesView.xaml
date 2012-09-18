@@ -29,7 +29,7 @@
 
 		<Label Content="Comments:" Height="28" HorizontalAlignment="Left" Name="label1" VerticalAlignment="Center" 
 			   Margin="12,0,0,0" Foreground="#FF333333" />
-		<CheckBox Content="Sign off" Height="16" HorizontalAlignment="Right" Margin="0,5,20,0" Name="chkSignOff" VerticalAlignment="Top" />
+		<CheckBox Content="Sign off" Height="16" Visibility="Hidden" HorizontalAlignment="Right" Margin="0,5,20,0" Name="chkSignOff" VerticalAlignment="Top" />
 
 		<Label Content="Diff (double click to open file):" Height="28" HorizontalAlignment="Left" Name="label2" VerticalAlignment="Center" 
 			   Margin="12,0,0,0" Foreground="#FF333333"
