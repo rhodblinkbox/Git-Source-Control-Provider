@@ -5,17 +5,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+
+
+
+    <Grid Name="grid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="130" />
-            <ColumnDefinition Width="126" />
-            <ColumnDefinition Width="668" />
+            <ColumnDefinition Width="794" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="96*" />
         </Grid.RowDefinitions>
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -24,18 +31,17 @@
             </LinearGradientBrush>
         </Grid.Background>
 
-        <Label Name="TestSwarmUsernameLabel" Content="TestSwarm username:" Grid.Row="0"  />
-        <Label Name="TestSwarmPasswordLabel" Content="TestSwarm password:" Grid.Row="1" />
-        <Label Name="TabTestSwarmTagsLabel" Content="TestSwarm tags:" Grid.Row="2" />
-        <Label Name="TabTestSwarmUrl" Content="TestSwarm tags:" Grid.Row="3" />
+        <Button Name="SaveButton" Content="Save" Click="SaveButton_Click" />
 
-        <TextBox Name="testSwarmUsername" Grid.Row="0" Grid.Column="1" 
-                             Text="{Binding Path=solutionUserSettings.TestSwarmUsername}" />
-        <TextBox Name="testSwarmPassword"  Grid.Row="1" Grid.Column="1" 
-                             Text="{Binding Path=solutionUserSettings.TestSwarmPassword}" />
-        <TextBox Name="testSwarmTags" Grid.Row="2" Grid.Column="1" 
-                             Text="{Binding Path=solutionUserSettings.TestSwarmTags}" />
-        <TextBox Name="testSwarmUrl" Grid.Row="3" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestSwarmUrl}" />
+        <Label Content="Open urls in VS:" Grid.Row="1"  />
+        <Label Content="Preview Get Latest:" Grid.Row="2"  />
+
+        <CheckBox Name="openUrlsInVs" Grid.Row="1" Grid.Column="1" 
+                             IsChecked="{Binding userSettings.OpenUrlsInVS}" Margin="0,0,449,0" />
+
+        <CheckBox Name="previewGetLatest" Grid.Row="2" Grid.Column="1" 
+                             IsChecked="{Binding userSettings.PreviewGetLatest}" Margin="0,0,449,0" />
+
+        
     </Grid>
 </UserControl>

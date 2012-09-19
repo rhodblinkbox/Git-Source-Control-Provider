@@ -26,6 +26,8 @@ namespace GitScc.Blinkbox.Options
         public string TestSwarmUsername { get; set; }
         public string TestSwarmPassword { get; set; }
         public string TestSwarmTags { get; set; }
+        public bool? SubmitTestsOnDeploy { get; set; }
+        
 
         /// <summary>
         /// Gets Current.
@@ -59,6 +61,8 @@ namespace GitScc.Blinkbox.Options
             this.TestSwarmPassword = string.IsNullOrEmpty(this.TestSwarmPassword) ? "1234$abcd" : this.TestSwarmPassword;
             this.TestSwarmTags = string.IsNullOrEmpty(this.TestSwarmTags) ? SolutionSettings.Current.TestSwarmTags : this.TestSwarmTags;
             this.TestSwarmUsername = string.IsNullOrEmpty(this.TestSwarmUsername) ? Environment.UserName : this.TestSwarmUsername;
+            this.SubmitTestsOnDeploy = this.SubmitTestsOnDeploy ?? true;
+            
         }
     }
 }

@@ -24,7 +24,7 @@ namespace GitScc.Blinkbox.Options
         public string CurrentBranch { get; set; }
         public string TestRunnerMode { get; set; }
         public string TestSwarmTags { get; set; }
-        public string DeployProjectName { get; set; }
+        public string DeployProjectLocation { get; set; }
 
         /// <summary>
         /// Gets Current.
@@ -62,7 +62,7 @@ namespace GitScc.Blinkbox.Options
             this.CurrentBranch = string.IsNullOrEmpty(this.CurrentBranch) ? "v0" : this.CurrentBranch;
             this.TestRunnerMode = string.IsNullOrEmpty(this.TestRunnerMode) ? "appfirst" : this.TestRunnerMode;
             this.TestSwarmTags = string.IsNullOrEmpty(this.TestSwarmTags) ? "devcomplete" : this.TestSwarmTags;
-            this.DeployProjectName = string.IsNullOrEmpty(this.DeployProjectName) ? "postCommitDeploy.proj" : this.DeployProjectName;
+            this.DeployProjectLocation = string.IsNullOrEmpty(this.DeployProjectLocation) ? "postCommitDeploy.proj" : this.DeployProjectLocation;
         }
     }
 }

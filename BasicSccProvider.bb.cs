@@ -326,10 +326,13 @@ namespace GitScc
         /// <returns>true if the solution has a deploy project.</returns>
         private bool DeployProjectAvailable()
         {
-            if (this.sccService.Active && this.sccService.SolutionOpen)
+            if (this.sccService.Active && this.sccService.SolutionOpen && SolutionSettings.Current != null && !string.IsNullOrEmpty(SolutionSettings.Current.DeployProjectLocation))
             {
-                var solutionDir = this.sccService.GetSolutionDirectory();
-                return File.Exists(solutionDir + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName);
+                var deployProjectPath = Path.IsPathRooted(SolutionSettings.Current.DeployProjectLocation)
+                    ? SolutionSettings.Current.DeployProjectLocation
+                    : Path.Combine(this.sccService.GetSolutionDirectory(), SolutionSettings.Current.DeployProjectLocation);
+
+                return File.Exists(deployProjectPath);
             }
 
             return false;

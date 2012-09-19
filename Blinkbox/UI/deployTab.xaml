@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid Name="deployTabGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+    <Grid Name="grid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="130" />
             <ColumnDefinition Width="126" />
@@ -25,15 +25,16 @@
                 <GradientStop Color="White" Offset="0" />
             </LinearGradientBrush>
         </Grid.Background>
-        <Label Name="deployTabTestSwarmUsernameLabel" Content="TestSwarm username:" Grid.Row="0"  />
-        <Label Name="deployTabTestSwarmPasswordLabel" Content="TestSwarm password:" Grid.Row="1" />
-        <Label Name="deployTabTestSwarmTagsLabel" Content="TestSwarm tags:" Grid.Row="2" />
 
-        <TextBox Name="testSwarmUsername" Grid.Row="0" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestSwarmUsername}" />
-        <TextBox Name="testSwarmPassword"  Grid.Row="1" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestSwarmPassword}" />
-        <TextBox Name="testSwarmTags" Grid.Row="2" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestSwarmTags}" />
+        <Button Name="SaveButton" Content="Save" Click="SaveButton_Click" />
+        
+        <Label Content="Deploy project name:" Grid.Row="1"  />
+        <Label Content="Submit test on deploy:" Grid.Row="2"  />
+
+        <TextBox Name="deployProjectName" Grid.Row="1" Grid.Column="1" 
+                             Text="{Binding Path=solutionSettings.DeployProjectLocation}" />
+
+        <CheckBox Name="submitTestsOnDeploy" Grid.Row="2" Grid.Column="1" 
+                             IsChecked="{Binding Path=solutionUserSettings.SubmitTestsOnDeploy}" />
     </Grid>
 </UserControl>

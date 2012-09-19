@@ -22,14 +22,6 @@ namespace GitScc.Blinkbox.UI
     /// </summary>
     public partial class TestTab : UserControl
     {
-        public string TestProperty { get
-        {
-            return "test";
-        } set
-        {
-            
-        } }
-
         public SolutionUserSettings solutionUserSettings
         {
             get

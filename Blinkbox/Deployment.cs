@@ -62,7 +62,10 @@ namespace GitScc.Blinkbox
             this.notificationService.AddMessage("Begin build and deploy to " + commit.Hash);
 
             // Look for a deploy project
-            var buildProjectFileName = this.sccProviderService.GetSolutionDirectory() + "\\" + BlinkboxSccOptions.Current.PostCommitDeployProjectName;
+            var buildProjectFileName = Path.IsPathRooted(SolutionSettings.Current.DeployProjectLocation)
+                    ? SolutionSettings.Current.DeployProjectLocation
+                    : Path.Combine(this.sccProviderService.GetSolutionDirectory(), SolutionSettings.Current.DeployProjectLocation);
+
             if (!File.Exists(buildProjectFileName))
             {
                 NotificationService.DisplayError("Deploy abandoned", "build project not found");
@@ -81,10 +84,7 @@ namespace GitScc.Blinkbox
                 var globalProperties = new Dictionary<string, string>
                     {
                         { BlinkboxSccOptions.Current.CommitGuidPropertyName, commit.Hash }, 
-                        { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment },
-                        { "TestSwarmUsername", SolutionUserSettings.Current.TestSwarmUsername },
-                        { "TestSwarmPassword", SolutionUserSettings.Current.TestSwarmPassword },
-                        { "TestSwarmTags", SolutionUserSettings.Current.TestSwarmTags }
+                        { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment }
                     };
                 var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
 
@@ -107,6 +107,12 @@ namespace GitScc.Blinkbox
                     return false;
                 }
 
+                if (SolutionUserSettings.Current.SubmitTestsOnDeploy.GetValueOrDefault())
+                {
+                    // Submit tests to testswarm
+                    this.SubmitTests();
+                }
+
                 // Launch urls in browser
                 this.notificationService.AddMessage("Launch urls...");
                 var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
@@ -123,6 +129,10 @@ namespace GitScc.Blinkbox
             return true;
         }
 
+        /// <summary>
+        /// Submits a test run to testswarm.
+        /// </summary>
+        /// <returns>the jobID asw a string</returns>
         public string SubmitTests()
         {
             var sccHelperService = BasicSccProvider.GetServiceEx<SccHelperService>();
@@ -133,11 +143,11 @@ namespace GitScc.Blinkbox
                 : SolutionSettings.Current.FeaturePath;
             var testSwarmUrl = SolutionSettings.Current.TestSwarmUrl.TrimEnd("/".ToCharArray());
             var testUrl = string.Format(
-                "{0}/Client/{1}/Test/Index.html?tags={2}&runnerMode={3}", 
+                "{0}/Client/{1}/Test/Index.html?tags={2}&runnermode={3}", 
                 testSwarmUrl,
                 sccHelperService.GetHeadRevisionHash(),
-                tag,
-                SolutionSettings.Current.TestRunnerMode);
+                tag.ToLower(),
+                SolutionSettings.Current.TestRunnerMode.ToLower());
 
             // get all feature files containing the specified tag.
             var featureFiles = Directory.GetFiles(featurePath, "*.feature", SearchOption.AllDirectories).AsEnumerable();
@@ -147,11 +157,11 @@ namespace GitScc.Blinkbox
             }
 
             // Build up the form
-            form.Append(string.Format("jobName={0}&runMax={1}", sccHelperService.GetLastCommitMessage(), 3));
+            form.Append(string.Format("jobName={0}&runMax={1}", HttpUtility.UrlEncode(sccHelperService.GetLastCommitMessage()), 3));
 
             foreach (var browserSet in SolutionSettings.Current.TestBrowserSets.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries))
             {
-                form.Append("&browserSets[]=").Append(browserSet);
+                form.Append("&browserSets[]=").Append(browserSet.ToLower());
             }
 
             foreach (var file in featureFiles)
@@ -162,15 +172,32 @@ namespace GitScc.Blinkbox
             }
 
             // Login to testswarm
+            this.notificationService.AddMessage("Login to " + testSwarmUrl + "/login");
+
             var login = this.Request(testSwarmUrl + "/login", string.Format("username={0}&password={1}", SolutionUserSettings.Current.TestSwarmUsername, SolutionUserSettings.Current.TestSwarmPassword));
             var authCookie = login.Headers["Set-Cookie"];
+            if (string.IsNullOrEmpty(authCookie))
+            {
+                this.notificationService.AddMessage("Login failed");
+            }
 
-            // Submit the jbo.
-            var job = this.Request(testSwarmUrl + "/addjob", form.ToString(), authCookie);
+
+            // Submit the job.
+            this.notificationService.AddMessage("Submit job");
+
+            var job = this.Request(testSwarmUrl + "/adddevboxjob", form.ToString(), authCookie);
             var jobId = job.Headers["X-TestSwarm-JobId"];
+            this.notificationService.AddMessage("jobID = " + jobId);
             return jobId;
         }
 
+        /// <summary>
+        /// Requests the specified URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="content">The content.</param>
+        /// <param name="authCookie">The auth cookie.</param>
+        /// <returns></returns>
         private System.Net.HttpWebResponse Request(string url, string content, string authCookie = null)
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
@@ -205,7 +232,7 @@ namespace GitScc.Blinkbox
                 string errorMessage;
                 try
                 {
-                    if (Blinkbox.Options.BlinkboxSccOptions.Current.LaunchDeployedUrlsInVS)
+                    if (UserSettings.Current.OpenUrlsInVS.GetValueOrDefault())
                     {
                         // launch in visual studio browser
                         var browserService = BasicSccProvider.GetServiceEx<SVsWebBrowsingService>() as IVsWebBrowsingService;

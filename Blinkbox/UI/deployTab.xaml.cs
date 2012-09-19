@@ -30,6 +30,22 @@ namespace GitScc.Blinkbox.UI
         /// </summary>
         private SccProviderService sccProviderInstance = null;
 
+        public SolutionUserSettings solutionUserSettings
+        {
+            get
+            {
+                return SolutionUserSettings.Current;
+            }
+        }
+
+        public SolutionSettings solutionSettings
+        {
+            get
+            {
+                return SolutionSettings.Current;
+            }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="deployTab"/> class.
         /// </summary>
@@ -38,7 +54,7 @@ namespace GitScc.Blinkbox.UI
             this.InitializeComponent();
 
             // Allow binding to local properties
-            this.DataContext = this;
+            grid.DataContext = this;
 
             // Register this component as a service so that we can use it externally. 
             BasicSccProvider.RegisterService(this);
@@ -48,8 +64,8 @@ namespace GitScc.Blinkbox.UI
                 sccProvider.OnSolutionOpen += (s, a) =>
                     {
                         // Refresh data context to trigger update
-                        this.DataContext = null;
-                        this.DataContext = this;
+                        grid.DataContext = null;
+                        grid.DataContext = this;
                     }; 
             }
         }
@@ -80,16 +96,13 @@ namespace GitScc.Blinkbox.UI
             }
         }
 
-        /// <summary>
-        /// Gets the solution settings.
-        /// </summary>
-        /// <value>The solution settings.</value>
-        public SolutionSettings solutionSettings
+
+
+        private void SaveButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            get
-            {
-                return this.SccProvider.SolutionOpen ? SolutionSettings.Current : null;
-            }
+            SolutionSettings.Current.Save();
+            SolutionUserSettings.Current.Save();
+            UserSettings.Current.Save();
         }
     }
 }
