@@ -42,7 +42,7 @@ namespace GitScc.Blinkbox.Options
                     if (!string.IsNullOrEmpty(solutionFileName))
                     {
                         // Solution is open. 
-                        string configFileName = Path.Combine(solutionDirectory, Path.GetFileNameWithoutExtension(solutionFileName) + ".settings.user");
+                        string configFileName = Path.Combine(solutionDirectory, Path.GetFileNameWithoutExtension(solutionFileName) + "." + Extension + ".user");
                         sccOptions = SettingsBase.LoadFromConfig<SolutionUserSettings>(configFileName);
                     }
                 }
@@ -57,7 +57,7 @@ namespace GitScc.Blinkbox.Options
         protected override void Init()
         {
             this.TestSwarmPassword = string.IsNullOrEmpty(this.TestSwarmPassword) ? "1234$abcd" : this.TestSwarmPassword;
-            this.TestSwarmTags = string.IsNullOrEmpty(this.TestSwarmTags) ? "devcomplete" : this.TestSwarmTags;
+            this.TestSwarmTags = string.IsNullOrEmpty(this.TestSwarmTags) ? SolutionSettings.Current.TestSwarmTags : this.TestSwarmTags;
             this.TestSwarmUsername = string.IsNullOrEmpty(this.TestSwarmUsername) ? Environment.UserName : this.TestSwarmUsername;
         }
     }

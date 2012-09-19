@@ -47,19 +47,9 @@ namespace GitScc.Blinkbox.UI
             {
                 sccProvider.OnSolutionOpen += (s, a) =>
                     {
-                        try
-                        {
-                            Action action = () =>
-                                {
-                                    this.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
-                                };
-
-                            this.Dispatcher.BeginInvoke(action, DispatcherPriority.ApplicationIdle);
-                        }
-                        catch 
-                        {
-                            
-                        }
+                        // Refresh data context to trigger update
+                        this.DataContext = null;
+                        this.DataContext = this;
                     }; 
             }
         }

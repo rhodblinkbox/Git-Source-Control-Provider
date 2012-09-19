@@ -10,7 +10,9 @@
 namespace GitScc.Blinkbox.UI
 {
     using System;
+    using System.Windows;
     using System.Windows.Controls;
+    using System.Windows.Data;
     using System.Windows.Threading;
 
     using GitScc.Blinkbox.Options;
@@ -20,6 +22,14 @@ namespace GitScc.Blinkbox.UI
     /// </summary>
     public partial class TestTab : UserControl
     {
+        public string TestProperty { get
+        {
+            return "test";
+        } set
+        {
+            
+        } }
+
         public SolutionUserSettings solutionUserSettings
         {
             get
@@ -41,6 +51,8 @@ namespace GitScc.Blinkbox.UI
         {
             InitializeComponent();
 
+            grid.DataContext = this;
+
             // Register this component as a service so that we can use it externally. 
             BasicSccProvider.RegisterService(this);
             var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
@@ -48,20 +60,9 @@ namespace GitScc.Blinkbox.UI
             {
                 sccProvider.OnSolutionOpen += (s, a) =>
                     {
-                        try
-                        {
-                            Action action = () =>
-                                {
-                                    this.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
-                                    this.GetBindingExpression(TextBox.TextProperty).UpdateSource();
-                                };
-
-                            this.Dispatcher.BeginInvoke(action, DispatcherPriority.ApplicationIdle);
-                        }
-                        catch
-                        {
-
-                        }
+                        // Refresh data context to trigger update
+                        grid.DataContext = null;
+                        grid.DataContext = this;
                     };
             }
         }

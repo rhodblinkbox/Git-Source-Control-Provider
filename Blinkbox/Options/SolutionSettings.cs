@@ -6,12 +6,7 @@
 
 namespace GitScc.Blinkbox.Options
 {
-    using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-
 
     /// <summary>
     /// TODO: Update summary.
@@ -28,7 +23,9 @@ namespace GitScc.Blinkbox.Options
         public string TestBrowserSets { get; set; }
         public string CurrentBranch { get; set; }
         public string TestRunnerMode { get; set; }
-        
+        public string TestSwarmTags { get; set; }
+        public string DeployProjectName { get; set; }
+
         /// <summary>
         /// Gets Current.
         /// </summary>
@@ -44,7 +41,7 @@ namespace GitScc.Blinkbox.Options
                     if (!string.IsNullOrEmpty(solutionFileName))
                     {
                         // Solution is open. 
-                        string configFileName = Path.Combine(solutionDirectory, Path.GetFileNameWithoutExtension(sccProvider.GetSolutionFileName()) + ".settings");
+                        string configFileName = Path.Combine(solutionDirectory, Path.GetFileNameWithoutExtension(sccProvider.GetSolutionFileName()) + "." + Extension);
 
                         sccOptions = SettingsBase.LoadFromConfig<SolutionSettings>(configFileName);
                     }
@@ -64,6 +61,8 @@ namespace GitScc.Blinkbox.Options
             this.TestBrowserSets = string.IsNullOrEmpty(this.TestBrowserSets) ? "default,currentDesktop" : this.TestBrowserSets;
             this.CurrentBranch = string.IsNullOrEmpty(this.CurrentBranch) ? "v0" : this.CurrentBranch;
             this.TestRunnerMode = string.IsNullOrEmpty(this.TestRunnerMode) ? "appfirst" : this.TestRunnerMode;
+            this.TestSwarmTags = string.IsNullOrEmpty(this.TestSwarmTags) ? "devcomplete" : this.TestSwarmTags;
+            this.DeployProjectName = string.IsNullOrEmpty(this.DeployProjectName) ? "postCommitDeploy.proj" : this.DeployProjectName;
         }
     }
 }

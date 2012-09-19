@@ -23,6 +23,11 @@ namespace GitScc.Blinkbox.Options
         protected string configFilePath;
 
         /// <summary>
+        /// Extension for the settings file.
+        /// </summary>
+        protected const string Extension = "bbSettings";
+
+        /// <summary>
         /// Loads settings from a config file.
         /// </summary>
         /// <typeparam name="Tsettings">The type of the settings.</typeparam>
