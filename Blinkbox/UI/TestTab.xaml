@@ -1,10 +1,12 @@
 ﻿<UserControl x:Class="GitScc.Blinkbox.UI.TestTab"
+             x:Name="TestTabControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300"
+             DataContext="{Binding ElementName=TestTabControl}">
     <Grid Name="grid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="130" />
@@ -39,18 +41,18 @@
         <Label Content="Runner mode:" Grid.Row="7" />
 
         <TextBox Name="testSwarmUsername" Grid.Row="1" Grid.Column="1" 
-                             Text="{Binding Path=solutionUserSettings.TestSwarmUsername, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                             Text="{Binding solutionUserSettings.TestSwarmUsername}" />
         <TextBox Name="testSwarmPassword"  Grid.Row="2" Grid.Column="1" 
-                             Text="{Binding Path=solutionUserSettings.TestSwarmPassword, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                             Text="{Binding solutionUserSettings.TestSwarmPassword}" />
         <TextBox Name="testSwarmTags" Grid.Row="3" Grid.Column="1" 
-                             Text="{Binding Path=solutionUserSettings.TestSwarmTags, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                             Text="{Binding solutionUserSettings.TestSwarmTags}" />
         <TextBox Name="testSwarmUrl" Grid.Row="4" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestSwarmUrl, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                             Text="{Binding solutionSettings.TestSwarmUrl}" />
         <TextBox Name="featurePath" Grid.Row="5" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.FeaturePath, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                             Text="{Binding solutionSettings.FeaturePath}" />
         <TextBox Name="browserSets" Grid.Row="6" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestBrowserSets, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                             Text="{Binding solutionSettings.TestBrowserSets}" />
         <TextBox Name="runnerMode" Grid.Row="7" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestRunnerMode, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                             Text="{Binding solutionSettings.TestRunnerMode}" />
     </Grid>
 </UserControl>

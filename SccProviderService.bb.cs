@@ -52,8 +52,8 @@ namespace GitScc
         public bool OperationInProgress()
         {
             var tracker = this.GetSolutionTracker();
-            return tracker.IsInTheMiddleOfBisect || tracker.IsInTheMiddleOfMerge || tracker.IsInTheMiddleOfPatch || tracker.IsInTheMiddleOfRebase
-                   || tracker.IsInTheMiddleOfRebaseI;
+            return tracker != null && (tracker.IsInTheMiddleOfBisect || tracker.IsInTheMiddleOfMerge || tracker.IsInTheMiddleOfPatch || tracker.IsInTheMiddleOfRebase
+                   || tracker.IsInTheMiddleOfRebaseI);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace GitScc
         /// <returns>the clean branchnameas used by git.</returns>
         public string CleanBranchName(string branchName)
         {
-            if (this.OperationInProgress())
+            if (!string.IsNullOrEmpty(branchName) && this.OperationInProgress())
             {
                 // the plugin appends an operation code to the branch name - remove it.
                 var parts = branchName.Split(new string[] { " | ", "|" }, StringSplitOptions.RemoveEmptyEntries);

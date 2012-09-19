@@ -45,7 +45,22 @@ namespace GitScc.Blinkbox.UI
             var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
             if (sccProvider != null)
             {
-                sccProvider.OnSolutionOpen += (s, a) => this.GetBindingExpression(TextBox.TextProperty).UpdateTarget(); 
+                sccProvider.OnSolutionOpen += (s, a) =>
+                    {
+                        try
+                        {
+                            Action action = () =>
+                                {
+                                    this.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
+                                };
+
+                            this.Dispatcher.BeginInvoke(action, DispatcherPriority.ApplicationIdle);
+                        }
+                        catch 
+                        {
+                            
+                        }
+                    }; 
             }
         }
 

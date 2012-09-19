@@ -239,7 +239,11 @@ namespace GitScc.Blinkbox
         /// <returns>The branch</returns>
         public string GetCurrentBranch()
         {
-            return this.sccProvider.CleanBranchName(this.Tracker.CurrentBranch);
+            if (this.Tracker != null)
+            {
+                return this.sccProvider.CleanBranchName(this.Tracker.CurrentBranch);
+            }
+            return null;
         }
 
         /// <summary>
@@ -250,8 +254,12 @@ namespace GitScc.Blinkbox
         public string GetHeadRevisionHash(string branchName = null)
         {
             branchName = branchName ?? this.GetCurrentBranch();
-            var revision = RunGitCommand("rev-parse " + branchName, wait: true, silent: true).Output;
-            return revision.Replace("\n", string.Empty); // Git adds a return to the revision
+            if (!string.IsNullOrEmpty(branchName))
+            {
+                var revision = RunGitCommand("rev-parse " + branchName, wait: true, silent: true).Output;
+                return revision.Replace("\n", string.Empty); // Git adds a return to the revision
+            }
+            return null;
         }
 
         /// <summary>

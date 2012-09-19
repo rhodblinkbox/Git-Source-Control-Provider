@@ -155,7 +155,7 @@ namespace GitScc.Blinkbox
 
                     var currentBranch = this.sccHelper.GetCurrentBranch();
 
-                    if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
+                    if (string.IsNullOrEmpty(currentBranch) || !this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
                     {
                         return;
                     }
@@ -220,7 +220,7 @@ namespace GitScc.Blinkbox
 
             var currentBranch = this.sccHelper.GetCurrentBranch();
 
-            if (!this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
+            if (string.IsNullOrEmpty(currentBranch) || !this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
             {
                 return;
             }
@@ -256,11 +256,16 @@ namespace GitScc.Blinkbox
                 {
                     this.lastTfsFetch = DateTime.Now;
                     this.FetchFromTfs(silent: true);
-                    var aheadBehind = SccHelperService.BranchAheadOrBehind(this.sccHelper.GetCurrentBranch(), BlinkboxSccOptions.Current.TfsRemoteBranch);
-                    var pendingChanges = BasicSccProvider.GetServiceEx<BBPendingChanges>();
-                    if (pendingChanges != null)
+                    var branch = this.sccHelper.GetCurrentBranch();
+                    
+                    if (!string.IsNullOrEmpty(branch))
                     {
-                        pendingChanges.UpdateTfsStatus(aheadBehind);
+                        var aheadBehind = SccHelperService.BranchAheadOrBehind(branch, BlinkboxSccOptions.Current.TfsRemoteBranch);
+                        var pendingChanges = BasicSccProvider.GetServiceEx<BBPendingChanges>();
+                        if (pendingChanges != null)
+                        {
+                            pendingChanges.UpdateTfsStatus(aheadBehind);
+                        }
                     }
                 };
 
