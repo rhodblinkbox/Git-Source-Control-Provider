@@ -26,7 +26,7 @@ namespace GitScc.Blinkbox
     /// <summary>
     /// Performs deployments 
     /// </summary>
-    public class Deployment
+    public class DeploymentService
     {
         /// <summary>
         /// The current instance of the <see cref="SccProviderService"/>
@@ -39,10 +39,10 @@ namespace GitScc.Blinkbox
         private readonly NotificationService notificationService;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Deployment"/> class.
+        /// Initializes a new instance of the <see cref="DeploymentService"/> class.
         /// </summary>
         /// <param name="basicSccProvider">The basic SCC provider.</param>
-        public Deployment(BasicSccProvider basicSccProvider)
+        public DeploymentService(BasicSccProvider basicSccProvider)
         {
             this.sccProviderService = basicSccProvider.GetService<SccProviderService>();
             this.notificationService = basicSccProvider.GetService<NotificationService>();

@@ -67,6 +67,11 @@ namespace GitScc
         private DevelopmentService developmentService;
 
         /// <summary>
+        /// Instance of the  <see cref="DevelopmentService"/>
+        /// </summary>
+        private DeploymentService deploymentService;
+
+        /// <summary>
         /// Registers a service.
         /// </summary>
         /// <typeparam name="T">The thye of the service to register.</typeparam>
@@ -104,6 +109,9 @@ namespace GitScc
 
             this.developmentService = new DevelopmentService(this, this.sccService, this.notificationService, this.sccHelperService);
             RegisterService(this.developmentService);
+
+            this.deploymentService = new DeploymentService(this);
+            RegisterService(this.deploymentService);
         }
 
         /// <summary>
@@ -173,7 +181,7 @@ namespace GitScc
             {
                 Name = "Submit Tests",
                 CommandId = CommandId.SubmitTestButtonId,
-                Handler = () => new Deployment(this).SubmitTests()
+                Handler = () => this.deploymentService.SubmitTests()
             });
 
             commands.Add(new GitTfsCommand
@@ -353,7 +361,7 @@ namespace GitScc
                             Hash = sccHelperService.GetHeadRevisionHash(),
                             Message = sccHelperService.GetLastCommitMessage() + " Re-deploy"
                         };
-                        new Deployment(this).RunDeploy(commit);
+                        this.deploymentService.RunDeploy(commit);
                     };
 
                 this.notificationService.ClearMessages();
