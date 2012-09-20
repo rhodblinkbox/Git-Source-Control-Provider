@@ -39,6 +39,13 @@ namespace GitScc.Blinkbox
         private readonly NotificationService notificationService;
 
         /// <summary>
+        /// List the deployments made
+        /// </summary>
+        private List<Deployment> deployments = new List<Deployment>();
+
+        public List<Deployment> Deployments { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DeploymentService"/> class.
         /// </summary>
         /// <param name="basicSccProvider">The basic SCC provider.</param>
@@ -46,20 +53,24 @@ namespace GitScc.Blinkbox
         {
             this.sccProviderService = basicSccProvider.GetService<SccProviderService>();
             this.notificationService = basicSccProvider.GetService<NotificationService>();
+
+            // Register this component as a service so that we can use it externally. 
+            BasicSccProvider.RegisterService(this);
+            var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
+            if (sccProvider != null)
+            {
+                sccProvider.OnSolutionOpen += (s, a) => { Deployments = UserSettings.Current.Last5Deployments; };
+            }
         }
 
         /// <summary>
         /// Deploys using the deploy project specified in settings.
         /// </summary>
-        /// <param name="commit">
-        /// The commit. Supplied if called after a successful commit, otherwise a new instance is created. 
-        /// </param>
-        /// <returns>
-        /// true if the deploy was successful.
-        /// </returns>
-        public bool RunDeploy(CommitData commit)
+        /// <param name="deployment">The deployment.</param>
+        /// <returns>true if the deploy was successful.</returns>
+        public bool RunDeploy(Deployment deployment)
         {
-            this.notificationService.AddMessage("Begin build and deploy to " + commit.Hash);
+            this.notificationService.AddMessage("Begin build and deploy to " + deployment.Version);
 
             // Look for a deploy project
             var buildProjectFileName = Path.IsPathRooted(SolutionSettings.Current.DeployProjectLocation)
@@ -77,13 +88,13 @@ namespace GitScc.Blinkbox
             // Initisalise our own project collection which can be cleaned up after the build. This is to prevent caching of the project. 
             using (var projectCollection = new ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection.GlobalProjectCollection.ToolsetLocations))
             {
-                var commitComment = Regex.Replace(commit.Message, @"\r|\n|\t", string.Empty);
+                var commitComment = Regex.Replace(deployment.Message, @"\r|\n|\t", string.Empty);
                 commitComment = HttpUtility.UrlEncode(commitComment.Substring(0, commitComment.Length > 80 ? 80 : commitComment.Length));
 
                 // Global properties need to be set before the projects are instantiated. 
                 var globalProperties = new Dictionary<string, string>
                     {
-                        { BlinkboxSccOptions.Current.CommitGuidPropertyName, commit.Hash }, 
+                        { BlinkboxSccOptions.Current.CommitGuidPropertyName, deployment.Version }, 
                         { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment }
                     };
                 var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
@@ -123,6 +134,8 @@ namespace GitScc.Blinkbox
                         this.LaunchBrowser(launchItem.EvaluatedInclude);
                     }
                 }
+
+                this.deployments.Add(deployment);
 
                 // Clean up project to prevent caching.
                 projectCollection.UnloadAllProjects();

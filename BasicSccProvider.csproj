@@ -98,6 +98,7 @@
     </Compile>
     <Compile Include="Blinkbox\Data\AheadBehind.cs" />
     <Compile Include="Blinkbox\Data\CommandException.cs" />
+    <Compile Include="Blinkbox\Data\Deployment.cs" />
     <Compile Include="Blinkbox\Options\UserSettings.cs" />
     <Compile Include="Blinkbox\Options\SolutionUserSettings.cs" />
     <Compile Include="Blinkbox\Options\SettingsBase.cs" />
@@ -125,7 +126,7 @@
     <Compile Include="Blinkbox\SccCommand.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Blinkbox\Deployment.cs" />
+    <Compile Include="Blinkbox\DeploymentService.cs" />
     <Compile Include="Blinkbox\GitCommand.cs">
       <SubType>Component</SubType>
     </Compile>

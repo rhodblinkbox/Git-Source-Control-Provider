@@ -356,12 +356,12 @@ namespace GitScc
                 // Run the following action asynchronously
                 Action action = () =>
                     {
-                        var commit = new CommitData 
+                        var deployment = new Deployment 
                         {
-                            Hash = sccHelperService.GetHeadRevisionHash(),
+                            Version = sccHelperService.GetHeadRevisionHash(),
                             Message = sccHelperService.GetLastCommitMessage() + " Re-deploy"
                         };
-                        this.deploymentService.RunDeploy(commit);
+                        this.deploymentService.RunDeploy(deployment);
                     };
 
                 this.notificationService.ClearMessages();

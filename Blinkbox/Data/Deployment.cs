@@ -14,7 +14,11 @@ namespace GitScc.Blinkbox.Data
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class Deploy
+    [Serializable]
+    public class Deployment
     {
+        public string Version { get; set; }
+
+        public string Message { get; set; }
     }
 }
