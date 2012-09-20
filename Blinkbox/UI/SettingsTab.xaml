@@ -37,10 +37,10 @@
         <Label Content="Preview Get Latest:" Grid.Row="2"  />
 
         <CheckBox Name="openUrlsInVs" Grid.Row="1" Grid.Column="1" 
-                             IsChecked="{Binding userSettings.OpenUrlsInVS}" Margin="0,0,449,0" />
+                             IsChecked="{Binding Path=userSettings.OpenUrlsInVS}" Margin="0,0,449,0" />
 
         <CheckBox Name="previewGetLatest" Grid.Row="2" Grid.Column="1" 
-                             IsChecked="{Binding userSettings.PreviewGetLatest}" Margin="0,0,449,0" />
+                             IsChecked="{Binding Path=userSettings.PreviewGetLatest}" Margin="0,0,449,0" />
 
         
     </Grid>

@@ -113,12 +113,15 @@ namespace GitScc.Blinkbox
                     this.SubmitTests();
                 }
 
-                // Launch urls in browser
-                this.notificationService.AddMessage("Launch urls...");
-                var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
-                foreach (var launchItem in launchUrls)
+                if (UserSettings.Current.OpenUrlsAfterDeploy.GetValueOrDefault())
                 {
-                    this.LaunchBrowser(launchItem.EvaluatedInclude);
+                    // Launch urls in browser
+                    this.notificationService.AddMessage("Launch urls...");
+                    var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
+                    foreach (var launchItem in launchUrls)
+                    {
+                        this.LaunchBrowser(launchItem.EvaluatedInclude);
+                    }
                 }
 
                 // Clean up project to prevent caching.

@@ -25,6 +25,7 @@ namespace GitScc.Blinkbox.Options
 
         public bool? PreviewGetLatest { get; set; }
         public bool? OpenUrlsInVS { get; set; }
+        public bool? OpenUrlsAfterDeploy { get; set; }
         
         /// <summary>
         /// Gets Current.
@@ -35,7 +36,7 @@ namespace GitScc.Blinkbox.Options
             {
                 if (sccOptions == null)
                 {
-                    string configFileName = Path.Combine(Environment.SpecialFolder.ApplicationData.ToString(), "blinkboxScc.settings");
+                    string configFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "blinkboxScc.settings");
                     sccOptions = SettingsBase.LoadFromConfig<UserSettings>(configFileName);
                 }
 
@@ -50,6 +51,7 @@ namespace GitScc.Blinkbox.Options
         {
             this.PreviewGetLatest = this.PreviewGetLatest ?? false;
             this.OpenUrlsInVS = this.OpenUrlsInVS ?? false;
+            this.OpenUrlsAfterDeploy = this.OpenUrlsAfterDeploy ?? true;
         }
     }
 }

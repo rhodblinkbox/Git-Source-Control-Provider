@@ -76,7 +76,10 @@ namespace GitScc.Blinkbox.Options
             var serialiser = new XmlSerializer(this.GetType());
             using (TextWriter tw = new StreamWriter(this.configFilePath))
             {
-                serialiser.Serialize(tw, this);
+                lock (this.configFilePath)
+                {
+                    serialiser.Serialize(tw, this);
+                }
             }
         }
 
