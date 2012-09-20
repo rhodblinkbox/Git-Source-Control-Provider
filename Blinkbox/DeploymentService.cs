@@ -14,6 +14,7 @@ namespace GitScc.Blinkbox
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Web;
+    using System.Xml;
 
     using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
@@ -26,7 +27,7 @@ namespace GitScc.Blinkbox
     /// <summary>
     /// Performs deployments 
     /// </summary>
-    public class DeploymentService
+    public class DeploymentService : IDisposable
     {
         /// <summary>
         /// The current instance of the <see cref="SccProviderService"/>
@@ -53,14 +54,6 @@ namespace GitScc.Blinkbox
         {
             this.sccProviderService = basicSccProvider.GetService<SccProviderService>();
             this.notificationService = basicSccProvider.GetService<NotificationService>();
-
-            // Register this component as a service so that we can use it externally. 
-            BasicSccProvider.RegisterService(this);
-            var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
-            if (sccProvider != null)
-            {
-                sccProvider.OnSolutionOpen += (s, a) => { Deployments = UserSettings.Current.Last5Deployments; };
-            }
         }
 
         /// <summary>
@@ -155,12 +148,12 @@ namespace GitScc.Blinkbox
             var form = new StringBuilder();
             var tag = SolutionUserSettings.Current.TestSwarmTags;
             var featurePath = SolutionSettings.Current.FeaturePath.StartsWith("\\")
-                ? this.sccProviderService.GetSolutionDirectory() + "\\" + SolutionSettings.Current.FeaturePath
+                ? this.sccProviderService.GetSolutionDirectory().TrimEnd("\\".ToCharArray()) + SolutionSettings.Current.FeaturePath
                 : SolutionSettings.Current.FeaturePath;
             var testSwarmUrl = SolutionSettings.Current.TestSwarmUrl.TrimEnd("/".ToCharArray());
             var testUrl = string.Format(
-                "{0}/Client/{1}/Test/Index.html?tags={2}&runnermode={3}", 
-                testSwarmUrl,
+                "http://tv-{0}.bbdev1.com/Client/V2-dev-{1}/Test/Index.html?tags={2}&runnermode={3}", 
+                Environment.MachineName,
                 sccHelperService.GetHeadRevisionHash(),
                 tag.ToLower(),
                 SolutionSettings.Current.TestRunnerMode.ToLower());
@@ -173,7 +166,11 @@ namespace GitScc.Blinkbox
             }
 
             // Build up the form
-            form.Append(string.Format("jobName={0}&runMax={1}", HttpUtility.UrlEncode(sccHelperService.GetLastCommitMessage()), 3));
+            form.Append(string.Format(
+                "jobName={0} ({1})&runMax={2}", 
+                sccHelperService.GetLastCommitMessage(),
+                sccHelperService.GetHeadRevisionHash(),
+                3));
 
             foreach (var browserSet in SolutionSettings.Current.TestBrowserSets.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries))
             {
@@ -184,7 +181,9 @@ namespace GitScc.Blinkbox
             {
                 var featureName = file.Replace(featurePath, string.Empty);
                 form.Append("&runNames[]=").Append(featureName);
-                form.Append("&runUrls[]=").Append(System.Web.HttpUtility.UrlEncode(testUrl + "&featurepath=" + featureName));
+
+                // NOTE: capitalisation of pfeaturePath is important. 
+                form.Append("&runUrls[]=").Append(System.Web.HttpUtility.UrlEncode(testUrl + "&featurePath=" + featureName));
             }
 
             // Login to testswarm
@@ -202,9 +201,26 @@ namespace GitScc.Blinkbox
             this.notificationService.AddMessage("Submit job");
 
             var job = this.Request(testSwarmUrl + "/adddevboxjob", form.ToString(), authCookie);
-            var jobId = job.Headers["X-TestSwarm-JobId"];
-            this.notificationService.AddMessage("jobID = " + jobId);
-            return jobId;
+            if (job.StatusCode == HttpStatusCode.OK)
+            {
+                var jobId = job.Headers["X-TestSwarm-JobId"];
+                this.notificationService.AddMessage("jobID = " + jobId);
+            }
+            else
+            {
+                NotificationService.DisplayError("Testswarm submit failed", "Testswarm submit failed");
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+
         }
 
         /// <summary>

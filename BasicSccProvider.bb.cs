@@ -111,7 +111,6 @@ namespace GitScc
             RegisterService(this.developmentService);
 
             this.deploymentService = new DeploymentService(this);
-            RegisterService(this.deploymentService);
         }
 
         /// <summary>

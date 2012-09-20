@@ -8,8 +8,8 @@
     <Grid Name="grid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="130" />
-            <ColumnDefinition Width="126" />
-            <ColumnDefinition Width="668" />
+            <ColumnDefinition Width="189" />
+            <ColumnDefinition Width="605" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -36,9 +36,9 @@
                              Text="{Binding Path=solutionSettings.DeployProjectLocation}" />
 
         <CheckBox Name="submitTestsOnDeploy" Grid.Row="2" Grid.Column="1" 
-                             IsChecked="{Binding Path=solutionUserSettings.SubmitTestsOnDeploy}" />
+                             IsChecked="{Binding Path=solutionUserSettings.SubmitTestsOnDeploy}" Margin="0,0,63,0" />
 
         <CheckBox Name="openUrlsAfterDeploy" Grid.Row="3" Grid.Column="1" 
-                             IsChecked="{Binding Path=solutionUserSettings.OpenUrlsAfterDeploy}" />
+                             IsChecked="{Binding Path=solutionUserSettings.OpenUrlsAfterDeploy}" Margin="0,0,63,0" />
     </Grid>
 </UserControl>
