@@ -13,6 +13,7 @@ namespace GitScc.Blinkbox.UI
     using System.Windows.Controls;
     using System.Windows.Threading;
 
+    using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
 
     /// <summary>
@@ -46,6 +47,8 @@ namespace GitScc.Blinkbox.UI
             }
         }
 
+        public Deployment LastDeployment { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="deployTab"/> class.
         /// </summary>
@@ -61,13 +64,18 @@ namespace GitScc.Blinkbox.UI
             var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
             if (sccProvider != null)
             {
-                sccProvider.OnSolutionOpen += (s, a) =>
-                    {
-                        // Refresh data context to trigger update
-                        grid.DataContext = null;
-                        grid.DataContext = this;
-                    }; 
+                sccProvider.OnSolutionOpen += (s, a) => this.RefreshBindings(); 
             }
+        }
+
+        /// <summary>
+        /// Refreshes the data context bindings to update the UI.
+        /// </summary>
+        public void RefreshBindings()
+        {
+            // TODO: proper way to do this?
+            grid.DataContext = null;
+            grid.DataContext = this;
         }
 
         /// <summary>
@@ -103,6 +111,23 @@ namespace GitScc.Blinkbox.UI
             SolutionSettings.Current.Save();
             SolutionUserSettings.Current.Save();
             UserSettings.Current.Save();
+        }
+
+        private void Deploylink_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (LastDeployment == null)
+            {
+                return;
+            }
+
+            if (sender == AppLink)
+            {
+                BasicSccProvider.LaunchBrowser(this.LastDeployment.AppUrl);
+            }
+            else
+            {
+                BasicSccProvider.LaunchBrowser(this.LastDeployment.TestRunUrl);
+            }
         }
     }
 }

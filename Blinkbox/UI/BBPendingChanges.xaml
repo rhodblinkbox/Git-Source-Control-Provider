@@ -9,6 +9,7 @@
     mc:Ignorable="d" 
 			 d:DesignHeight="300" d:DesignWidth="800">
 
+
     <Grid x:Name="Main" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
         <TabControl Padding="0,0,0,0">

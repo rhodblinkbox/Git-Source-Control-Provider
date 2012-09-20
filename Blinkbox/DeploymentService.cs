@@ -14,21 +14,25 @@ namespace GitScc.Blinkbox
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Web;
-    using System.Xml;
 
     using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
+    using GitScc.Blinkbox.UI;
 
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
     using Microsoft.Build.Framework;
-    using Microsoft.VisualStudio.Shell.Interop;
 
     /// <summary>
     /// Performs deployments 
     /// </summary>
     public class DeploymentService : IDisposable
     {
+        /// <summary>
+        /// The current instance of the <see cref="SccProviderService"/>
+        /// </summary>
+        private readonly BasicSccProvider basicSccProvider;
+
         /// <summary>
         /// The current instance of the <see cref="SccProviderService"/>
         /// </summary>
@@ -52,6 +56,7 @@ namespace GitScc.Blinkbox
         /// <param name="basicSccProvider">The basic SCC provider.</param>
         public DeploymentService(BasicSccProvider basicSccProvider)
         {
+            this.basicSccProvider = basicSccProvider;
             this.sccProviderService = basicSccProvider.GetService<SccProviderService>();
             this.notificationService = basicSccProvider.GetService<NotificationService>();
         }
@@ -117,14 +122,17 @@ namespace GitScc.Blinkbox
                     this.SubmitTests();
                 }
 
+                var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
+                deployment.AppUrl = msbuildProject.Properties.FirstOrDefault(p => p.Name == "LaunchAppUrl").EvaluatedValue;
+                deployment.TestRunUrl = msbuildProject.Properties.FirstOrDefault(p => p.Name == "LaunchTestRunUrl").EvaluatedValue;
+
                 if (UserSettings.Current.OpenUrlsAfterDeploy.GetValueOrDefault())
                 {
                     // Launch urls in browser
                     this.notificationService.AddMessage("Launch urls...");
-                    var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
                     foreach (var launchItem in launchUrls)
                     {
-                        this.LaunchBrowser(launchItem.EvaluatedInclude);
+                        BasicSccProvider.LaunchBrowser(launchItem.EvaluatedInclude);
                     }
                 }
 
@@ -133,6 +141,15 @@ namespace GitScc.Blinkbox
                 // Clean up project to prevent caching.
                 projectCollection.UnloadAllProjects();
                 projectCollection.UnregisterAllLoggers();
+
+                try
+                {
+                    var deployTab = BasicSccProvider.GetServiceEx<deployTab>();
+                    deployTab.LastDeployment = deployment;
+                    deployTab.RefreshBindings();
+                }
+                catch
+                { }
             }
 
             return true;
@@ -251,46 +268,6 @@ namespace GitScc.Blinkbox
 
             var response = request.GetResponse();
             return (HttpWebResponse)response;
-        }
-
-        /// <summary>
-        /// Launches the provided url in the Visual Studio browser.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        private void LaunchBrowser(string url)
-        {
-            if (!string.IsNullOrEmpty(url))
-            {
-                string errorMessage;
-                try
-                {
-                    if (UserSettings.Current.OpenUrlsInVS.GetValueOrDefault())
-                    {
-                        // launch in visual studio browser
-                        var browserService = BasicSccProvider.GetServiceEx<SVsWebBrowsingService>() as IVsWebBrowsingService;
-                        if (browserService != null)
-                        {
-                            IVsWindowFrame frame;
-
-                            // passing 0 to the NavigateFlags allows the browser service to reuse open instances of the internal browser.
-                            browserService.Navigate(url, 0, out frame);
-                        }
-                    }
-                    else
-                    {
-                        // Launch in default browser
-                        System.Diagnostics.Process.Start(url);
-                    }
-
-                    return;
-                }
-                catch (Exception e)
-                {
-                    errorMessage = e.Message;
-                }
-
-                NotificationService.DisplayError("Browser failed", "Cannot launch " + url + ": " + errorMessage);
-            }
         }
     }
 }

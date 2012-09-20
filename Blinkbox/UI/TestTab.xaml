@@ -7,12 +7,23 @@
              xmlns:this="GitScc.Blinkbox.UI.TestTab" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800">
-
+    
+    <Control.Resources>
+        <Style TargetType="CheckBox">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="10,0,0,0" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="0,4,0,4" />
+        </Style>
+    </Control.Resources>
 
     <Grid Name="grid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="130" />
-            <ColumnDefinition Width="794" />
+            <ColumnDefinition Width="348" />
+            <ColumnDefinition Width="108" />
+            <ColumnDefinition Width="214*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -31,9 +42,11 @@
                 <GradientStop Color="White" Offset="0" />
             </LinearGradientBrush>
         </Grid.Background>
-        
-        <Button Name="SaveButton" Content="Save" Click="SaveButton_Click" />
-        
+
+        <TextBlock Padding="10,10,0,10">
+            <Hyperlink Name="SaveButton" Click="SaveButton_Click">Save</Hyperlink>
+        </TextBlock>
+       
         <Label Content="TestSwarm username:" Grid.Row="1"  />
         <Label Content="TestSwarm password:" Grid.Row="2" />
         <Label Content="TestSwarm tags:" Grid.Row="3" />
@@ -43,18 +56,22 @@
         <Label Content="Runner mode:" Grid.Row="7" />
 
         <TextBox Name="testSwarmUsername" Grid.Row="1" Grid.Column="1" 
-                             Text="{Binding solutionUserSettings.TestSwarmUsername}" Margin="0,0,449,0" />
+                             Text="{Binding solutionUserSettings.TestSwarmUsername, Mode=TwoWay}" Margin="0,0,3,0" />
         <TextBox Name="testSwarmPassword" Grid.Row="2" Grid.Column="1" 
-                             Text="{Binding solutionUserSettings.TestSwarmPassword}" Margin="0,0,449,0" />
+                             Text="{Binding solutionUserSettings.TestSwarmPassword}" Margin="0,0,3,0" />
         <TextBox Name="testSwarmTags" Grid.Row="3" Grid.Column="1" 
-                             Text="{Binding Path=solutionUserSettings.TestSwarmTags}" Margin="0,0,449,0" />
+                             Text="{Binding Path=solutionUserSettings.TestSwarmTags, Mode=TwoWay}" Margin="0,0,3,0" />
         <TextBox Name="testSwarmUrl" Grid.Row="4" Grid.Column="1" 
-                             Text="{Binding solutionSettings.TestSwarmUrl}" Margin="0,0,449,0" />
+                             Text="{Binding solutionSettings.TestSwarmUrl, Mode=TwoWay}" Margin="0,0,3,0" />
         <TextBox Name="featurePath" Grid.Row="5" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.FeaturePath}" Margin="0,0,449,0" />
+                             Text="{Binding Path=solutionSettings.FeaturePath, Mode=TwoWay}" Margin="0,0,3,0" />
         <TextBox Name="browserSets" Grid.Row="6" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestBrowserSets}" Margin="0,0,449,0" />
+                             Text="{Binding Path=solutionSettings.TestBrowserSets, Mode=TwoWay}" Margin="0,0,3,0" />
         <TextBox Name="runnerMode" Grid.Row="7" Grid.Column="1" 
-                             Text="{Binding Path=TestProperty}" Margin="0,0,449,0" />
+                             Text="{Binding Path=solutionSettings.TestRunnerMode, Mode=TwoWay}" Margin="0,0,3,0" />
+
+        <TextBlock Grid.Column="1" Padding="10,10,0,10">
+            <Hyperlink Name="OpenTestSwarm" Click="Hyperlink_Click">Open Testswarm</Hyperlink>
+        </TextBlock>
     </Grid>
 </UserControl>

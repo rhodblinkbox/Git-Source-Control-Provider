@@ -22,6 +22,7 @@ namespace GitScc
 
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.OLE.Interop;
+    using Microsoft.VisualStudio.Shell.Interop;
 
     using MsVsShell = Microsoft.VisualStudio.Shell;
 
@@ -94,6 +95,48 @@ namespace GitScc
         public T GetService<T>()
         {
             return (T)base.GetService(typeof(T));
+        }
+
+
+
+        /// <summary>
+        /// Launches the provided url in the Visual Studio browser.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        public static void LaunchBrowser(string url)
+        {
+            if (!string.IsNullOrEmpty(url))
+            {
+                string errorMessage;
+                try
+                {
+                    if (UserSettings.Current.OpenUrlsInVS.GetValueOrDefault())
+                    {
+                        // launch in visual studio browser
+                        var browserService = BasicSccProvider.GetServiceEx<SVsWebBrowsingService>() as IVsWebBrowsingService;
+                        if (browserService != null)
+                        {
+                            IVsWindowFrame frame;
+
+                            // passing 0 to the NavigateFlags allows the browser service to reuse open instances of the internal browser.
+                            browserService.Navigate(url, 0, out frame);
+                        }
+                    }
+                    else
+                    {
+                        // Launch in default browser
+                        System.Diagnostics.Process.Start(url);
+                    }
+
+                    return;
+                }
+                catch (Exception e)
+                {
+                    errorMessage = e.Message;
+                }
+
+                NotificationService.DisplayError("Browser failed", "Cannot launch " + url + ": " + errorMessage);
+            }
         }
 
         /// <summary>

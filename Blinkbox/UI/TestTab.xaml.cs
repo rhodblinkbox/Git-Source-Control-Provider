@@ -64,5 +64,10 @@ namespace GitScc.Blinkbox.UI
             SolutionSettings.Current.Save();
             SolutionUserSettings.Current.Save();
         }
+
+        private void Hyperlink_Click(object sender, RoutedEventArgs e)
+        {
+            BasicSccProvider.LaunchBrowser(SolutionSettings.Current.TestSwarmUrl + "/user/" + SolutionUserSettings.Current.TestSwarmUsername);
+        }
     }
 }
