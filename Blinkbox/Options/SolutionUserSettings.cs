@@ -12,6 +12,7 @@ namespace GitScc.Blinkbox.Options
     using System.Linq;
     using System.Text;
 
+    using GitScc.Blinkbox.Data;
 
     /// <summary>
     /// TODO: Update summary.
@@ -27,6 +28,8 @@ namespace GitScc.Blinkbox.Options
         public string TestSwarmPassword { get; set; }
         public string TestSwarmTags { get; set; }
         public bool? SubmitTestsOnDeploy { get; set; }
+
+        public Deployment LastDeployment { get; set; }
         
 
         /// <summary>
@@ -62,7 +65,6 @@ namespace GitScc.Blinkbox.Options
             this.TestSwarmTags = string.IsNullOrEmpty(this.TestSwarmTags) ? SolutionSettings.Current.TestSwarmTags : this.TestSwarmTags;
             this.TestSwarmUsername = string.IsNullOrEmpty(this.TestSwarmUsername) ? Environment.UserName : this.TestSwarmUsername;
             this.SubmitTestsOnDeploy = this.SubmitTestsOnDeploy ?? true;
-            
         }
     }
 }

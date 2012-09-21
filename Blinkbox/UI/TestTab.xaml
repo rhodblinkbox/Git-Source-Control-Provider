@@ -14,7 +14,7 @@
             <Setter Property="Margin" Value="10,0,0,0" />
         </Style>
         <Style TargetType="TextBox">
-            <Setter Property="Margin" Value="0,4,0,4" />
+            <Setter Property="Margin" Value="0,1,0,1" />
         </Style>
     </Control.Resources>
 
@@ -26,6 +26,8 @@
             <ColumnDefinition Width="214*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -54,21 +56,24 @@
         <Label Content="Feature Files:" Grid.Row="5" />
         <Label Content="Browser Sets:" Grid.Row="6" />
         <Label Content="Runner mode:" Grid.Row="7" />
+        <Label Content="Test submission script:" Grid.Row="8" />
 
         <TextBox Name="testSwarmUsername" Grid.Row="1" Grid.Column="1" 
-                             Text="{Binding solutionUserSettings.TestSwarmUsername, Mode=TwoWay}" Margin="0,0,3,0" />
+                             Text="{Binding solutionUserSettings.TestSwarmUsername, Mode=TwoWay}" />
         <TextBox Name="testSwarmPassword" Grid.Row="2" Grid.Column="1" 
-                             Text="{Binding solutionUserSettings.TestSwarmPassword}" Margin="0,0,3,0" />
+                             Text="{Binding solutionUserSettings.TestSwarmPassword}" />
         <TextBox Name="testSwarmTags" Grid.Row="3" Grid.Column="1" 
-                             Text="{Binding Path=solutionUserSettings.TestSwarmTags, Mode=TwoWay}" Margin="0,0,3,0" />
+                             Text="{Binding Path=solutionUserSettings.TestSwarmTags, Mode=TwoWay}" />
         <TextBox Name="testSwarmUrl" Grid.Row="4" Grid.Column="1" 
-                             Text="{Binding solutionSettings.TestSwarmUrl, Mode=TwoWay}" Margin="0,0,3,0" />
+                             Text="{Binding solutionSettings.TestSwarmUrl, Mode=TwoWay}" />
         <TextBox Name="featurePath" Grid.Row="5" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.FeaturePath, Mode=TwoWay}" Margin="0,0,3,0" />
+                             Text="{Binding Path=solutionSettings.FeaturePath, Mode=TwoWay}" />
         <TextBox Name="browserSets" Grid.Row="6" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestBrowserSets, Mode=TwoWay}" Margin="0,0,3,0" />
+                             Text="{Binding Path=solutionSettings.TestBrowserSets, Mode=TwoWay}" />
         <TextBox Name="runnerMode" Grid.Row="7" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestRunnerMode, Mode=TwoWay}" Margin="0,0,3,0" />
+                             Text="{Binding Path=solutionSettings.TestRunnerMode, Mode=TwoWay}" />
+        <TextBox Name="testSubmissionScript" Grid.Row="8" Grid.Column="1" 
+                             Text="{Binding Path=solutionSettings.TestSubmissionScript, Mode=TwoWay}" />
 
         <TextBlock Grid.Column="1" Padding="10,10,0,10">
             <Hyperlink Name="OpenTestSwarm" Click="Hyperlink_Click">Open Testswarm</Hyperlink>

@@ -10,7 +10,10 @@
 namespace GitScc.Blinkbox.UI
 {
     using System;
+    using System.Globalization;
+    using System.Windows;
     using System.Windows.Controls;
+    using System.Windows.Data;
     using System.Windows.Threading;
 
     using GitScc.Blinkbox.Data;
@@ -129,5 +132,6 @@ namespace GitScc.Blinkbox.UI
                 BasicSccProvider.LaunchBrowser(this.LastDeployment.TestRunUrl);
             }
         }
+
     }
 }

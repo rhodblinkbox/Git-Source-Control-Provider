@@ -44,13 +44,6 @@ namespace GitScc.Blinkbox
         private readonly NotificationService notificationService;
 
         /// <summary>
-        /// List the deployments made
-        /// </summary>
-        private List<Deployment> deployments = new List<Deployment>();
-
-        public List<Deployment> Deployments { get; private set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="DeploymentService"/> class.
         /// </summary>
         /// <param name="basicSccProvider">The basic SCC provider.</param>
@@ -67,6 +60,52 @@ namespace GitScc.Blinkbox
         /// <param name="deployment">The deployment.</param>
         /// <returns>true if the deploy was successful.</returns>
         public bool RunDeploy(Deployment deployment)
+        {
+            bool success = false;
+
+            if (Path.GetExtension(SolutionSettings.Current.DeployProjectLocation) == ".ps1")
+            {
+                var scriptName = Path.IsPathRooted(SolutionSettings.Current.DeployProjectLocation)
+                     ? SolutionSettings.Current.DeployProjectLocation
+                     : Path.Combine(this.sccProviderService.GetSolutionDirectory(), SolutionSettings.Current.DeployProjectLocation);
+
+                var powershellArgs = string.Format(
+                    "-buildProjectPath:'{0}' -buildLabel:'{1}' -branchName:'{2}' -release:'{3}'",
+                    this.sccProviderService.GetSolutionFileName(),
+                    deployment.Version,
+                    SolutionSettings.Current.CurrentBranch,
+                    SolutionSettings.Current.CurrentRelease);
+
+                var powershellCall = string.Format(
+                    "& '{0}' {1}",
+                    scriptName,
+                    powershellArgs);
+
+                var command = new SccCommand("powershell.exe", powershellCall);
+                command.Start();
+                success = command.ExitCode == 0;
+            }
+            else
+            {
+                success = this.DeployMsBuild(deployment);
+            }
+
+            if (success)
+            {
+                SolutionUserSettings.Current.LastDeployment = deployment;
+                SolutionUserSettings.Current.Save();
+            }
+
+            return success;
+        }
+
+
+        /// <summary>
+        /// Deploys using the deploy project specified in settings.
+        /// </summary>
+        /// <param name="deployment">The deployment.</param>
+        /// <returns>true if the deploy was successful.</returns>
+        private bool DeployMsBuild(Deployment deployment)
         {
             this.notificationService.AddMessage("Begin build and deploy to " + deployment.Version);
 
@@ -136,8 +175,6 @@ namespace GitScc.Blinkbox
                     }
                 }
 
-                this.deployments.Add(deployment);
-
                 // Clean up project to prevent caching.
                 projectCollection.UnloadAllProjects();
                 projectCollection.UnregisterAllLoggers();
@@ -161,73 +198,39 @@ namespace GitScc.Blinkbox
         /// <returns>the jobID asw a string</returns>
         public string SubmitTests()
         {
-            var sccHelperService = BasicSccProvider.GetServiceEx<SccHelperService>();
-            var form = new StringBuilder();
-            var tag = SolutionUserSettings.Current.TestSwarmTags;
-            var featurePath = SolutionSettings.Current.FeaturePath.StartsWith("\\")
-                ? this.sccProviderService.GetSolutionDirectory().TrimEnd("\\".ToCharArray()) + SolutionSettings.Current.FeaturePath
-                : SolutionSettings.Current.FeaturePath;
-            var testSwarmUrl = SolutionSettings.Current.TestSwarmUrl.TrimEnd("/".ToCharArray());
-            var testUrl = string.Format(
-                "http://tv-{0}.bbdev1.com/Client/V2-dev-{1}/Test/Index.html?tags={2}&runnermode={3}", 
-                Environment.MachineName,
-                sccHelperService.GetHeadRevisionHash(),
-                tag.ToLower(),
-                SolutionSettings.Current.TestRunnerMode.ToLower());
+            var scriptName = Path.IsPathRooted(SolutionSettings.Current.TestSubmissionScript)
+                     ? SolutionSettings.Current.TestSubmissionScript
+                     : Path.Combine(this.sccProviderService.GetSolutionDirectory(), SolutionSettings.Current.TestSubmissionScript);
 
-            // get all feature files containing the specified tag.
-            var featureFiles = Directory.GetFiles(featurePath, "*.feature", SearchOption.AllDirectories).AsEnumerable();
-            if (!string.IsNullOrEmpty(tag))
+            var featureDirectory = Path.IsPathRooted(SolutionSettings.Current.FeaturePath)
+                     ? SolutionSettings.Current.FeaturePath
+                     : Path.Combine(this.sccProviderService.GetSolutionDirectory(), SolutionSettings.Current.FeaturePath);
+
+            var lastDeployment = SolutionUserSettings.Current.LastDeployment;
+            if (lastDeployment == null)
             {
-                featureFiles = featureFiles.Where(f => File.ReadAllText(f).Contains(tag));
+                NotificationService.DisplayError("cannot find previous deployment", "Please deploy first");
+                return string.Empty;
             }
 
-            // Build up the form
-            form.Append(string.Format(
-                "jobName={0} ({1})&runMax={2}", 
-                sccHelperService.GetLastCommitMessage(),
-                sccHelperService.GetHeadRevisionHash(),
-                3));
+            var powershellArgs = string.Format(
+                "-version:'{0}' -featuresDirectory:'{1}' -branch:'{2}' -userName:'{3}' -password:'{4}' -appUrl:'{5}' -tag:'{6}' -jobName:'{7}' ",
+                lastDeployment.Version,
+                featureDirectory,
+                SolutionSettings.Current.CurrentBranch,
+                SolutionUserSettings.Current.TestSwarmUsername,
+                SolutionUserSettings.Current.TestSwarmPassword,
+                lastDeployment.AppUrl,
+                SolutionUserSettings.Current.TestSwarmTags,
+                lastDeployment.Message + " (" + lastDeployment.Message + ")");
 
-            foreach (var browserSet in SolutionSettings.Current.TestBrowserSets.Split(new[] {","}, StringSplitOptions.RemoveEmptyEntries))
-            {
-                form.Append("&browserSets[]=").Append(browserSet.ToLower());
-            }
+            var powershellCall = string.Format(
+                "& '{0}' {1}",
+                scriptName,
+                powershellArgs);
 
-            foreach (var file in featureFiles)
-            {
-                var featureName = file.Replace(featurePath, string.Empty);
-                form.Append("&runNames[]=").Append(featureName);
-
-                // NOTE: capitalisation of pfeaturePath is important. 
-                form.Append("&runUrls[]=").Append(System.Web.HttpUtility.UrlEncode(testUrl + "&featurePath=" + featureName));
-            }
-
-            // Login to testswarm
-            this.notificationService.AddMessage("Login to " + testSwarmUrl + "/login");
-
-            var login = this.Request(testSwarmUrl + "/login", string.Format("username={0}&password={1}", SolutionUserSettings.Current.TestSwarmUsername, SolutionUserSettings.Current.TestSwarmPassword));
-            var authCookie = login.Headers["Set-Cookie"];
-            if (string.IsNullOrEmpty(authCookie))
-            {
-                this.notificationService.AddMessage("Login failed");
-            }
-
-
-            // Submit the job.
-            this.notificationService.AddMessage("Submit job");
-
-            var job = this.Request(testSwarmUrl + "/adddevboxjob", form.ToString(), authCookie);
-            if (job.StatusCode == HttpStatusCode.OK)
-            {
-                var jobId = job.Headers["X-TestSwarm-JobId"];
-                this.notificationService.AddMessage("jobID = " + jobId);
-            }
-            else
-            {
-                NotificationService.DisplayError("Testswarm submit failed", "Testswarm submit failed");
-            }
-
+            var command = new SccCommand("powershell.exe", powershellCall);
+            command.Start();
             return null;
         }
 
