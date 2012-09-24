@@ -11,7 +11,6 @@ namespace GitScc.Blinkbox
     using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
-    using System.Management.Automation;
     using System.Net;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -24,7 +23,6 @@ namespace GitScc.Blinkbox
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
     using Microsoft.Build.Framework;
-    using System.Management.Automation.Runspaces;
 
     /// <summary>
     /// Performs deployments 
@@ -288,6 +286,7 @@ namespace GitScc.Blinkbox
             return null;
         }
 
+        /*
         /// <summary>
         /// Runs a powershell script.
         /// </summary>
@@ -321,7 +320,7 @@ namespace GitScc.Blinkbox
                 return outputObjects;
             }
         }
-
+        */
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
