@@ -131,7 +131,9 @@ namespace GitScc.Blinkbox
                     this.FetchFromTfs();
 
                     // Merge without commit from tfs-merge to current branch. 
-                    SccHelperService.RunGitCommand("merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + " --no-commit", wait: true);
+                    var command = "merge " + BlinkboxSccOptions.Current.TfsRemoteBranch + (UserSettings.Current.PreviewGetLatest.GetValueOrDefault() ? " --no-commit" : string.Empty);
+
+                    SccHelperService.RunGitCommand(command, wait: true);
 
                     this.CommitIfRequired();
 
