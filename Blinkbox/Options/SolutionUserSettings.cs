@@ -28,6 +28,8 @@ namespace GitScc.Blinkbox.Options
         public string TestSwarmPassword { get; set; }
         public string TestSwarmTags { get; set; }
         public bool? SubmitTestsOnDeploy { get; set; }
+        public string LocalAppUrlTemplate { get; set; }
+        public string LocalTestUrlTemplate { get; set; }
 
         public Deployment LastDeployment { get; set; }
         
@@ -65,6 +67,12 @@ namespace GitScc.Blinkbox.Options
             this.TestSwarmTags = string.IsNullOrEmpty(this.TestSwarmTags) ? SolutionSettings.Current.TestSwarmTags : this.TestSwarmTags;
             this.TestSwarmUsername = string.IsNullOrEmpty(this.TestSwarmUsername) ? Environment.UserName : this.TestSwarmUsername;
             this.SubmitTestsOnDeploy = this.SubmitTestsOnDeploy ?? true;
+            this.LocalAppUrlTemplate = string.IsNullOrEmpty(this.LocalAppUrlTemplate)
+                ? "http://tv-{MachineName}.bbdev1.com/Client/{BuildLabel}"
+                : this.LocalAppUrlTemplate;
+            this.LocalTestUrlTemplate = string.IsNullOrEmpty(this.LocalTestUrlTemplate) 
+                ? (this.LocalAppUrlTemplate + "/Test/Index.html?runnerMode={RunnerMode}&tags={Tags}")
+                : this.LocalTestUrlTemplate;
         }
     }
 }

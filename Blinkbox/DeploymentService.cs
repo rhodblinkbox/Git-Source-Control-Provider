@@ -118,6 +118,22 @@ namespace GitScc.Blinkbox
 
             if (success)
             {
+                var replacements = new Dictionary<string, string>()
+                    {
+                        { "MachineName", Environment.MachineName },
+                        { "BuildLabel", deployment.Version },
+                        { "Tags", SolutionUserSettings.Current.TestSwarmTags },
+                        { "RunnerMode", SolutionSettings.Current.TestRunnerMode },
+                    };
+                deployment.AppUrl = SolutionUserSettings.Current.LocalAppUrlTemplate;
+                deployment.TestRunUrl = SolutionUserSettings.Current.LocalTestUrlTemplate;
+
+                foreach (var replacement in replacements)
+                {
+                    deployment.AppUrl = deployment.AppUrl.Replace("{" + replacement.Key + "}", replacement.Value);
+                    deployment.TestRunUrl = deployment.TestRunUrl.Replace("{" + replacement.Key + "}", replacement.Value);
+                }
+
                 SolutionUserSettings.Current.LastDeployment = deployment;
                 SolutionUserSettings.Current.Save();
             }
@@ -186,8 +202,6 @@ namespace GitScc.Blinkbox
                 }
 
                 var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
-                deployment.AppUrl = msbuildProject.Properties.FirstOrDefault(p => p.Name == "LaunchAppUrl").EvaluatedValue;
-                deployment.TestRunUrl = msbuildProject.Properties.FirstOrDefault(p => p.Name == "LaunchTestRunUrl").EvaluatedValue;
 
                 if (UserSettings.Current.OpenUrlsAfterDeploy.GetValueOrDefault())
                 {
@@ -321,6 +335,8 @@ namespace GitScc.Blinkbox
             }
         }
         */
+
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>

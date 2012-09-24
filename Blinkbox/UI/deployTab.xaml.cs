@@ -121,14 +121,8 @@ namespace GitScc.Blinkbox.UI
                 return;
             }
 
-            if (sender == AppLink)
-            {
-                BasicSccProvider.LaunchBrowser(SolutionUserSettings.Current.LastDeployment.AppUrl);
-            }
-            else
-            {
-                BasicSccProvider.LaunchBrowser(SolutionUserSettings.Current.LastDeployment.TestRunUrl);
-            }
+            var url = sender == AppLink ? SolutionUserSettings.Current.LastDeployment.AppUrl : SolutionUserSettings.Current.LastDeployment.TestRunUrl;
+            BasicSccProvider.LaunchBrowser(url);
         }
 
     }

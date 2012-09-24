@@ -6,6 +6,7 @@
 
 namespace GitScc.Blinkbox.Options
 {
+    using System;
     using System.IO;
 
     /// <summary>
@@ -67,7 +68,6 @@ namespace GitScc.Blinkbox.Options
             this.DeployProjectLocation = string.IsNullOrEmpty(this.DeployProjectLocation) ? "deploy\\deployLocal.ps1" : this.DeployProjectLocation;
             this.CurrentRelease = string.IsNullOrEmpty(this.CurrentRelease) ? "v0.0.0" : this.CurrentRelease;
             this.TestSubmissionScript = string.IsNullOrEmpty(this.TestSubmissionScript) ? "deploy\\testSwarm.ps1" : this.TestSubmissionScript;
-            
         }
     }
 }
