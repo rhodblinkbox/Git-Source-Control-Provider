@@ -8,11 +8,8 @@ namespace GitScc.Blinkbox
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
-    using System.Net;
-    using System.Text;
     using System.Text.RegularExpressions;
     using System.Web;
 
@@ -69,32 +66,6 @@ namespace GitScc.Blinkbox
                 // Call a powershell script to run the deployment.
                 var scriptName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.DeployProjectLocation);
 
-                /*
-                var parameters = new Dictionary<string, object>()
-                {
-                    { "buildProjectPath", this.sccProviderService.GetSolutionFileName() },
-                    { "buildLabel", deployment.Version },
-                    { "branchName", SolutionSettings.Current.CurrentBranch },
-                    { "release", SolutionSettings.Current.CurrentRelease }
-                };
-
-                try
-                {
-                    var outputObjects = this.RunPowershell(scriptName, parameters);
-                    success = true;
-                    var result = outputObjects.FirstOrDefault(x => x.Properties["LaunchAppUrl"] != null);
-                    if (result != null)
-                    {
-                        deployment.AppUrl = result.Properties["LaunchAppUrl"].ToString();
-                        deployment.TestRunUrl = result.Properties["LaunchTestRunUrl"].ToString();
-                    }
-                }
-                catch (Exception e)
-                {
-                    NotificationService.DisplayException(e, "Submit Tests failed");
-                }
-                */
-                
                 var powershellArgs = string.Format(
                     "-buildProjectPath:'{0}' -buildLabel:'{1}' -branchName:'{2}' -release:'{3}'",
                     this.sccProviderService.GetSolutionFileName(),
@@ -247,37 +218,6 @@ namespace GitScc.Blinkbox
                 NotificationService.DisplayError("cannot find previous deployment", "Please deploy first");
                 return string.Empty;
             }
-            /*
-            var parameters = new Dictionary<string, object>()
-                {
-                    { "version", lastDeployment.Version },
-                    { "featuresDirectory", featureDirectory },
-                    { "branch", SolutionSettings.Current.CurrentBranch },
-                    { "userName", SolutionUserSettings.Current.TestSwarmUsername },
-                    { "password", SolutionUserSettings.Current.TestSwarmPassword },
-                    { "appUrl", lastDeployment.AppUrl },
-                    { "tag", SolutionUserSettings.Current.TestSwarmTags },
-                    { "jobName", lastDeployment.Message + " (" + lastDeployment.Message + ")" }
-                };
-
-            try
-            {
-                string jobId = null;
-                var outputObjects = this.RunPowershell(scriptName, parameters);
-
-                var result = outputObjects.FirstOrDefault(x => x.Properties["JobId"] != null);
-                if (result != null)
-                {
-                    jobId = result.Properties["JobId"].ToString();
-                }
-              
-                return jobId;
-            }
-            catch (Exception e)
-            {
-                NotificationService.DisplayException(e, "Submit Tests failed");
-            }
-             * */
 
             var powershellArgs = string.Format(
                 "-version:'{0}' -featuresDirectory:'{1}' -branch:'{2}' -userName:'{3}' -password:'{4}' -appUrl:'{5}' -tag:'{6}' -jobName:'{7}' ",
@@ -300,79 +240,12 @@ namespace GitScc.Blinkbox
             return null;
         }
 
-        /*
-        /// <summary>
-        /// Runs a powershell script.
-        /// </summary>
-        /// <param name="scriptPath">The script path.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        public Collection<PSObject> RunPowershell(string scriptPath, IDictionary<string, object> parameters)
-        {
-            using (var runspace = RunspaceFactory.CreateRunspace())
-            {
-                runspace.Open();
-
-                var pipeline = runspace.CreatePipeline();
-                var scriptCommand = new Command(scriptPath);
-                pipeline.Commands.Add(scriptCommand);
-
-                foreach (var parameter in parameters)
-                {
-                    scriptCommand.Parameters.Add(parameter.Key, parameter.Value);
-                }
-
-                // run script and get outputs
-                var outputObjects = pipeline.Invoke();
-
-                foreach (var outputObject in outputObjects)
-                {
-                    // Write to message window
-                    this.notificationService.AddMessage(outputObject.ToString());
-                }
-
-                return outputObjects;
-            }
-        }
-        */
-
-
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
         {
 
-        }
-
-        /// <summary>
-        /// Requests the specified URL.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="content">The content.</param>
-        /// <param name="authCookie">The auth cookie.</param>
-        /// <returns></returns>
-        private System.Net.HttpWebResponse Request(string url, string content, string authCookie = null)
-        {
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.ContentType = "application/x-www-form-urlencoded";
-            request.Method = "POST";
-            request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.89 Safari/537.1";
-            request.AllowAutoRedirect = false;
-
-            if (!string.IsNullOrEmpty(authCookie))
-            {
-                request.Headers.Add("Cookie", authCookie); 
-            }
-
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(content);
-            request.ContentLength = contentBytes.Length;
-            var requestStream = request.GetRequestStream();
-            requestStream.Write(contentBytes, 0, contentBytes.Length);
-            requestStream.Close();
-
-            var response = request.GetResponse();
-            return (HttpWebResponse)response;
         }
     }
 }
