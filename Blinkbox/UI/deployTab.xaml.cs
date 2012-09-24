@@ -50,8 +50,6 @@ namespace GitScc.Blinkbox.UI
             }
         }
 
-        public Deployment LastDeployment { get; set; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="deployTab"/> class.
         /// </summary>
@@ -118,18 +116,18 @@ namespace GitScc.Blinkbox.UI
 
         private void Deploylink_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (LastDeployment == null)
+            if (SolutionUserSettings.Current.LastDeployment == null)
             {
                 return;
             }
 
             if (sender == AppLink)
             {
-                BasicSccProvider.LaunchBrowser(this.LastDeployment.AppUrl);
+                BasicSccProvider.LaunchBrowser(SolutionUserSettings.Current.LastDeployment.AppUrl);
             }
             else
             {
-                BasicSccProvider.LaunchBrowser(this.LastDeployment.TestRunUrl);
+                BasicSccProvider.LaunchBrowser(SolutionUserSettings.Current.LastDeployment.TestRunUrl);
             }
         }
 
