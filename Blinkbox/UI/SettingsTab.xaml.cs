@@ -14,6 +14,8 @@ using System.Windows.Shapes;
 
 namespace GitScc.Blinkbox.UI
 {
+    using System.IO;
+
     using GitScc.Blinkbox.Options;
 
     /// <summary>
@@ -72,6 +74,26 @@ namespace GitScc.Blinkbox.UI
             SolutionSettings.Current.Save();
             SolutionUserSettings.Current.Save();
             UserSettings.Current.Save();
+        }
+
+        private void PSButton_Click(object sender, RoutedEventArgs e)
+        {
+            var sccProviderService = BasicSccProvider.GetServiceEx<SccProviderService>();
+
+            var scriptName = Path.Combine(sccProviderService.GetSolutionDirectory(), "deploy\\setExecutionPolicy.ps1");
+
+            if (!File.Exists(scriptName))
+            {
+                NotificationService.DisplayError("Task Failed", "Cannot find the required powershell script at " + scriptName);
+                return;
+            }
+
+            var powershellCall = string.Format(
+                "& '{0}'",
+                scriptName);
+
+            var command = new SccCommand("powershell.exe", powershellCall);
+            command.Start();
         }
     }
 }

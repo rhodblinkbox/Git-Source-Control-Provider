@@ -43,6 +43,10 @@
             <Hyperlink Name="SaveButton" Click="SaveButton_Click">Save</Hyperlink>
         </TextBlock>
 
+        <TextBlock Padding="10,10,0,10" Grid.Column="1">
+            <Hyperlink Name="PSButton" Click="PSButton_Click" ToolTip="Enables Remote-Signed execution policy for powershell scripts.">Enable PS scripts</Hyperlink>
+        </TextBlock>
+
         <Label Content="Open urls in VS:" Grid.Row="1"  />
         <Label Content="Preview Get Latest:" Grid.Row="2"  />
 

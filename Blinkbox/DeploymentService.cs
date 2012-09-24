@@ -65,6 +65,7 @@ namespace GitScc.Blinkbox
 
             if (Path.GetExtension(SolutionSettings.Current.DeployProjectLocation) == ".ps1")
             {
+                // Call a powershell script to run the deployment.
                 var scriptName = Path.IsPathRooted(SolutionSettings.Current.DeployProjectLocation)
                      ? SolutionSettings.Current.DeployProjectLocation
                      : Path.Combine(this.sccProviderService.GetSolutionDirectory(), SolutionSettings.Current.DeployProjectLocation);
@@ -181,8 +182,8 @@ namespace GitScc.Blinkbox
 
                 try
                 {
+                    SolutionUserSettings.Current.LastDeployment = deployment;
                     var deployTab = BasicSccProvider.GetServiceEx<deployTab>();
-                    deployTab.LastDeployment = deployment;
                     deployTab.RefreshBindings();
                 }
                 catch
@@ -233,7 +234,6 @@ namespace GitScc.Blinkbox
             command.Start();
             return null;
         }
-
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
