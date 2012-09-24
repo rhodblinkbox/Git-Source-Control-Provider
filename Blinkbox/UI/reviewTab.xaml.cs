@@ -1,68 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ReviewTab.xaml.cs" company="blinkbox">
+//   
+// </copyright>
+// <summary>
+//   Interaction logic for reviewTab.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace GitScc.Blinkbox.UI
 {
+    using System;
+    using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Linq;
+    using System.Windows.Controls;
+    using System.Windows.Data;
+    using System.Windows.Input;
     using System.Windows.Threading;
 
-    using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
 
     /// <summary>
     /// Interaction logic for reviewTab.xaml
     /// </summary>
-    public partial class ReviewTab : UserControl
+    public partial class ReviewTab
     {
-        private string[] diffLines;
-        private string sortMemberPath = "FileName";
-        private ListSortDirection sortDirection = ListSortDirection.Ascending;
-        private SccProviderService service;
+        /// <summary>
+        /// the sorting order of the file list
+        /// </summary>
+        private const string SortMemberPath = "FileName";
 
+        /// <summary>
+        /// Sort direction of the file list
+        /// </summary>
+        private const ListSortDirection SortDirection = ListSortDirection.Ascending;
 
+        /// <summary>
+        /// Instance of the sccProvider. 
+        /// </summary>
+        private readonly SccProviderService service;
+
+        /// <summary>
+        /// instance of the <see cref="SccProviderService"/>
+        /// </summary>
+        private BBPendingChanges bbPendingChanges;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReviewTab"/> class.
+        /// </summary>
         public ReviewTab()
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
             this.service = BasicSccProvider.GetServiceEx<SccProviderService>();
         }
-
-        private void reviewList_Sorting(object sender, DataGridSortingEventArgs e)
-        {
-
-        }
-
-
-        /// <summary>
-        /// The name of the branch to be used for reviewing
-        /// </summary>
-        private string comparisonBranch = null;
-
-        /// <summary>
-        /// instance of the <see cref="DevelopmentService"/>
-        /// </summary>
-        private DevelopmentService developmentServiceInstance = null;
-
-        /// <summary>
-        /// instance of the <see cref="SccProviderService"/>
-        /// </summary>
-        private SccProviderService sccProviderInstance = null;
-
-        /// <summary>
-        /// instance of the <see cref="SccProviderService"/>
-        /// </summary>
-        private BBPendingChanges bbPendingChanges = null;
 
         /// <summary>
         /// Gets the development service.
@@ -78,32 +69,6 @@ namespace GitScc.Blinkbox.UI
         }
 
         /// <summary>
-        /// Gets the development service.
-        /// </summary>
-        /// <value>The development service.</value>
-        private DevelopmentService DevelopmentService
-        {
-            get
-            {
-                this.developmentServiceInstance = this.developmentServiceInstance ?? BasicSccProvider.GetServiceEx<DevelopmentService>();
-                return this.developmentServiceInstance;
-            }
-        }
-
-        /// <summary>
-        /// Gets the development service.
-        /// </summary>
-        /// <value>The development service.</value>
-        private SccProviderService SccProvider
-        {
-            get
-            {
-                this.sccProviderInstance = this.sccProviderInstance ?? BasicSccProvider.GetServiceEx<SccProviderService>();
-                return this.sccProviderInstance;
-            }
-        }
-
-        /// <summary>
         /// Initialises the blinkbox extensions.
         /// </summary>
         public void InitialiseBlinkboxExtensions()
@@ -111,8 +76,6 @@ namespace GitScc.Blinkbox.UI
             // Register this component as a service so that we can use it externally. 
             BasicSccProvider.RegisterService(this);
         }
-
-     
 
         /// <summary>
         /// Show a list of files for review.
@@ -127,7 +90,6 @@ namespace GitScc.Blinkbox.UI
         {
             if (changedFiles.Any())
             {
-                this.comparisonBranch = branchName;
                 this.DisplayReview(changedFiles);
             }
         }
@@ -137,7 +99,6 @@ namespace GitScc.Blinkbox.UI
         /// </summary>
         public void CancelReview()
         {
-            this.comparisonBranch = null;
         }
 
         /// <summary>
@@ -165,7 +126,7 @@ namespace GitScc.Blinkbox.UI
         /// <param name="changedFiles">
         /// The changed files.
         /// </param>
-        internal void DisplayReview(List<GitFile> changedFiles)
+        public void DisplayReview(List<GitFile> changedFiles)
         {
             Action act = () =>
             {
@@ -203,7 +164,7 @@ namespace GitScc.Blinkbox.UI
                     if (view != null)
                     {
                         view.SortDescriptions.Clear();
-                        view.SortDescriptions.Add(new SortDescription(sortMemberPath, sortDirection));
+                        view.SortDescriptions.Add(new SortDescription(SortMemberPath, SortDirection));
                         view.Refresh();
                     }
 
@@ -221,7 +182,7 @@ namespace GitScc.Blinkbox.UI
                 }
                 catch (Exception ex)
                 {
-                   //// ShowStatusMessage(ex.Message);
+                    NotificationService.DisplayException(ex, "Review failed");
                 }
 
                 this.reviewList.EndInit();
@@ -262,7 +223,6 @@ namespace GitScc.Blinkbox.UI
                 try
                 {
                     this.ReviewDiff.Text = string.Empty;
-                    this.diffLines = new string[0];
 
                     var reviewItem = this.GetSelectedReviewItem();
                     if (reviewItem == null || string.IsNullOrEmpty(reviewItem.FileName))
@@ -277,13 +237,12 @@ namespace GitScc.Blinkbox.UI
                     var diff = sccHelper.DiffFileWithGit(fileNameRel, tfsRevision);
 
                     // Show in the diff window
-                    diffLines = diff.Split(Environment.NewLine.ToCharArray());
                     this.ReviewDiff.SyntaxHighlighting = ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.GetDefinitionByExtension(".diff");
                     this.ReviewDiff.Text = diff;
                 }
                 catch (Exception ex)
                 {
-                    ////ShowStatusMessage(ex.Message);
+                    NotificationService.DisplayException(ex, "Diff failed");
                 }
 
                 service.NoRefresh = false;
@@ -322,7 +281,7 @@ namespace GitScc.Blinkbox.UI
         /// <summary>
         /// Gets the selected review item.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>the selected item.</returns>
         private GitFile GetSelectedReviewItem()
         {
             if (this.reviewList.SelectedCells.Any())

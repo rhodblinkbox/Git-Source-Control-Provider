@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="BBPendingChanges.xaml.cs" company="blinkbox">
+//   TODO: add comment
+// </copyright>
+// <summary>
+//   Interaction logic for BBPendingChanges.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace GitScc.Blinkbox.UI
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Windows.Controls;
     using System.Windows.Threading;
 
     using GitScc.Blinkbox.Data;
@@ -21,67 +20,107 @@ namespace GitScc.Blinkbox.UI
     /// <summary>
     /// Interaction logic for BBPendingChanges.xaml
     /// </summary>
-    public partial class BBPendingChanges : UserControl
+    public partial class BBPendingChanges
     {
-
+        /// <summary>
+        /// reference to the tracker
+        /// </summary>
         private GitFileStatusTracker tracker;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BBPendingChanges"/> class.
+        /// </summary>
+        public BBPendingChanges()
+        {
+            this.InitializeComponent();
+            BasicSccProvider.RegisterService(this);
+        }
+
+        /// <summary>
+        /// Gets the review tab.
+        /// </summary>
+        /// <value>The review tab.</value>
         public TabItem ReviewTab
         {
             get
             {
-                return reviewTabItem;
+                return this.reviewTabItem;
             }
         }
 
+        /// <summary>
+        /// Gets the git tab.
+        /// </summary>
+        /// <value>The git tab.</value>
         public TabItem GitTab
         {
             get
             {
-                return gitTabItem;
+                return this.gitTabItem;
             }
         }
 
+        /// <summary>
+        /// Gets the deploy tab.
+        /// </summary>
+        /// <value>The deploy tab.</value>
         public TabItem DeployTab
         {
             get
             {
-                return deployTabItem;
+                return this.deployTabItem;
             }
         }
 
-        public BBPendingChanges()
-        {
-            InitializeComponent();
-            BasicSccProvider.RegisterService(this);
-        }
-
+        /// <summary>
+        /// Commits the working directory.
+        /// </summary>
         public void Commit()
         {
             pendingChangesView.Commit();
         }
 
+        /// <summary>
+        /// Amends the previous commit.
+        /// </summary>
         public void AmendCommit()
         {
             pendingChangesView.AmendCommit();
         }
 
-        public void RefreshPendingChanges(GitFileStatusTracker tracker)
+        /// <summary>
+        /// Refreshes the pending changes.
+        /// </summary>
+        /// <param name="currentTracker">The tracker.</param>
+        public void RefreshPendingChanges(GitFileStatusTracker currentTracker)
         {
-            this.tracker = tracker;
-            pendingChangesView.Refresh(tracker);
+            this.tracker = currentTracker;
+            pendingChangesView.Refresh(currentTracker);
         }
 
+        /// <summary>
+        /// Gets the tracker.
+        /// </summary>
+        /// <returns>the current tracker.</returns>
         public GitFileStatusTracker GetTracker()
         {
             return this.tracker;
         }
 
+        /// <summary>
+        /// Opens the file.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
         public void OpenFile(string fileName)
         {
             pendingChangesView.OpenFile(fileName);
         }
 
+        /// <summary>
+        /// Reviews the specified changed files.
+        /// </summary>
+        /// <param name="changedFiles">The changed files.</param>
+        /// <param name="branchName">Name of the branch.</param>
         public void Review(List<GitFile> changedFiles, string branchName = null)
         {
             if (changedFiles.Any())
@@ -89,9 +128,11 @@ namespace GitScc.Blinkbox.UI
                 ////this.comparisonBranch = branchName;
                 reviewTab.DisplayReview(changedFiles);
             }
-            
         }
 
+        /// <summary>
+        /// Ends the review.
+        /// </summary>
         public void EndReview()
         {
             reviewTab.EndReview();

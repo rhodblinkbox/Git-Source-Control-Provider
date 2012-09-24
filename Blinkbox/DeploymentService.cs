@@ -15,7 +15,6 @@ namespace GitScc.Blinkbox
 
     using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
-    using GitScc.Blinkbox.UI;
 
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
@@ -26,11 +25,6 @@ namespace GitScc.Blinkbox
     /// </summary>
     public class DeploymentService : IDisposable
     {
-        /// <summary>
-        /// The current instance of the <see cref="SccProviderService"/>
-        /// </summary>
-        private readonly BasicSccProvider basicSccProvider;
-
         /// <summary>
         /// The current instance of the <see cref="SccProviderService"/>
         /// </summary>
@@ -47,7 +41,6 @@ namespace GitScc.Blinkbox
         /// <param name="basicSccProvider">The basic SCC provider.</param>
         public DeploymentService(BasicSccProvider basicSccProvider)
         {
-            this.basicSccProvider = basicSccProvider;
             this.sccProviderService = basicSccProvider.GetService<SccProviderService>();
             this.notificationService = basicSccProvider.GetService<NotificationService>();
         }
@@ -59,7 +52,7 @@ namespace GitScc.Blinkbox
         /// <returns>true if the deploy was successful.</returns>
         public bool RunDeploy(Deployment deployment)
         {
-            bool success = false;
+            bool success;
 
             if (Path.GetExtension(SolutionSettings.Current.DeployProjectLocation) == ".ps1")
             {
@@ -89,13 +82,14 @@ namespace GitScc.Blinkbox
 
             if (success)
             {
-                var replacements = new Dictionary<string, string>()
-                    {
-                        { "MachineName", Environment.MachineName },
-                        { "BuildLabel", deployment.BuildLabel },
-                        { "Tags", SolutionUserSettings.Current.TestSwarmTags },
-                        { "RunnerMode", SolutionSettings.Current.TestRunnerMode },
-                    };
+                // Save the deployment in userSettings. 
+                var replacements = new Dictionary<string, string> 
+                {
+                    { "MachineName", Environment.MachineName },
+                    { "BuildLabel", deployment.BuildLabel },
+                    { "Tags", SolutionUserSettings.Current.TestSwarmTags },
+                    { "RunnerMode", SolutionSettings.Current.TestRunnerMode },
+                };
                 deployment.AppUrl = SolutionUserSettings.Current.LocalAppUrlTemplate;
                 deployment.TestRunUrl = SolutionUserSettings.Current.LocalTestUrlTemplate;
 
@@ -107,11 +101,60 @@ namespace GitScc.Blinkbox
 
                 SolutionUserSettings.Current.LastDeployment = deployment;
                 SolutionUserSettings.Current.Save();
+
+                if (SolutionUserSettings.Current.SubmitTestsOnDeploy.GetValueOrDefault())
+                {
+                    // Submit tests to testswarm
+                    this.SubmitTests();
+                }
             }
 
             return success;
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+        }
+
+        /// <summary>
+        /// Submits a test run to testswarm.
+        /// </summary>
+        public void SubmitTests()
+        {
+            this.notificationService.ClearMessages();
+
+            var scriptName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.TestSubmissionScript);
+            var featureDirectory = SccHelperService.GetAbsolutePath(SolutionSettings.Current.FeaturePath);
+
+            var lastDeployment = SolutionUserSettings.Current.LastDeployment;
+            if (lastDeployment == null)
+            {
+                NotificationService.DisplayError("cannot find previous deployment", "Please deploy first");
+                return;
+            }
+
+            var powershellArgs = string.Format(
+                "-version:'{0}' -featuresDirectory:'{1}' -branch:'{2}' -userName:'{3}' -password:'{4}' -appUrl:'{5}' -tag:'{6}' -jobName:'{7}' ",
+                lastDeployment.BuildLabel,
+                featureDirectory,
+                SolutionSettings.Current.CurrentBranch,
+                SolutionUserSettings.Current.TestSwarmUsername,
+                SolutionUserSettings.Current.TestSwarmPassword,
+                lastDeployment.AppUrl,
+                SolutionUserSettings.Current.TestSwarmTags,
+                lastDeployment.Message + " (" + lastDeployment.Message + ")");
+
+            var powershellCall = string.Format(
+                "& '{0}' {1}",
+                scriptName,
+                powershellArgs);
+
+            var command = new SccCommand("powershell.exe", powershellCall);
+            command.Start();
+        }
 
         /// <summary>
         /// Deploys using the deploy project specified in settings.
@@ -166,12 +209,6 @@ namespace GitScc.Blinkbox
                     return false;
                 }
 
-                if (SolutionUserSettings.Current.SubmitTestsOnDeploy.GetValueOrDefault())
-                {
-                    // Submit tests to testswarm
-                    this.SubmitTests();
-                }
-
                 var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
 
                 if (UserSettings.Current.OpenUrlsAfterDeploy.GetValueOrDefault())
@@ -187,65 +224,9 @@ namespace GitScc.Blinkbox
                 // Clean up project to prevent caching.
                 projectCollection.UnloadAllProjects();
                 projectCollection.UnregisterAllLoggers();
-
-                try
-                {
-                    SolutionUserSettings.Current.LastDeployment = deployment;
-                    var deployTab = BasicSccProvider.GetServiceEx<deployTab>();
-                    deployTab.RefreshBindings();
-                }
-                catch
-                { }
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Submits a test run to testswarm.
-        /// </summary>
-        /// <returns>the jobID asw a string</returns>
-        public string SubmitTests()
-        {
-            this.notificationService.ClearMessages();
-
-            var scriptName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.TestSubmissionScript);
-            var featureDirectory = SccHelperService.GetAbsolutePath(SolutionSettings.Current.FeaturePath);
-
-            var lastDeployment = SolutionUserSettings.Current.LastDeployment;
-            if (lastDeployment == null)
-            {
-                NotificationService.DisplayError("cannot find previous deployment", "Please deploy first");
-                return string.Empty;
-            }
-
-            var powershellArgs = string.Format(
-                "-version:'{0}' -featuresDirectory:'{1}' -branch:'{2}' -userName:'{3}' -password:'{4}' -appUrl:'{5}' -tag:'{6}' -jobName:'{7}' ",
-                lastDeployment.BuildLabel,
-                featureDirectory,
-                SolutionSettings.Current.CurrentBranch,
-                SolutionUserSettings.Current.TestSwarmUsername,
-                SolutionUserSettings.Current.TestSwarmPassword,
-                lastDeployment.AppUrl,
-                SolutionUserSettings.Current.TestSwarmTags,
-                lastDeployment.Message + " (" + lastDeployment.Message + ")");
-
-            var powershellCall = string.Format(
-                "& '{0}' {1}",
-                scriptName,
-                powershellArgs);
-
-            var command = new SccCommand("powershell.exe", powershellCall);
-            command.Start();
-            return null;
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-
         }
     }
 }

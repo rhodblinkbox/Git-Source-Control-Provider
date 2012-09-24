@@ -23,7 +23,7 @@ namespace GitScc
         /// <summary>
         /// The name of the branch to be used for reviewing
         /// </summary>
-        private string comparisonBranch = null;
+        private readonly string comparisonBranch;
 
         /// <summary>
         /// Initialises the blinkbox extensions.
@@ -53,7 +53,6 @@ namespace GitScc
             this.DiffEditor.Dispatcher.BeginInvoke(action);
         }
 
-
         /// <summary>
         /// Replaces the double-click functionality with a tortoise-git diff, if available.
         /// </summary>
@@ -67,7 +66,7 @@ namespace GitScc
                 this.GetSelectedFileFullName(fileName =>
                 {
                     var sccService = BasicSccProvider.GetServiceEx<SccProviderService>();
-                    sccService.CompareFile(fileName, comparisonBranch);
+                    sccService.CompareFile(fileName, null);
                 });
                 return;
             }

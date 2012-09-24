@@ -105,6 +105,7 @@
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsGetLatestButtonId</CommandName>
+                <ToolTipText>Get the latest changes from TFS and merge into current branch</ToolTipText>
                 <ButtonText>Get Latest</ButtonText>
             </Strings>
         </Button>
@@ -120,6 +121,7 @@
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsReviewButtonId</CommandName>
+                <ToolTipText>Compare the working directory with TFS</ToolTipText>
                 <ButtonText>Review</ButtonText>
             </Strings>
         </Button>
@@ -135,6 +137,7 @@
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsCancelReviewButtonId</CommandName>
+                <ToolTipText>Cancel the review</ToolTipText>
                 <ButtonText>Cancel Review</ButtonText>
             </Strings>
         </Button>
@@ -150,6 +153,7 @@
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <CommandName>GitTfsCheckinButtonId</CommandName>
+                <ToolTipText>Check reviewed working directroy into TFS</ToolTipText>
                 <ButtonText>Check in</ButtonText>
             </Strings>
         </Button>
@@ -199,6 +203,7 @@
         <CommandFlag>IconAndText</CommandFlag>
         <Strings>
           <ButtonText>TortoiseGit</ButtonText>
+          <ToolTipText>Click the icon for history, or the menu on the right for more options.</ToolTipText>
         </Strings>
       </Button>
 
@@ -334,7 +339,7 @@
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <ButtonText>Deploy</ButtonText>
-                <ToolTipText>Deploy working directory to a website named with the latest commit hash.</ToolTipText>
+                <ToolTipText>Deploy working directory using the latest commit hash as the build label.</ToolTipText>
             </Strings>
         </Button>
 
@@ -349,7 +354,7 @@
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
                 <ButtonText>Submit Test Run</ButtonText>
-                <ToolTipText>Submit the last deploy to testswarm.</ToolTipText>
+                <ToolTipText>Submit the last deployment to testswarm.</ToolTipText>
             </Strings>
         </Button>
         

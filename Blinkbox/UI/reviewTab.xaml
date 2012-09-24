@@ -39,7 +39,7 @@
 			       Margin="12,0,0,0" Foreground="#FF333333" Width="189" ToolTip="select file to view, double click to diff in tortoise." />
 
             <DataGrid AutoGenerateColumns="False" Grid.Row="2" HorizontalAlignment="Stretch" Margin="10,0,10,10" Name="reviewList" VerticalAlignment="Stretch"
-					      GridLinesVisibility="None"  Foreground="#FF333333" Sorting="reviewList_Sorting" IsReadOnly="True" SelectedValuePath="FileName"
+					      GridLinesVisibility="None"  Foreground="#FF333333" IsReadOnly="True" SelectedValuePath="FileName"
 					      SelectionMode="Single" SelectionChanged="Review_SelectionChanged" MouseDoubleClick="Review_MouseDoubleClick"
 					      CanUserResizeRows="False" CanUserDeleteRows="False" CanUserAddRows="False" CanUserReorderColumns="False" RowHeaderWidth="0">
 

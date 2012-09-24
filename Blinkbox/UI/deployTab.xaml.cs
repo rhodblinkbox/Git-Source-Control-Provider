@@ -9,14 +9,6 @@
 
 namespace GitScc.Blinkbox.UI
 {
-    using System;
-    using System.Globalization;
-    using System.Windows;
-    using System.Windows.Controls;
-    using System.Windows.Data;
-    using System.Windows.Threading;
-
-    using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
 
     /// <summary>
@@ -24,32 +16,6 @@ namespace GitScc.Blinkbox.UI
     /// </summary>
     public partial class deployTab
     {
-        /// <summary>
-        /// instance of the <see cref="DevelopmentService"/>
-        /// </summary>
-        private DevelopmentService developmentServiceInstance = null;
-
-        /// <summary>
-        /// instance of the <see cref="SccProviderService"/>
-        /// </summary>
-        private SccProviderService sccProviderInstance = null;
-
-        public SolutionUserSettings solutionUserSettings
-        {
-            get
-            {
-                return SolutionUserSettings.Current;
-            }
-        }
-
-        public SolutionSettings solutionSettings
-        {
-            get
-            {
-                return SolutionSettings.Current;
-            }
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="deployTab"/> class.
         /// </summary>
@@ -65,7 +31,31 @@ namespace GitScc.Blinkbox.UI
             var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
             if (sccProvider != null)
             {
-                sccProvider.OnSolutionOpen += (s, a) => this.RefreshBindings(); 
+                sccProvider.OnSolutionOpen += (s, a) => this.RefreshBindings();
+            }
+        }
+
+        /// <summary>
+        /// Gets the solution user settings.
+        /// </summary>
+        /// <value>The solution user settings.</value>
+        public SolutionUserSettings solutionUserSettings
+        {
+            get
+            {
+                return SolutionUserSettings.Current;
+            }
+        }
+
+        /// <summary>
+        /// Gets the solution settings.
+        /// </summary>
+        /// <value>The solution settings.</value>
+        public SolutionSettings solutionSettings
+        {
+            get
+            {
+                return SolutionSettings.Current;
             }
         }
 
@@ -80,33 +70,10 @@ namespace GitScc.Blinkbox.UI
         }
 
         /// <summary>
-        /// Gets the development service.
+        /// Handles the Click event of the SaveButton control.
         /// </summary>
-        /// <value>The development service.</value>
-        private DevelopmentService DevelopmentService
-        {
-            get
-            {
-                this.developmentServiceInstance = this.developmentServiceInstance ?? BasicSccProvider.GetServiceEx<DevelopmentService>();
-                return this.developmentServiceInstance;
-            }
-        }
-
-        /// <summary>
-        /// Gets the development service.
-        /// </summary>
-        /// <value>The development service.</value>
-        private SccProviderService SccProvider
-        {
-            get
-            {
-                this.sccProviderInstance = this.sccProviderInstance ?? BasicSccProvider.GetServiceEx<SccProviderService>();
-                return this.sccProviderInstance;
-            }
-        }
-
-
-
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Windows.RoutedEventArgs"/> instance containing the event data.</param>
         private void SaveButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             SolutionSettings.Current.Save();
@@ -114,6 +81,11 @@ namespace GitScc.Blinkbox.UI
             UserSettings.Current.Save();
         }
 
+        /// <summary>
+        /// Handles the Click event of the Deploylink control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Windows.RoutedEventArgs"/> instance containing the event data.</param>
         private void Deploylink_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             if (SolutionUserSettings.Current.LastDeployment == null)
@@ -124,6 +96,5 @@ namespace GitScc.Blinkbox.UI
             var url = sender == AppLink ? SolutionUserSettings.Current.LastDeployment.AppUrl : SolutionUserSettings.Current.LastDeployment.TestRunUrl;
             BasicSccProvider.LaunchBrowser(url);
         }
-
     }
 }

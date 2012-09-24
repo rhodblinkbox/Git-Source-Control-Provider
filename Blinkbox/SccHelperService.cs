@@ -260,6 +260,7 @@ namespace GitScc.Blinkbox
             {
                 return this.sccProvider.CleanBranchName(this.Tracker.CurrentBranch);
             }
+
             return null;
         }
 
@@ -276,6 +277,7 @@ namespace GitScc.Blinkbox
                 var revision = RunGitCommand("rev-parse " + branchName, wait: true, silent: true).Output;
                 return revision.Replace("\n", string.Empty); // Git adds a return to the revision
             }
+
             return null;
         }
 

@@ -1,16 +1,15 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="DeploySettings.cs" company="blinkbox">
+// <copyright file="SolutionSettings.cs" company="blinkbox">
 // TODO: Update copyright text.
 // </copyright>
 // -----------------------------------------------------------------------
 
 namespace GitScc.Blinkbox.Options
 {
-    using System;
     using System.IO;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// Provides settings specific to a solution.
     /// </summary>
     public class SolutionSettings : SettingsBase
     {
@@ -18,16 +17,6 @@ namespace GitScc.Blinkbox.Options
         /// private instance of BlinkboxSccOptions.
         /// </summary>
         private static SolutionSettings sccOptions;
-
-        public string TestSwarmUrl { get; set; }
-        public string FeaturePath { get; set; }
-        public string TestBrowserSets { get; set; }
-        public string CurrentBranch { get; set; }
-        public string TestRunnerMode { get; set; }
-        public string TestSwarmTags { get; set; }
-        public string DeployProjectLocation { get; set; }
-        public string CurrentRelease { get; set; }
-        public string TestSubmissionScript { get; set; }
 
         /// <summary>
         /// Gets Current.
@@ -53,6 +42,60 @@ namespace GitScc.Blinkbox.Options
                 return sccOptions;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the test swarm URL.
+        /// </summary>
+        /// <value>The test swarm URL.</value>
+        public string TestSwarmUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the feature path.
+        /// </summary>
+        /// <value>The feature path.</value>
+        public string FeaturePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the test browser sets.
+        /// </summary>
+        /// <value>The test browser sets.</value>
+        public string TestBrowserSets { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current branch.
+        /// </summary>
+        /// <value>The current branch.</value>
+        public string CurrentBranch { get; set; }
+
+        /// <summary>
+        /// Gets or sets the test runner mode.
+        /// </summary>
+        /// <value>The test runner mode.</value>
+        public string TestRunnerMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the test swarm tags.
+        /// </summary>
+        /// <value>The test swarm tags.</value>
+        public string TestSwarmTags { get; set; }
+
+        /// <summary>
+        /// Gets or sets the deploy project location.
+        /// </summary>
+        /// <value>The deploy project location.</value>
+        public string DeployProjectLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current release.
+        /// </summary>
+        /// <value>The current release.</value>
+        public string CurrentRelease { get; set; }
+
+        /// <summary>
+        /// Gets or sets the test submission script.
+        /// </summary>
+        /// <value>The test submission script.</value>
+        public string TestSubmissionScript { get; set; }
 
         /// <summary>
         /// Inits this instance.

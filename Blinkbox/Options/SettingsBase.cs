@@ -16,6 +16,10 @@ namespace GitScc.Blinkbox.Options
     [Serializable]
     public abstract class SettingsBase
     {
+        /// <summary>
+        /// Extension for the settings file.
+        /// </summary>
+        protected const string Extension = "bbSettings";
 
         /// <summary>
         /// The path to the config file
@@ -23,9 +27,37 @@ namespace GitScc.Blinkbox.Options
         protected string configFilePath;
 
         /// <summary>
-        /// Extension for the settings file.
+        /// Tries the find file.
         /// </summary>
-        protected const string Extension = "bbSettings";
+        /// <param name="paths">The paths.</param>
+        /// <returns>the path if the file is found.</returns>
+        public static string TryFindFile(string[] paths)
+        {
+            foreach (var path in paths)
+            {
+                if (File.Exists(path))
+                {
+                    return path;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Saves the config file.
+        /// </summary>
+        public void Save()
+        {
+            var serialiser = new XmlSerializer(this.GetType());
+            using (TextWriter tw = new StreamWriter(this.configFilePath))
+            {
+                lock (this.configFilePath)
+                {
+                    serialiser.Serialize(tw, this);
+                }
+            }
+        }
 
         /// <summary>
         /// Loads settings from a config file.
@@ -47,8 +79,9 @@ namespace GitScc.Blinkbox.Options
                         options = (Tsettings)serializer.Deserialize(tr);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    NotificationService.DisplayException(ex, "Loading settings file " + configFileName + " failed");
                 }
             }
 
@@ -67,38 +100,5 @@ namespace GitScc.Blinkbox.Options
         /// Inits this instance.
         /// </summary>
         protected abstract void Init();
-
-        /// <summary>
-        /// Saves the config file.
-        /// </summary>
-        public void Save()
-        {
-            var serialiser = new XmlSerializer(this.GetType());
-            using (TextWriter tw = new StreamWriter(this.configFilePath))
-            {
-                lock (this.configFilePath)
-                {
-                    serialiser.Serialize(tw, this);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Tries the find file.
-        /// </summary>
-        /// <param name="paths">The paths.</param>
-        /// <returns>the path if the file is found.</returns>
-        public static string TryFindFile(string[] paths)
-        {
-            foreach (var path in paths)
-            {
-                if (File.Exists(path))
-                {
-                    return path;
-                }
-            }
-
-            return null;
-        }
     }
 }

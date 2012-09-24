@@ -21,12 +21,12 @@ namespace GitScc
     /// <summary>
     /// Blinkbox implementation for the SccProviderService
     /// </summary>
-    public partial class SccProviderService : IVsSolutionEvents
+    public partial class SccProviderService
     {
         /// <summary>
         /// Caches the solution directory
         /// </summary>
-        private string solutionDirectory = null;
+        private string solutionDirectory;
 
         /// <summary>
         /// Occurs when the source control provider refreshes.
@@ -129,7 +129,7 @@ namespace GitScc
             if (!string.IsNullOrEmpty(branchName) && this.OperationInProgress())
             {
                 // the plugin appends an operation code to the branch name - remove it.
-                var parts = branchName.Split(new string[] { " | ", "|" }, StringSplitOptions.RemoveEmptyEntries);
+                var parts = branchName.Split(new[] { " | ", "|" }, StringSplitOptions.RemoveEmptyEntries);
                 return parts[0];
             }
 
@@ -164,6 +164,7 @@ namespace GitScc
             {
                 this.OnSolutionOpen(this, new EventArgs());
             }
+
             return VSConstants.S_OK;
         }
 

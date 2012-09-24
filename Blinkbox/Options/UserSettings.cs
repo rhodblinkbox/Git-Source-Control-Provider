@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="DeploySettings.cs" company="blinkbox">
+// <copyright file="UserSettings.cs" company="blinkbox">
 // TODO: Update copyright text.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -7,12 +7,7 @@
 namespace GitScc.Blinkbox.Options
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-
-    using GitScc.Blinkbox.Data;
 
     /// <summary>
     /// TODO: Update summary.
@@ -23,11 +18,6 @@ namespace GitScc.Blinkbox.Options
         /// private instance of BlinkboxSccOptions.
         /// </summary>
         private static UserSettings sccOptions;
-
-        public bool? PreviewGetLatest { get; set; }
-        public bool? OpenUrlsInVS { get; set; }
-        public bool? OpenUrlsAfterDeploy { get; set; }
-        public List<Data.Deployment> Last5Deployments { get; set; }
 
         /// <summary>
         /// Gets Current.
@@ -47,6 +37,24 @@ namespace GitScc.Blinkbox.Options
         }
 
         /// <summary>
+        /// Gets or sets the preview get latest.
+        /// </summary>
+        /// <value>The preview get latest.</value>
+        public bool? PreviewGetLatest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the open urls in VS.
+        /// </summary>
+        /// <value>The open urls in VS.</value>
+        public bool? OpenUrlsInVS { get; set; }
+
+        /// <summary>
+        /// Gets or sets the open urls after deploy.
+        /// </summary>
+        /// <value>The open urls after deploy.</value>
+        public bool? OpenUrlsAfterDeploy { get; set; }
+
+        /// <summary>
         /// Inits this instance.
         /// </summary>
         protected override void Init()
@@ -54,8 +62,6 @@ namespace GitScc.Blinkbox.Options
             this.PreviewGetLatest = this.PreviewGetLatest ?? false;
             this.OpenUrlsInVS = this.OpenUrlsInVS ?? false;
             this.OpenUrlsAfterDeploy = this.OpenUrlsAfterDeploy ?? true;
-            this.Last5Deployments = this.Last5Deployments ?? new List<Deployment>();
         }
-
     }
 }

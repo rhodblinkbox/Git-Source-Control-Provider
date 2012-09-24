@@ -88,18 +88,6 @@ namespace GitScc
         }
 
         /// <summary>
-        /// Gets the service of type T.
-        /// </summary>
-        /// <typeparam name="T">The type of a service</typeparam>
-        /// <returns>service of type T.</returns>
-        public T GetService<T>()
-        {
-            return (T)base.GetService(typeof(T));
-        }
-
-
-
-        /// <summary>
         /// Launches the provided url in the Visual Studio browser.
         /// </summary>
         /// <param name="url">The URL.</param>
@@ -140,6 +128,16 @@ namespace GitScc
         }
 
         /// <summary>
+        /// Gets the service of type T.
+        /// </summary>
+        /// <typeparam name="T">The type of a service</typeparam>
+        /// <returns>service of type T.</returns>
+        public T GetService<T>()
+        {
+            return (T)base.GetService(typeof(T));
+        }
+
+        /// <summary>
         /// Initialises the blinkbox extensions to BasicSccProvider.
         /// </summary>
         private void InitialiseBlinkboxExtensions()
@@ -150,7 +148,7 @@ namespace GitScc
             this.sccHelperService = new SccHelperService(this.sccService);
             RegisterService(this.sccHelperService);
 
-            this.developmentService = new DevelopmentService(this, this.sccService, this.notificationService, this.sccHelperService);
+            this.developmentService = new DevelopmentService(this.sccService, this.notificationService, this.sccHelperService);
             RegisterService(this.developmentService);
 
             this.deploymentService = new DeploymentService(this);
