@@ -378,10 +378,7 @@ namespace GitScc
         {
             if (this.sccService.Active && this.sccService.SolutionOpen && SolutionSettings.Current != null && !string.IsNullOrEmpty(SolutionSettings.Current.DeployProjectLocation))
             {
-                var deployProjectPath = Path.IsPathRooted(SolutionSettings.Current.DeployProjectLocation)
-                    ? SolutionSettings.Current.DeployProjectLocation
-                    : Path.Combine(this.sccService.GetSolutionDirectory(), SolutionSettings.Current.DeployProjectLocation);
-
+                var deployProjectPath = SccHelperService.GetAbsolutePath(SolutionSettings.Current.DeployProjectLocation);
                 return File.Exists(deployProjectPath);
             }
 

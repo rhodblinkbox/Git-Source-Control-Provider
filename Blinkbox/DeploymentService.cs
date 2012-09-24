@@ -69,10 +69,34 @@ namespace GitScc.Blinkbox
             if (Path.GetExtension(SolutionSettings.Current.DeployProjectLocation) == ".ps1")
             {
                 // Call a powershell script to run the deployment.
-                var scriptName = Path.IsPathRooted(SolutionSettings.Current.DeployProjectLocation)
-                     ? SolutionSettings.Current.DeployProjectLocation
-                     : Path.Combine(this.sccProviderService.GetSolutionDirectory(), SolutionSettings.Current.DeployProjectLocation);
+                var scriptName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.DeployProjectLocation);
 
+                /*
+                var parameters = new Dictionary<string, object>()
+                {
+                    { "buildProjectPath", this.sccProviderService.GetSolutionFileName() },
+                    { "buildLabel", deployment.Version },
+                    { "branchName", SolutionSettings.Current.CurrentBranch },
+                    { "release", SolutionSettings.Current.CurrentRelease }
+                };
+
+                try
+                {
+                    var outputObjects = this.RunPowershell(scriptName, parameters);
+                    success = true;
+                    var result = outputObjects.FirstOrDefault(x => x.Properties["LaunchAppUrl"] != null);
+                    if (result != null)
+                    {
+                        deployment.AppUrl = result.Properties["LaunchAppUrl"].ToString();
+                        deployment.TestRunUrl = result.Properties["LaunchTestRunUrl"].ToString();
+                    }
+                }
+                catch (Exception e)
+                {
+                    NotificationService.DisplayException(e, "Submit Tests failed");
+                }
+                */
+                
                 var powershellArgs = string.Format(
                     "-buildProjectPath:'{0}' -buildLabel:'{1}' -branchName:'{2}' -release:'{3}'",
                     this.sccProviderService.GetSolutionFileName(),
@@ -114,9 +138,7 @@ namespace GitScc.Blinkbox
             this.notificationService.AddMessage("Begin build and deploy to " + deployment.Version);
 
             // Look for a deploy project
-            var buildProjectFileName = Path.IsPathRooted(SolutionSettings.Current.DeployProjectLocation)
-                    ? SolutionSettings.Current.DeployProjectLocation
-                    : Path.Combine(this.sccProviderService.GetSolutionDirectory(), SolutionSettings.Current.DeployProjectLocation);
+            var buildProjectFileName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.DeployProjectLocation);
 
             if (!File.Exists(buildProjectFileName))
             {
@@ -204,13 +226,8 @@ namespace GitScc.Blinkbox
         {
             this.notificationService.ClearMessages();
 
-            var scriptName = Path.IsPathRooted(SolutionSettings.Current.TestSubmissionScript)
-                     ? SolutionSettings.Current.TestSubmissionScript
-                     : Path.Combine(this.sccProviderService.GetSolutionDirectory(), SolutionSettings.Current.TestSubmissionScript);
-
-            var featureDirectory = Path.IsPathRooted(SolutionSettings.Current.FeaturePath)
-                     ? SolutionSettings.Current.FeaturePath
-                     : Path.Combine(this.sccProviderService.GetSolutionDirectory(), SolutionSettings.Current.FeaturePath);
+            var scriptName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.TestSubmissionScript);
+            var featureDirectory = SccHelperService.GetAbsolutePath(SolutionSettings.Current.FeaturePath);
 
             var lastDeployment = SolutionUserSettings.Current.LastDeployment;
             if (lastDeployment == null)
@@ -218,7 +235,7 @@ namespace GitScc.Blinkbox
                 NotificationService.DisplayError("cannot find previous deployment", "Please deploy first");
                 return string.Empty;
             }
-
+            /*
             var parameters = new Dictionary<string, object>()
                 {
                     { "version", lastDeployment.Version },
@@ -231,9 +248,25 @@ namespace GitScc.Blinkbox
                     { "jobName", lastDeployment.Message + " (" + lastDeployment.Message + ")" }
                 };
 
-            var result = this.RunPowershell(scriptName, parameters);
+            try
+            {
+                string jobId = null;
+                var outputObjects = this.RunPowershell(scriptName, parameters);
 
-            /*
+                var result = outputObjects.FirstOrDefault(x => x.Properties["JobId"] != null);
+                if (result != null)
+                {
+                    jobId = result.Properties["JobId"].ToString();
+                }
+              
+                return jobId;
+            }
+            catch (Exception e)
+            {
+                NotificationService.DisplayException(e, "Submit Tests failed");
+            }
+             * */
+
             var powershellArgs = string.Format(
                 "-version:'{0}' -featuresDirectory:'{1}' -branch:'{2}' -userName:'{3}' -password:'{4}' -appUrl:'{5}' -tag:'{6}' -jobName:'{7}' ",
                 lastDeployment.Version,
@@ -251,48 +284,42 @@ namespace GitScc.Blinkbox
                 powershellArgs);
 
             var command = new SccCommand("powershell.exe", powershellCall);
-            command.Start();*/
+            command.Start();
             return null;
         }
 
-        public object RunPowershell(string scriptPath, IDictionary<string, object> parameters)
+        /// <summary>
+        /// Runs a powershell script.
+        /// </summary>
+        /// <param name="scriptPath">The script path.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public Collection<PSObject> RunPowershell(string scriptPath, IDictionary<string, object> parameters)
         {
-            try
+            using (var runspace = RunspaceFactory.CreateRunspace())
             {
-                using (var runspace = RunspaceFactory.CreateRunspace())
+                runspace.Open();
+
+                var pipeline = runspace.CreatePipeline();
+                var scriptCommand = new Command(scriptPath);
+                pipeline.Commands.Add(scriptCommand);
+
+                foreach (var parameter in parameters)
                 {
-                    runspace.Open();
-
-                    var pipeline = runspace.CreatePipeline();
-                    var scriptCommand = new Command(scriptPath);
-                    pipeline.Commands.Add(scriptCommand);
-
-                    foreach (var parameter in parameters)
-                    {
-                        scriptCommand.Parameters.Add(parameter.Key, parameter.Value);
-                    }
-
-                    string jobId = null;
-                    var outputObjects = pipeline.Invoke();
-                    foreach (var outputObject in outputObjects)
-                    {
-                        this.notificationService.AddMessage(outputObject.ToString());
-
-                        if (outputObject.Properties["JobId"] != null)
-                        {
-                            jobId = outputObject.Properties["JobId"].ToString();
-                        }
-                    }
-
-                    return jobId;
+                    scriptCommand.Parameters.Add(parameter.Key, parameter.Value);
                 }
-            }
-            catch (Exception e)
-            {
-                NotificationService.DisplayException(e, "Submit Tests failed");
-            }
 
-            return false;
+                // run script and get outputs
+                var outputObjects = pipeline.Invoke();
+
+                foreach (var outputObject in outputObjects)
+                {
+                    // Write to message window
+                    this.notificationService.AddMessage(outputObject.ToString());
+                }
+
+                return outputObjects;
+            }
         }
 
         /// <summary>

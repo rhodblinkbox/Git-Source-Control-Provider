@@ -9,6 +9,7 @@ namespace GitScc.Blinkbox
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
 
     using GitScc.Blinkbox.Data;
@@ -136,6 +137,22 @@ namespace GitScc.Blinkbox
             }
 
             return gitTfsCommand.Output;
+        }
+
+        /// <summary>
+        /// Converts a relative path to an absolute path relative to the solution.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>an absolute path relative to the solution. </returns>
+        public static string GetAbsolutePath(string path)
+        {
+            path = path.TrimStart("\\".ToCharArray());
+            var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
+            path = Path.IsPathRooted(path)
+                     ? path
+                     : Path.Combine(sccProvider.GetSolutionDirectory(), path);
+
+            return path;
         }
 
         /// <summary>
