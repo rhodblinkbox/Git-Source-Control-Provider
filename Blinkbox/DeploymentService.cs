@@ -10,6 +10,8 @@ namespace GitScc.Blinkbox
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Management.Automation;
+    using System.Management.Automation.Runspaces;
     using System.Text.RegularExpressions;
     using System.Web;
 
@@ -136,6 +138,20 @@ namespace GitScc.Blinkbox
                 return;
             }
 
+            var args = new Dictionary<string, object>
+                {
+                    { "version", lastDeployment.BuildLabel },
+                    { "featuresDirectory", featureDirectory },
+                    { "branch", SolutionSettings.Current.CurrentBranch },
+                    { "userName", SolutionUserSettings.Current.TestSwarmUsername },
+                    { "password", SolutionUserSettings.Current.TestSwarmPassword },
+                    { "appUrl", lastDeployment.AppUrl },
+                    { "tag", SolutionUserSettings.Current.TestSwarmTags },
+                    { "jobName", lastDeployment.Message + " (" + lastDeployment.BuildLabel + ")" }
+                };
+
+            RunPowershell(scriptName, args);
+            /*
             var powershellArgs = string.Format(
                 "-version:'{0}' -featuresDirectory:'{1}' -branch:'{2}' -userName:'{3}' -password:'{4}' -appUrl:'{5}' -tag:'{6}' -jobName:'{7}' ",
                 lastDeployment.BuildLabel,
@@ -154,6 +170,7 @@ namespace GitScc.Blinkbox
 
             var command = new SccCommand("powershell.exe", powershellCall);
             command.Start();
+             * */
         }
 
         /// <summary>
@@ -227,6 +244,30 @@ namespace GitScc.Blinkbox
             }
 
             return true;
+        }
+
+        private void RunPowershell(string script, Dictionary<string, object> parameters )
+        {
+            var host = new PowershellHost();
+
+            using (var myRunSpace = RunspaceFactory.CreateRunspace(host))
+            {
+                // Open the runspace.
+                myRunSpace.Open();
+
+                // Create a PowerShell object to run the script.
+                using (PowerShell powershell = PowerShell.Create())
+                {
+                    powershell.Runspace = myRunSpace;
+                    powershell.AddScript(script);
+
+                    foreach (var parameter in parameters)
+                    {
+                        powershell.AddParameter(parameter.Key, parameter.Value);
+                    }
+
+                    var outputs = powershell.Invoke(script);
+                }
         }
     }
 }
