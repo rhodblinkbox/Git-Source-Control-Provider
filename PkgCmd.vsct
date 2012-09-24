@@ -325,7 +325,7 @@
 
         <Button guid="guidSccProviderCmdSet"
                 id="BlinkboxDeployId"
-                priority="0x0000"
+                priority="0x0002"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="igrpPendingChangesToolWindowToolbarGroup"/>
@@ -333,14 +333,14 @@
             <CommandFlag>DefaultInvisible</CommandFlag>
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
-                <ButtonText>Deploy Last Commit</ButtonText>
+                <ButtonText>Deploy</ButtonText>
                 <ToolTipText>Deploy working directory to a website named with the latest commit hash.</ToolTipText>
             </Strings>
         </Button>
 
         <Button guid="guidSccProviderCmdSet"
                 id="BlinkboxSubmitTestsId"
-                priority="0x0000"
+                priority="0x0003"
                 type="Button">
             <Parent guid="guidSccProviderCmdSet"
                     id="igrpPendingChangesToolWindowToolbarGroup"/>
@@ -348,7 +348,7 @@
             <CommandFlag>DefaultInvisible</CommandFlag>
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
-                <ButtonText>Submit Tests</ButtonText>
+                <ButtonText>Submit Test Run</ButtonText>
                 <ToolTipText>Submit the last deploy to testswarm.</ToolTipText>
             </Strings>
         </Button>

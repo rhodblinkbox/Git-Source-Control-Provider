@@ -114,7 +114,6 @@
     </Compile>
     <Compile Include="Blinkbox\DevelopmentService.cs" />
     <Compile Include="Blinkbox\NotificationService.cs" />
-    <Compile Include="Blinkbox\Data\CommitData.cs" />
     <Compile Include="Blinkbox\GitTfsCommand.cs" />
     <Compile Include="Blinkbox\Options\BlinkboxSccOptions.cs" />
     <Compile Include="Blinkbox\Options\BlinkboxOptionsControl.cs">

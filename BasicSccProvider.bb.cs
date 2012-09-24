@@ -230,7 +230,7 @@ namespace GitScc
             {
                 Name = "Deploy",
                 CommandId = CommandId.BlinkboxDeployId,
-                Handler = this.ReDeploy
+                Handler = this.DeployCurrentVersion
             });
 
             return commands;
@@ -388,7 +388,7 @@ namespace GitScc
         /// <summary>
         /// Handles the Deploy button. 
         /// </summary>
-        private void ReDeploy()
+        private void DeployCurrentVersion()
         {
             try
             {
@@ -397,8 +397,8 @@ namespace GitScc
                     {
                         var deployment = new Deployment 
                         {
-                            Version = sccHelperService.GetHeadRevisionHash(),
-                            Message = sccHelperService.GetLastCommitMessage() + " Re-deploy"
+                            BuildLabel = sccHelperService.GetHeadRevisionHash(),
+                            Message = sccHelperService.GetLastCommitMessage()
                         };
                         this.deploymentService.RunDeploy(deployment);
                     };

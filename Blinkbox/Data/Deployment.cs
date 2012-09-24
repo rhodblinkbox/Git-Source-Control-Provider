@@ -17,7 +17,7 @@ namespace GitScc.Blinkbox.Data
     [Serializable]
     public class Deployment
     {
-        public string Version { get; set; }
+        public string BuildLabel { get; set; }
 
         public string Message { get; set; }
 

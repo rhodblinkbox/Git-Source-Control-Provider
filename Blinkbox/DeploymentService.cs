@@ -69,7 +69,7 @@ namespace GitScc.Blinkbox
                 var powershellArgs = string.Format(
                     "-buildProjectPath:'{0}' -buildLabel:'{1}' -branchName:'{2}' -release:'{3}'",
                     this.sccProviderService.GetSolutionFileName(),
-                    deployment.Version,
+                    deployment.BuildLabel,
                     SolutionSettings.Current.CurrentBranch,
                     SolutionSettings.Current.CurrentRelease);
 
@@ -92,7 +92,7 @@ namespace GitScc.Blinkbox
                 var replacements = new Dictionary<string, string>()
                     {
                         { "MachineName", Environment.MachineName },
-                        { "BuildLabel", deployment.Version },
+                        { "BuildLabel", deployment.BuildLabel },
                         { "Tags", SolutionUserSettings.Current.TestSwarmTags },
                         { "RunnerMode", SolutionSettings.Current.TestRunnerMode },
                     };
@@ -120,7 +120,7 @@ namespace GitScc.Blinkbox
         /// <returns>true if the deploy was successful.</returns>
         private bool DeployMsBuild(Deployment deployment)
         {
-            this.notificationService.AddMessage("Begin build and deploy to " + deployment.Version);
+            this.notificationService.AddMessage("Begin build and deploy to " + deployment.BuildLabel);
 
             // Look for a deploy project
             var buildProjectFileName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.DeployProjectLocation);
@@ -142,7 +142,7 @@ namespace GitScc.Blinkbox
                 // Global properties need to be set before the projects are instantiated. 
                 var globalProperties = new Dictionary<string, string>
                     {
-                        { BlinkboxSccOptions.Current.CommitGuidPropertyName, deployment.Version }, 
+                        { BlinkboxSccOptions.Current.CommitGuidPropertyName, deployment.BuildLabel }, 
                         { BlinkboxSccOptions.Current.CommitCommentPropertyName, commitComment }
                     };
                 var msbuildProject = new ProjectInstance(buildProjectFileName, globalProperties, "4.0", projectCollection);
@@ -221,7 +221,7 @@ namespace GitScc.Blinkbox
 
             var powershellArgs = string.Format(
                 "-version:'{0}' -featuresDirectory:'{1}' -branch:'{2}' -userName:'{3}' -password:'{4}' -appUrl:'{5}' -tag:'{6}' -jobName:'{7}' ",
-                lastDeployment.Version,
+                lastDeployment.BuildLabel,
                 featureDirectory,
                 SolutionSettings.Current.CurrentBranch,
                 SolutionUserSettings.Current.TestSwarmUsername,
