@@ -8,8 +8,10 @@ namespace GitScc.Blinkbox
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
+    using System.Management.Automation;
     using System.Net;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -22,6 +24,7 @@ namespace GitScc.Blinkbox
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
     using Microsoft.Build.Framework;
+    using System.Management.Automation.Runspaces;
 
     /// <summary>
     /// Performs deployments 
@@ -199,6 +202,8 @@ namespace GitScc.Blinkbox
         /// <returns>the jobID asw a string</returns>
         public string SubmitTests()
         {
+            this.notificationService.ClearMessages();
+
             var scriptName = Path.IsPathRooted(SolutionSettings.Current.TestSubmissionScript)
                      ? SolutionSettings.Current.TestSubmissionScript
                      : Path.Combine(this.sccProviderService.GetSolutionDirectory(), SolutionSettings.Current.TestSubmissionScript);
@@ -214,6 +219,21 @@ namespace GitScc.Blinkbox
                 return string.Empty;
             }
 
+            var parameters = new Dictionary<string, object>()
+                {
+                    { "version", lastDeployment.Version },
+                    { "featuresDirectory", featureDirectory },
+                    { "branch", SolutionSettings.Current.CurrentBranch },
+                    { "userName", SolutionUserSettings.Current.TestSwarmUsername },
+                    { "password", SolutionUserSettings.Current.TestSwarmPassword },
+                    { "appUrl", lastDeployment.AppUrl },
+                    { "tag", SolutionUserSettings.Current.TestSwarmTags },
+                    { "jobName", lastDeployment.Message + " (" + lastDeployment.Message + ")" }
+                };
+
+            var result = this.RunPowershell(scriptName, parameters);
+
+            /*
             var powershellArgs = string.Format(
                 "-version:'{0}' -featuresDirectory:'{1}' -branch:'{2}' -userName:'{3}' -password:'{4}' -appUrl:'{5}' -tag:'{6}' -jobName:'{7}' ",
                 lastDeployment.Version,
@@ -231,8 +251,48 @@ namespace GitScc.Blinkbox
                 powershellArgs);
 
             var command = new SccCommand("powershell.exe", powershellCall);
-            command.Start();
+            command.Start();*/
             return null;
+        }
+
+        public object RunPowershell(string scriptPath, IDictionary<string, object> parameters)
+        {
+            try
+            {
+                using (var runspace = RunspaceFactory.CreateRunspace())
+                {
+                    runspace.Open();
+
+                    var pipeline = runspace.CreatePipeline();
+                    var scriptCommand = new Command(scriptPath);
+                    pipeline.Commands.Add(scriptCommand);
+
+                    foreach (var parameter in parameters)
+                    {
+                        scriptCommand.Parameters.Add(parameter.Key, parameter.Value);
+                    }
+
+                    string jobId = null;
+                    var outputObjects = pipeline.Invoke();
+                    foreach (var outputObject in outputObjects)
+                    {
+                        this.notificationService.AddMessage(outputObject.ToString());
+
+                        if (outputObject.Properties["JobId"] != null)
+                        {
+                            jobId = outputObject.Properties["JobId"].ToString();
+                        }
+                    }
+
+                    return jobId;
+                }
+            }
+            catch (Exception e)
+            {
+                NotificationService.DisplayException(e, "Submit Tests failed");
+            }
+
+            return false;
         }
 
         /// <summary>
