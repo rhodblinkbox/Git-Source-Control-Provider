@@ -246,28 +246,74 @@ namespace GitScc.Blinkbox
             return true;
         }
 
-        private void RunPowershell(string script, Dictionary<string, object> parameters )
+        private void RunPowershell(string script, IDictionary<string, object> parameters)
         {
             var host = new PowershellHost();
-
-            using (var myRunSpace = RunspaceFactory.CreateRunspace(host))
+            try
             {
-                // Open the runspace.
-                myRunSpace.Open();
-
-                // Create a PowerShell object to run the script.
-                using (PowerShell powershell = PowerShell.Create())
+                using (var runSpace = RunspaceFactory.CreateRunspace(host))
                 {
-                    powershell.Runspace = myRunSpace;
-                    powershell.AddScript(script);
+                    // Open the runspace.
+                    runSpace.Open();
 
-                    foreach (var parameter in parameters)
+                    /* using (PowerShell powershell = PowerShell.Create())
+                     {
+                         powershell.AddScript(script);
+                         foreach (var parameter in parameters)
+                         {
+                             powershell.AddParameter(parameter.Key, parameter.Value);
+                         }
+                         powershell.Runspace = runSpace;
+                         var outputs = powershell.Invoke();
+
+                     }*/
+
+                    using (var pipeline = runSpace.CreatePipeline())
                     {
-                        powershell.AddParameter(parameter.Key, parameter.Value);
-                    }
+                        var scriptCommand = new Command(script, true);
+                        pipeline.Commands.Add(scriptCommand);
+                        pipeline.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output); 
+                        pipeline.Commands.Add("out-default"); 
+                        ////pipeline.Output.DataReady += this.HandlePowershellOutput;
+                        ////pipeline.Error.DataReady += this.HandlePowershellOutput;
 
-                    var outputs = powershell.Invoke(script);
+                        foreach (var parameter in parameters)
+                        {
+                            scriptCommand.Parameters.Add(parameter.Key, parameter.Value);
+                        }
+
+                        // run script and get outputs
+                        var outputObjects = pipeline.Invoke();
+
+                        runSpace.SessionStateProxy.GetVariable("X-TestSwarm-JobId");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        /// <summary>
+        /// Handles the powershell output.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        private void HandlePowershellOutput(object sender, EventArgs e)
+        {
+            try
+            {
+                var reader = (PipelineReader<PSObject>)sender;
+                if (reader != null)
+                {
+                    foreach (var output in reader.ReadToEnd())
+                    {
+                        notificationService.AddMessage(output.ToString());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {}
         }
     }
 }
