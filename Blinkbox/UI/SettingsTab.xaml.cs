@@ -90,33 +90,5 @@ namespace GitScc.Blinkbox.UI
             SolutionUserSettings.Current.Save();
             UserSettings.Current.Save();
         }
-
-        /// <summary>
-        /// Handles the Click event of the PSButton control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Windows.RoutedEventArgs"/> instance containing the event data.</param>
-        private void PSButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var sccProviderService = BasicSccProvider.GetServiceEx<SccProviderService>();
-
-                var scriptName = Path.Combine(sccProviderService.GetSolutionDirectory(), "deploy\\setExecutionPolicy.ps1");
-
-                if (!File.Exists(scriptName))
-                {
-                    NotificationService.DisplayError("Task Failed", "Cannot find the required powershell script at " + scriptName);
-                    return;
-                }
-
-                var command = new SccCommand("powershell.exe", "set-executionpolicy remotesigned");
-                command.Start();
-            }
-            catch (Exception ex)
-            {
-                NotificationService.DisplayException(ex, "Couldnt enable scripts");
-            }
-        }
     }
 }

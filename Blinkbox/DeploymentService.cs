@@ -9,12 +9,12 @@ namespace GitScc.Blinkbox
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
-    using System.Management.Automation;
     using System.Management.Automation.Runspaces;
     using System.Text.RegularExpressions;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Web;
 
     using GitScc.Blinkbox.Data;
@@ -41,6 +41,11 @@ namespace GitScc.Blinkbox
         private readonly NotificationService notificationService;
 
         /// <summary>
+        /// Instance of the  <see cref="SccProviderService"/>
+        /// </summary>
+        private readonly CancellationTokenSource cancelRunAsync = new CancellationTokenSource();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DeploymentService"/> class.
         /// </summary>
         /// <param name="basicSccProvider">The basic SCC provider.</param>
@@ -53,63 +58,83 @@ namespace GitScc.Blinkbox
         /// <summary>
         /// Deploys using the deploy project specified in settings.
         /// </summary>
-        /// <param name="deployment">The deployment.</param>
-        /// <returns>true if the deploy was successful.</returns>
-        public bool RunDeploy(Deployment deployment)
+        /// <param name="newDeployment">
+        /// The new Deployment.
+        /// </param>
+        public void RunDeploy(Deployment newDeployment)
         {
-            bool success;
+            Func<Deployment, bool> buildAction;
 
             if (Path.GetExtension(SolutionSettings.Current.DeployProjectLocation) == ".ps1")
             {
-                // Call a powershell script to run the deployment.
-                var scriptName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.DeployProjectLocation);
-
-                var powershellArgs = new Dictionary<string, object>
+                buildAction = (deployment) =>
                     {
-                        { "buildProjectPath", this.sccProviderService.GetSolutionFileName() },
-                        { "buildLabel", deployment.BuildLabel },
-                        { "branchName", SolutionSettings.Current.CurrentBranch },
-                        { "release", SolutionSettings.Current.CurrentRelease },
-                    };
+                        try
+                        {
+                            // Call a powershell script to run the deployment.
+                            var scriptName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.DeployProjectLocation);
 
-                var result = this.RunPowershell(scriptName, powershellArgs);
-                success = true;
+                            var powershellArgs = new Dictionary<string, object>
+                                {
+                                    { "buildProjectPath", this.sccProviderService.GetSolutionFileName() },
+                                    { "buildLabel", deployment.BuildLabel },
+                                    { "branchName", SolutionSettings.Current.CurrentBranch },
+                                    { "release", SolutionSettings.Current.CurrentRelease },
+                                };
+
+                            this.RunPowershell(scriptName, powershellArgs);
+                            return true;
+                        }
+                        catch (Exception ex)
+                        {
+                            NotificationService.DisplayException(ex, "build failed");
+                            return false;
+                        }
+                    };
             }
             else
             {
-                success = this.DeployMsBuild(deployment);
+                buildAction = this.DeployMsBuild;
             }
 
-            if (success)
-            {
-                // Save the deployment in userSettings. 
-                var replacements = new Dictionary<string, string> 
+            Action<Deployment> successFulBuildAction = (deployment) =>
                 {
-                    { "MachineName", Environment.MachineName },
-                    { "BuildLabel", deployment.BuildLabel },
-                    { "Tags", SolutionUserSettings.Current.TestSwarmTags },
-                    { "RunnerMode", SolutionSettings.Current.TestRunnerMode },
+                    // Save the deployment in userSettings. 
+                    var replacements = new Dictionary<string, string>
+                        {
+                            { "MachineName", Environment.MachineName },
+                            { "BuildLabel", deployment.BuildLabel },
+                            { "Tags", SolutionUserSettings.Current.TestSwarmTags },
+                            { "RunnerMode", SolutionSettings.Current.TestRunnerMode },
+                        };
+                    deployment.AppUrl = SolutionUserSettings.Current.LocalAppUrlTemplate;
+                    deployment.TestRunUrl = SolutionUserSettings.Current.LocalTestUrlTemplate;
+
+                    foreach (var replacement in replacements)
+                    {
+                        deployment.AppUrl = deployment.AppUrl.Replace("{" + replacement.Key + "}", replacement.Value);
+                        deployment.TestRunUrl = deployment.TestRunUrl.Replace("{" + replacement.Key + "}", replacement.Value);
+                    }
+
+                    SolutionUserSettings.Current.LastDeployment = deployment;
+                    SolutionUserSettings.Current.Save();
+
+                    if (SolutionUserSettings.Current.SubmitTestsOnDeploy.GetValueOrDefault())
+                    {
+                        // Submit tests to testswarm
+                        this.SubmitTests();
+                    }
                 };
-                deployment.AppUrl = SolutionUserSettings.Current.LocalAppUrlTemplate;
-                deployment.TestRunUrl = SolutionUserSettings.Current.LocalTestUrlTemplate;
 
-                foreach (var replacement in replacements)
-                {
-                    deployment.AppUrl = deployment.AppUrl.Replace("{" + replacement.Key + "}", replacement.Value);
-                    deployment.TestRunUrl = deployment.TestRunUrl.Replace("{" + replacement.Key + "}", replacement.Value);
-                }
-
-                SolutionUserSettings.Current.LastDeployment = deployment;
-                SolutionUserSettings.Current.Save();
-
-                if (SolutionUserSettings.Current.SubmitTestsOnDeploy.GetValueOrDefault())
-                {
-                    // Submit tests to testswarm
-                    this.SubmitTests();
-                }
-            }
-
-            return success;
+            this.RunAsync(
+                () =>
+                    {
+                        if (buildAction(newDeployment))
+                        {
+                            successFulBuildAction(newDeployment);
+                        }
+                    },
+                "Deploy");
         }
 
         /// <summary>
@@ -124,32 +149,36 @@ namespace GitScc.Blinkbox
         /// </summary>
         public void SubmitTests()
         {
-            this.notificationService.ClearMessages();
-
-            var scriptName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.TestSubmissionScript);
-            var featureDirectory = SccHelperService.GetAbsolutePath(SolutionSettings.Current.FeaturePath);
-
-            var lastDeployment = SolutionUserSettings.Current.LastDeployment;
-            if (lastDeployment == null || string.IsNullOrEmpty(lastDeployment.BuildLabel))
-            {
-                NotificationService.DisplayError("cannot find previous deployment", "cannot find the previous deployment - please re-deploy first");
-                return;
-            }
-
-            var args = new Dictionary<string, object>
+            Action action = () =>
                 {
-                    { "version", lastDeployment.BuildLabel },
-                    { "featuresDirectory", featureDirectory },
-                    { "branch", SolutionSettings.Current.CurrentBranch },
-                    { "userName", SolutionUserSettings.Current.TestSwarmUsername },
-                    { "password", SolutionUserSettings.Current.TestSwarmPassword },
-                    { "appUrl", lastDeployment.AppUrl },
-                    { "tag", SolutionUserSettings.Current.TestSwarmTags },
-                    { "jobName", lastDeployment.Message + " (" + lastDeployment.BuildLabel + ")" }
+                    this.notificationService.ClearMessages();
+
+                    var scriptName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.TestSubmissionScript);
+                    var featureDirectory = SccHelperService.GetAbsolutePath(SolutionSettings.Current.FeaturePath);
+
+                    var lastDeployment = SolutionUserSettings.Current.LastDeployment;
+                    if (lastDeployment == null || string.IsNullOrEmpty(lastDeployment.BuildLabel))
+                    {
+                        NotificationService.DisplayError("cannot find previous deployment", "cannot find the previous deployment - please re-deploy first");
+                        return;
+                    }
+
+                    var args = new Dictionary<string, object>
+                        {
+                            { "version", lastDeployment.BuildLabel },
+                            { "featuresDirectory", featureDirectory },
+                            { "branch", SolutionSettings.Current.CurrentBranch },
+                            { "userName", SolutionUserSettings.Current.TestSwarmUsername },
+                            { "password", SolutionUserSettings.Current.TestSwarmPassword },
+                            { "appUrl", lastDeployment.AppUrl },
+                            { "tag", SolutionUserSettings.Current.TestSwarmTags },
+                            { "jobName", lastDeployment.Message + " (" + lastDeployment.BuildLabel + ")" }
+                        };
+
+                    this.RunPowershell(scriptName, args);
                 };
 
-            var results = this.RunPowershell(scriptName, args);
-            var jobId = results["JobId"].ToString();
+            this.RunAsync(action, "Submit Tests");
         }
 
         /// <summary>
@@ -207,6 +236,9 @@ namespace GitScc.Blinkbox
 
                 var launchUrls = msbuildProject.Items.Where(pii => pii.ItemType == BlinkboxSccOptions.Current.UrlToLaunchPropertyName);
 
+                // msbuild appends v2-dev onto the front. 
+                deployment.BuildLabel = "v2-dev-" + deployment.BuildLabel;
+
                 if (UserSettings.Current.OpenUrlsAfterDeploy.GetValueOrDefault())
                 {
                     // Launch urls in browser
@@ -225,34 +257,71 @@ namespace GitScc.Blinkbox
             return true;
         }
 
+        /// <summary>
+        /// Runs the provided action asyncronously.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="operation">The operation.</param>
+        /// <returns>The task.</returns>
+        public Task RunAsync(Action action, string operation)
+        {
+            var task = new TaskFactory().StartNew(action, this.cancelRunAsync.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+            task.ContinueWith(t =>
+            {
+                if (t.Exception != null)
+                {
+                    NotificationService.DisplayException(t.Exception.Flatten().InnerException, operation + " failed");
+                }
+            });
+
+            return task;
+        }
+
+        /// <summary>
+        /// Runs a powershell script.
+        /// </summary>
+        /// <param name="script">
+        /// The script.
+        /// </param>
+        /// <param name="parameters">
+        /// The parameters.
+        /// </param>
+        /// <returns>
+        /// The System.Collections.Hashtable.
+        /// </returns>
         private Hashtable RunPowershell(string script, IDictionary<string, object> parameters)
         {
-            var host = new PowershellHost();
             try
             {
-                using (var runSpace = RunspaceFactory.CreateRunspace(host))
-                using (var powerShell = System.Management.Automation.PowerShell.Create())
-                {
-                    // Open the runspace.
-                    runSpace.Open();
-                    powerShell.Runspace = runSpace;
+                    var host = new PowershellHost();
 
-                    powerShell.AddCommand(script, false);
-                    foreach (var parameter in parameters)
+                    using (var runSpace = RunspaceFactory.CreateRunspace(host))
+                    using (var powerShell = System.Management.Automation.PowerShell.Create())
                     {
-                        powerShell.AddParameter(parameter.Key, parameter.Value);
-                    }
+                        // Open the runspace.
+                        runSpace.Open();
+                        powerShell.Runspace = runSpace;
 
-                    var outputs = powerShell.Invoke();
-                    return outputs.Reverse()
-                        .Where(x => x != null && x.ImmediateBaseObject is Hashtable)
-                        .Select(x => x.ImmediateBaseObject as Hashtable)
-                        .FirstOrDefault();
-                }
+                        // Set the execution policy so that scripts wil run. 
+                        powerShell.AddScript("Set-ExecutionPolicy RemoteSigned");
+                        powerShell.Invoke();
+
+                        powerShell.AddCommand(script, false);
+                        foreach (var parameter in parameters)
+                        {
+                            powerShell.AddParameter(parameter.Key, parameter.Value);
+                        }
+
+                        var outputs = powerShell.Invoke();
+                        return outputs.Reverse().Where(x => x != null && x.ImmediateBaseObject is Hashtable).Select(x => x.ImmediateBaseObject as Hashtable).FirstOrDefault();
+                    }
             }
             catch (Exception ex)
             {
+                NotificationService.DisplayException(ex, Path.GetFileNameWithoutExtension(script) + " failed");
             }
+
             return null;
         }
     }
