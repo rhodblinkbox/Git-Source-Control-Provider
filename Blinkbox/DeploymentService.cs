@@ -294,28 +294,28 @@ namespace GitScc.Blinkbox
         {
             try
             {
-                    var host = new PowershellHost();
+                var host = new PowershellHost();
 
-                    using (var runSpace = RunspaceFactory.CreateRunspace(host))
-                    using (var powerShell = System.Management.Automation.PowerShell.Create())
+                using (var runSpace = RunspaceFactory.CreateRunspace(host))
+                using (var powerShell = System.Management.Automation.PowerShell.Create())
+                {
+                    // Open the runspace.
+                    runSpace.Open();
+                    powerShell.Runspace = runSpace;
+
+                    // Set the execution policy so that scripts wil run. 
+                    powerShell.AddScript("Set-ExecutionPolicy RemoteSigned");
+                    powerShell.Invoke();
+
+                    powerShell.AddCommand(script, false);
+                    foreach (var parameter in parameters)
                     {
-                        // Open the runspace.
-                        runSpace.Open();
-                        powerShell.Runspace = runSpace;
-
-                        // Set the execution policy so that scripts wil run. 
-                        powerShell.AddScript("Set-ExecutionPolicy RemoteSigned");
-                        powerShell.Invoke();
-
-                        powerShell.AddCommand(script, false);
-                        foreach (var parameter in parameters)
-                        {
-                            powerShell.AddParameter(parameter.Key, parameter.Value);
-                        }
-
-                        var outputs = powerShell.Invoke();
-                        return outputs.Reverse().Where(x => x != null && x.ImmediateBaseObject is Hashtable).Select(x => x.ImmediateBaseObject as Hashtable).FirstOrDefault();
+                        powerShell.AddParameter(parameter.Key, parameter.Value);
                     }
+
+                    var outputs = powerShell.Invoke();
+                    return outputs.Reverse().Where(x => x != null && x.ImmediateBaseObject is Hashtable).Select(x => x.ImmediateBaseObject as Hashtable).FirstOrDefault();
+                }
             }
             catch (Exception ex)
             {
