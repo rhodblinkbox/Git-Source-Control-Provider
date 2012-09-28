@@ -60,6 +60,18 @@ namespace GitScc.Blinkbox.UI
         }
 
         /// <summary>
+        /// Gets the solution settings.
+        /// </summary>
+        /// <value>The solution settings.</value>
+        public UserSettings userSettings
+        {
+            get
+            {
+                return UserSettings.Current;
+            }
+        }
+
+        /// <summary>
         /// Refreshes the data context bindings to update the UI.
         /// </summary>
         public void RefreshBindings()
@@ -90,7 +102,7 @@ namespace GitScc.Blinkbox.UI
         {
             if (SolutionUserSettings.Current.LastDeployment == null)
             {
-                return;
+                NotificationService.DisplayError("Cannot launch url", "Please deploy first.");
             }
 
             var url = sender == AppLink ? SolutionUserSettings.Current.LastDeployment.AppUrl : SolutionUserSettings.Current.LastDeployment.TestRunUrl;

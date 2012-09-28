@@ -90,7 +90,9 @@
     <Compile Include="Blinkbox\Options\SettingsBase.cs" />
     <Compile Include="Blinkbox\Options\SolutionSettings.cs" />
     <Compile Include="Blinkbox\Data\RefreshArgs.cs" />
-    <Compile Include="Blinkbox\PowershellHost.cs" />
+    <Compile Include="Blinkbox\Powershell\PowershellHost.cs" />
+    <Compile Include="Blinkbox\Powershell\PowershellHostUserInterface.cs" />
+    <Compile Include="Blinkbox\Powershell\PowershellRawUserInterface.cs" />
     <Compile Include="Blinkbox\UI\BBPendingChanges.xaml.cs">
       <DependentUpon>BBPendingChanges.xaml</DependentUpon>
     </Compile>

@@ -7,7 +7,9 @@
 namespace GitScc.Blinkbox
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
@@ -17,6 +19,7 @@ namespace GitScc.Blinkbox
 
     using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
+    using GitScc.Blinkbox.Powershell;
 
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
@@ -61,21 +64,16 @@ namespace GitScc.Blinkbox
                 // Call a powershell script to run the deployment.
                 var scriptName = SccHelperService.GetAbsolutePath(SolutionSettings.Current.DeployProjectLocation);
 
-                var powershellArgs = string.Format(
-                    "-buildProjectPath:'{0}' -buildLabel:'{1}' -branchName:'{2}' -release:'{3}'",
-                    this.sccProviderService.GetSolutionFileName(),
-                    deployment.BuildLabel,
-                    SolutionSettings.Current.CurrentBranch,
-                    SolutionSettings.Current.CurrentRelease);
+                var powershellArgs = new Dictionary<string, object>
+                    {
+                        { "buildProjectPath", this.sccProviderService.GetSolutionFileName() },
+                        { "buildLabel", deployment.BuildLabel },
+                        { "branchName", SolutionSettings.Current.CurrentBranch },
+                        { "release", SolutionSettings.Current.CurrentRelease },
+                    };
 
-                var powershellCall = string.Format(
-                    "& '{0}' {1}",
-                    scriptName,
-                    powershellArgs);
-
-                var command = new SccCommand("powershell.exe", powershellCall);
-                command.Start();
-                success = command.ExitCode == 0;
+                var result = this.RunPowershell(scriptName, powershellArgs);
+                success = true;
             }
             else
             {
@@ -132,9 +130,9 @@ namespace GitScc.Blinkbox
             var featureDirectory = SccHelperService.GetAbsolutePath(SolutionSettings.Current.FeaturePath);
 
             var lastDeployment = SolutionUserSettings.Current.LastDeployment;
-            if (lastDeployment == null)
+            if (lastDeployment == null || string.IsNullOrEmpty(lastDeployment.BuildLabel))
             {
-                NotificationService.DisplayError("cannot find previous deployment", "Please deploy first");
+                NotificationService.DisplayError("cannot find previous deployment", "cannot find the previous deployment - please re-deploy first");
                 return;
             }
 
@@ -150,27 +148,8 @@ namespace GitScc.Blinkbox
                     { "jobName", lastDeployment.Message + " (" + lastDeployment.BuildLabel + ")" }
                 };
 
-            RunPowershell(scriptName, args);
-            /*
-            var powershellArgs = string.Format(
-                "-version:'{0}' -featuresDirectory:'{1}' -branch:'{2}' -userName:'{3}' -password:'{4}' -appUrl:'{5}' -tag:'{6}' -jobName:'{7}' ",
-                lastDeployment.BuildLabel,
-                featureDirectory,
-                SolutionSettings.Current.CurrentBranch,
-                SolutionUserSettings.Current.TestSwarmUsername,
-                SolutionUserSettings.Current.TestSwarmPassword,
-                lastDeployment.AppUrl,
-                SolutionUserSettings.Current.TestSwarmTags,
-                lastDeployment.Message + " (" + lastDeployment.Message + ")");
-
-            var powershellCall = string.Format(
-                "& '{0}' {1}",
-                scriptName,
-                powershellArgs);
-
-            var command = new SccCommand("powershell.exe", powershellCall);
-            command.Start();
-             * */
+            var results = this.RunPowershell(scriptName, args);
+            var jobId = results["JobId"].ToString();
         }
 
         /// <summary>
@@ -246,74 +225,35 @@ namespace GitScc.Blinkbox
             return true;
         }
 
-        private void RunPowershell(string script, IDictionary<string, object> parameters)
+        private Hashtable RunPowershell(string script, IDictionary<string, object> parameters)
         {
             var host = new PowershellHost();
             try
             {
                 using (var runSpace = RunspaceFactory.CreateRunspace(host))
+                using (var powerShell = System.Management.Automation.PowerShell.Create())
                 {
                     // Open the runspace.
                     runSpace.Open();
+                    powerShell.Runspace = runSpace;
 
-                    /* using (PowerShell powershell = PowerShell.Create())
-                     {
-                         powershell.AddScript(script);
-                         foreach (var parameter in parameters)
-                         {
-                             powershell.AddParameter(parameter.Key, parameter.Value);
-                         }
-                         powershell.Runspace = runSpace;
-                         var outputs = powershell.Invoke();
-
-                     }*/
-
-                    using (var pipeline = runSpace.CreatePipeline())
+                    powerShell.AddCommand(script, false);
+                    foreach (var parameter in parameters)
                     {
-                        var scriptCommand = new Command(script, true);
-                        pipeline.Commands.Add(scriptCommand);
-                        pipeline.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output); 
-                        pipeline.Commands.Add("out-default"); 
-                        ////pipeline.Output.DataReady += this.HandlePowershellOutput;
-                        ////pipeline.Error.DataReady += this.HandlePowershellOutput;
-
-                        foreach (var parameter in parameters)
-                        {
-                            scriptCommand.Parameters.Add(parameter.Key, parameter.Value);
-                        }
-
-                        // run script and get outputs
-                        var outputObjects = pipeline.Invoke();
-
-                        runSpace.SessionStateProxy.GetVariable("X-TestSwarm-JobId");
+                        powerShell.AddParameter(parameter.Key, parameter.Value);
                     }
+
+                    var outputs = powerShell.Invoke();
+                    return outputs.Reverse()
+                        .Where(x => x != null && x.ImmediateBaseObject is Hashtable)
+                        .Select(x => x.ImmediateBaseObject as Hashtable)
+                        .FirstOrDefault();
                 }
             }
             catch (Exception ex)
             {
             }
-        }
-
-        /// <summary>
-        /// Handles the powershell output.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        private void HandlePowershellOutput(object sender, EventArgs e)
-        {
-            try
-            {
-                var reader = (PipelineReader<PSObject>)sender;
-                if (reader != null)
-                {
-                    foreach (var output in reader.ReadToEnd())
-                    {
-                        notificationService.AddMessage(output.ToString());
-                    }
-                }
-            }
-            catch (Exception ex)
-            {}
+            return null;
         }
     }
 }
