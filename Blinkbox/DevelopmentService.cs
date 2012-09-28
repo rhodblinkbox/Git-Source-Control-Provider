@@ -156,7 +156,7 @@ namespace GitScc.Blinkbox
 
                     var currentBranch = this.sccHelper.GetCurrentBranch();
 
-                    if (string.IsNullOrEmpty(currentBranch) || !this.CheckWorkingDirectoryClean() || !this.CheckLatestFromTfs(currentBranch))
+                    if (!this.CheckWorkingDirectoryClean() || string.IsNullOrEmpty(currentBranch) || !this.CheckLatestFromTfs(currentBranch))
                     {
                         return;
                     }

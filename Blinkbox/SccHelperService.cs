@@ -256,12 +256,18 @@ namespace GitScc.Blinkbox
         /// <returns>The branch</returns>
         public string GetCurrentBranch()
         {
+            string branch = null;
             if (this.Tracker != null)
             {
-                return this.sccProvider.CleanBranchName(this.Tracker.CurrentBranch);
+                branch = this.sccProvider.CleanBranchName(this.Tracker.CurrentBranch);
             }
 
-            return null;
+            if (!string.IsNullOrEmpty(branch))
+            {
+                NotificationService.DisplayError(string.Empty, "unable to get current branch, please refresh and try again.");
+            }
+
+            return branch;
         }
 
         /// <summary>
