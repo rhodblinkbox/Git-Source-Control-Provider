@@ -262,7 +262,7 @@ namespace GitScc.Blinkbox
                 branch = this.sccProvider.CleanBranchName(this.Tracker.CurrentBranch);
             }
 
-            if (!string.IsNullOrEmpty(branch))
+            if (string.IsNullOrEmpty(branch))
             {
                 NotificationService.DisplayError(string.Empty, "unable to get current branch, please refresh and try again.");
             }
