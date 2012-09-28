@@ -149,45 +149,40 @@ namespace GitScc.Blinkbox
         {
             const string OperationName = "Review";
 
-            Action action = () =>
+            this.notificationService.ClearMessages();
+            this.notificationService.NewSection("Start " + OperationName);
+
+            var currentBranch = this.sccHelper.GetCurrentBranch();
+
+            if (!this.CheckWorkingDirectoryClean() || string.IsNullOrEmpty(currentBranch) || !this.CheckLatestFromTfs(currentBranch))
+            {
+                return;
+            }
+
+            var diff = SccHelperService.DiffBranches(BlinkboxSccOptions.Current.TfsRemoteBranch, currentBranch);
+
+            if (diff.Any())
+            {
+                // Switch to reviewing mode
+                this.CurrentMode = DevMode.Reviewing;
+
+                var pendingChangesView = BasicSccProvider.GetServiceEx<BBPendingChanges>();
+                if (pendingChangesView != null)
                 {
-                    this.notificationService.ClearMessages();
-                    this.notificationService.NewSection("Start " + OperationName);
+                    pendingChangesView.Review(diff.ToList(), BlinkboxSccOptions.Current.TfsRemoteBranch);
+                }
 
-                    var currentBranch = this.sccHelper.GetCurrentBranch();
-
-                    if (!this.CheckWorkingDirectoryClean() || string.IsNullOrEmpty(currentBranch) || !this.CheckLatestFromTfs(currentBranch))
-                    {
-                        return;
-                    }
-
-                    var diff = SccHelperService.DiffBranches(BlinkboxSccOptions.Current.TfsRemoteBranch, currentBranch);
-
-                    if (diff.Any())
-                    {
-                        // Switch to reviewing mode
-                        this.CurrentMode = DevMode.Reviewing;
-
-                        var pendingChangesView = BasicSccProvider.GetServiceEx<BBPendingChanges>();
-                        if (pendingChangesView != null)
-                        {
-                            pendingChangesView.Review(diff.ToList(), BlinkboxSccOptions.Current.TfsRemoteBranch);
-                        }
-
-                        // force the commands to update
-                        var shell = BasicSccProvider.GetServiceEx<IVsUIShell>();
-                        if (shell != null)
-                        {
-                            shell.UpdateCommandUI(0);
-                        }
-                    }
-                    else
-                    {
-                        notificationService.AddMessage("No changes found to review");
-                    }
-                };
-
-            this.RunAsync(action, OperationName);
+                // force the commands to update
+                var shell = BasicSccProvider.GetServiceEx<IVsUIShell>();
+                if (shell != null)
+                {
+                    shell.UpdateCommandUI(0);
+                }
+            }
+            else
+            {
+                notificationService.AddMessage("No changes found to review");
+            }
         }
 
         /// <summary>
