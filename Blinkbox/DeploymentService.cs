@@ -125,15 +125,10 @@ namespace GitScc.Blinkbox
                     }
                 };
 
-            this.RunAsync(
-                () =>
-                    {
-                        if (buildAction(newDeployment))
-                        {
-                            successFulBuildAction(newDeployment);
-                        }
-                    },
-                "Deploy");
+            if (buildAction(newDeployment))
+            {
+                successFulBuildAction(newDeployment);
+            }
         }
 
         /// <summary>

@@ -353,7 +353,7 @@
             <CommandFlag>DefaultInvisible</CommandFlag>
             <CommandFlag>IconAndText</CommandFlag>
             <Strings>
-                <ButtonText>Submit Test Run</ButtonText>
+                <ButtonText>Submit Tests</ButtonText>
                 <ToolTipText>Submit the last deployment to testswarm.</ToolTipText>
             </Strings>
         </Button>

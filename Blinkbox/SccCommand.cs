@@ -40,6 +40,9 @@ namespace GitScc.Blinkbox
             StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
             StartInfo.LoadUserProfile = true;
 
+            // We dont want to provide input
+            this.StartInfo.RedirectStandardInput = true;
+
             // Send output to the pending changes window
             StartInfo.RedirectStandardOutput = true;
             StartInfo.RedirectStandardError = true;
@@ -84,6 +87,9 @@ namespace GitScc.Blinkbox
 
                 base.Start();
 
+                // we need to close this before we call waitforExit, as we are not providing input. 
+                this.StandardInput.Close();
+
                 if (this.WaitUntilFinished)
                 {
                     this.WaitForExit();
@@ -101,6 +107,7 @@ namespace GitScc.Blinkbox
             }
             catch (Exception e)
             {
+                this.Kill();
                 throw new CommandException<SccCommand>(this, e);
             }
 

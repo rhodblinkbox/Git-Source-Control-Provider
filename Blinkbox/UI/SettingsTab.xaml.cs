@@ -9,7 +9,11 @@
 
 namespace GitScc.Blinkbox.UI
 {
+    using System.Windows.Controls;
+
     using GitScc.Blinkbox.Options;
+
+    using Microsoft.Win32;
 
     /// <summary>
     /// Interaction logic for SettingsTab.xaml
@@ -76,6 +80,18 @@ namespace GitScc.Blinkbox.UI
         }
 
         /// <summary>
+        /// Gets the user settings.
+        /// </summary>
+        /// <value>The user settings.</value>
+        public GitSccOptions sccSettings
+        {
+            get
+            {
+                return GitSccOptions.Current;
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the SaveButton control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -85,6 +101,7 @@ namespace GitScc.Blinkbox.UI
             SolutionSettings.Current.Save();
             SolutionUserSettings.Current.Save();
             UserSettings.Current.Save();
+            GitSccOptions.Current.SaveConfig();
         }
     }
 }

@@ -20,8 +20,8 @@ namespace GitScc.Blinkbox.Powershell
         /// </summary>
         public override ConsoleColor BackgroundColor
         {
-            get { return Console.BackgroundColor; }
-            set { Console.BackgroundColor = value; }
+            get { return ConsoleColor.Black; }
+            set { /* noop */ }
         }
 
         /// <summary>
@@ -30,8 +30,8 @@ namespace GitScc.Blinkbox.Powershell
         /// </summary>
         public override Size BufferSize
         {
-            get { return new Size(Console.BufferWidth, Console.BufferHeight); }
-            set { Console.SetBufferSize(value.Width, value.Height); }
+            get { return new Size(160, 300); }
+            set { /* noop */ }
         }
 
         /// <summary>
@@ -61,8 +61,8 @@ namespace GitScc.Blinkbox.Powershell
         /// </summary>
         public override int CursorSize
         {
-            get { return Console.CursorSize; }
-            set { Console.CursorSize = value; }
+            get { return 100; }
+            set { /* noop */ }
         }
 
         /// <summary>
@@ -71,8 +71,8 @@ namespace GitScc.Blinkbox.Powershell
         /// </summary>
         public override ConsoleColor ForegroundColor
         {
-            get { return Console.ForegroundColor; }
-            set { Console.ForegroundColor = value; }
+            get { return ConsoleColor.White; }
+            set { /* noop */ }
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace GitScc.Blinkbox.Powershell
         /// </summary>
         public override bool KeyAvailable
         {
-            get { return Console.KeyAvailable; }
+            get { return false; }
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace GitScc.Blinkbox.Powershell
         /// </summary>
         public override Size MaxPhysicalWindowSize
         {
-            get { return new Size(Console.LargestWindowWidth, Console.LargestWindowHeight); }
+            get { return new Size(160, 75); }
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace GitScc.Blinkbox.Powershell
         /// </summary>
         public override Size MaxWindowSize
         {
-            get { return new Size(Console.LargestWindowWidth, Console.LargestWindowHeight); }
+            get { return new Size(160, 75); }
         }
 
         /// <summary>
@@ -114,8 +114,8 @@ namespace GitScc.Blinkbox.Powershell
         /// </summary>
         public override Coordinates WindowPosition
         {
-            get { return new Coordinates(Console.WindowLeft, Console.WindowTop); }
-            set { Console.SetWindowPosition(value.X, value.Y); }
+            get { return new Coordinates(0, 0); }
+            set { /* noop */ }
         }
 
         /// <summary>
@@ -125,8 +125,8 @@ namespace GitScc.Blinkbox.Powershell
         /// </summary>
         public override Size WindowSize
         {
-            get { return new Size(Console.WindowWidth, Console.WindowHeight); }
-            set { Console.SetWindowSize(value.Width, value.Height); }
+            get { return new Size(160, 75); }
+            set { /* noop */ }
         }
 
         /// <summary>
@@ -135,8 +135,8 @@ namespace GitScc.Blinkbox.Powershell
         /// </summary>
         public override string WindowTitle
         {
-            get { return Console.Title; }
-            set { Console.Title = value; }
+            get { return string.Empty; }
+            set { /* noop */ }
         }
 
         /// <summary>

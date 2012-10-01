@@ -103,6 +103,7 @@ namespace GitScc.Blinkbox.UI
             if (SolutionUserSettings.Current.LastDeployment == null)
             {
                 NotificationService.DisplayError("Cannot launch url", "Please deploy first.");
+                return;
             }
 
             var url = sender == AppLink ? SolutionUserSettings.Current.LastDeployment.AppUrl : SolutionUserSettings.Current.LastDeployment.TestRunUrl;

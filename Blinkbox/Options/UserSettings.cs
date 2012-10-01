@@ -55,6 +55,12 @@ namespace GitScc.Blinkbox.Options
         public bool? OpenUrlsAfterDeploy { get; set; }
 
         /// <summary>
+        /// Gets or sets the location of git-tfs.
+        /// </summary>
+        /// <value>the location of git-tfs.</value>
+        public string GitTfsLocation { get; set; }
+
+        /// <summary>
         /// Inits this instance.
         /// </summary>
         protected override void Init()
@@ -62,6 +68,7 @@ namespace GitScc.Blinkbox.Options
             this.PreviewGetLatest = this.PreviewGetLatest ?? false;
             this.OpenUrlsInVS = this.OpenUrlsInVS ?? false;
             this.OpenUrlsAfterDeploy = this.OpenUrlsAfterDeploy ?? true;
+            this.GitTfsLocation = string.IsNullOrEmpty(this.GitTfsLocation) ? "C:\\Program Files (x86)\\Git-tfs\\git-tfs.exe" : this.GitTfsLocation;
         }
     }
 }
