@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="SettingsTab.xaml.cs" company="blinkbox">
-//   
+// TODO: Update copyright text.
 // </copyright>
 // <summary>
 //   Interaction logic for SettingsTab.xaml
@@ -9,10 +9,6 @@
 
 namespace GitScc.Blinkbox.UI
 {
-    using System;
-    using System.IO;
-    using System.Windows;
-
     using GitScc.Blinkbox.Options;
 
     /// <summary>

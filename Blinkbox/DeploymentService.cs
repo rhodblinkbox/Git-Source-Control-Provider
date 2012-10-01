@@ -7,7 +7,6 @@
 namespace GitScc.Blinkbox
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -67,7 +66,7 @@ namespace GitScc.Blinkbox
 
             if (Path.GetExtension(SolutionSettings.Current.DeployProjectLocation) == ".ps1")
             {
-                buildAction = (deployment) =>
+                buildAction = deployment =>
                     {
                         try
                         {
@@ -82,7 +81,7 @@ namespace GitScc.Blinkbox
                                     { "release", SolutionSettings.Current.CurrentRelease },
                                 };
 
-                            this.RunPowershell(scriptName, powershellArgs);
+                            this.RunPowershell<object>(scriptName, powershellArgs);
                             return true;
                         }
                         catch (Exception ex)
@@ -97,7 +96,7 @@ namespace GitScc.Blinkbox
                 buildAction = this.DeployMsBuild;
             }
 
-            Action<Deployment> successFulBuildAction = (deployment) =>
+            Action<Deployment> successFulBuildAction = deployment =>
                 {
                     // Save the deployment in userSettings. 
                     var replacements = new Dictionary<string, string>
@@ -175,10 +174,31 @@ namespace GitScc.Blinkbox
                             { "jobName", lastDeployment.Message + " (" + lastDeployment.BuildLabel + ")" }
                         };
 
-                    this.RunPowershell(scriptName, args);
+                    this.RunPowershell<object>(scriptName, args);
                 };
 
             this.RunAsync(action, "Submit Tests");
+        }
+
+        /// <summary>
+        /// Runs the provided action asyncronously.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="operation">The operation.</param>
+        /// <returns>The task.</returns>
+        public Task RunAsync(Action action, string operation)
+        {
+            var task = new TaskFactory().StartNew(action, this.cancelRunAsync.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+            task.ContinueWith(t =>
+            {
+                if (t.Exception != null)
+                {
+                    NotificationService.DisplayException(t.Exception.Flatten().InnerException, operation + " failed");
+                }
+            });
+
+            return task;
         }
 
         /// <summary>
@@ -258,29 +278,11 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
-        /// Runs the provided action asyncronously.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="operation">The operation.</param>
-        /// <returns>The task.</returns>
-        public Task RunAsync(Action action, string operation)
-        {
-            var task = new TaskFactory().StartNew(action, this.cancelRunAsync.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-
-            task.ContinueWith(t =>
-            {
-                if (t.Exception != null)
-                {
-                    NotificationService.DisplayException(t.Exception.Flatten().InnerException, operation + " failed");
-                }
-            });
-
-            return task;
-        }
-
-        /// <summary>
         /// Runs a powershell script.
         /// </summary>
+        /// <typeparam name="T">
+        /// The type of the return value. Hashtable for a returned object.
+        /// </typeparam>
         /// <param name="script">
         /// The script.
         /// </param>
@@ -288,9 +290,9 @@ namespace GitScc.Blinkbox
         /// The parameters.
         /// </param>
         /// <returns>
-        /// The System.Collections.Hashtable.
+        /// The return value of the script.
         /// </returns>
-        private Hashtable RunPowershell(string script, IDictionary<string, object> parameters)
+        private T RunPowershell<T>(string script, IEnumerable<KeyValuePair<string, object>> parameters) where T : class
         {
             try
             {
@@ -314,7 +316,10 @@ namespace GitScc.Blinkbox
                     }
 
                     var outputs = powerShell.Invoke();
-                    return outputs.Reverse().Where(x => x != null && x.ImmediateBaseObject is Hashtable).Select(x => x.ImmediateBaseObject as Hashtable).FirstOrDefault();
+
+                    // the return value is the last output from the script.
+                    var result = outputs.LastOrDefault();
+                    return result == null ? null : result.ImmediateBaseObject as T;
                 }
             }
             catch (Exception ex)
