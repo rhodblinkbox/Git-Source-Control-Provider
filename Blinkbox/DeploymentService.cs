@@ -157,6 +157,8 @@ namespace GitScc.Blinkbox
                         return;
                     }
 
+                    var browserSets = SolutionUserSettings.Current.TestBrowserSets.Split(new[] { ",", ".", "|", ";" }, StringSplitOptions.RemoveEmptyEntries);
+
                     var args = new Dictionary<string, object>
                         {
                             { "version", lastDeployment.BuildLabel },
@@ -166,7 +168,9 @@ namespace GitScc.Blinkbox
                             { "password", SolutionUserSettings.Current.TestSwarmPassword },
                             { "appUrl", lastDeployment.AppUrl },
                             { "tag", SolutionUserSettings.Current.TestSwarmTags },
-                            { "jobName", lastDeployment.Message + " (" + lastDeployment.BuildLabel + ")" }
+                            { "jobName", lastDeployment.Message + " (" + lastDeployment.BuildLabel + ")" },
+                            { "browserSets", browserSets },
+                            { "runnerMode", SolutionUserSettings.Current.TestRunnerMode }
                         };
 
                     this.RunPowershell<object>(scriptName, args);

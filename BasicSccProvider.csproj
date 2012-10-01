@@ -34,7 +34,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
@@ -99,6 +99,7 @@
     <Compile Include="Blinkbox\UI\deployTab.xaml.cs">
       <DependentUpon>deployTab.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Blinkbox\UI\PasswordHelper.cs" />
     <Compile Include="Blinkbox\UI\ReviewTab.xaml.cs">
       <DependentUpon>ReviewTab.xaml</DependentUpon>
     </Compile>

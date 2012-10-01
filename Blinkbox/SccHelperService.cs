@@ -215,10 +215,21 @@ namespace GitScc.Blinkbox
         /// <returns>The working directory</returns>
         public string GetWorkingDirectory()
         {
-            var directory = this.Tracker == null ? null : this.Tracker.GitWorkingDirectory;
+            string directory = null;
+            try
+            {
+                directory = this.Tracker == null ? null : this.Tracker.GitWorkingDirectory;
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e.ToString());
+            }
+
+            // Getting the directory failed (perhaps because the tracker was unavailable). Try a different approach.
             directory = !string.IsNullOrEmpty(directory)
                 ? directory
                 : GitFileStatusTracker.GetRepositoryDirectory(this.sccProvider.GetSolutionDirectory());
+
             return directory;
         }
 
