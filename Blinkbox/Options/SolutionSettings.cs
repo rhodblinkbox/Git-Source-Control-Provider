@@ -98,19 +98,37 @@ namespace GitScc.Blinkbox.Options
         public string TestSubmissionScript { get; set; }
 
         /// <summary>
+        /// Gets or sets the local app URL template.
+        /// </summary>
+        /// <value>The local app URL template.</value>
+        public string LocalAppUrlTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the local test URL template.
+        /// </summary>
+        /// <value>The local test URL template.</value>
+        public string LocalTestUrlTemplate { get; set; }
+
+        /// <summary>
         /// Inits this instance.
         /// </summary>
         protected override void Init()
         {
             this.TestSwarmUrl = string.IsNullOrEmpty(this.TestSwarmUrl) ? "http://battleship/testswarm" : this.TestSwarmUrl;
             this.FeaturePath = string.IsNullOrEmpty(this.FeaturePath) ? "test\\AngularClient.Test.Artefacts\\Features" : this.FeaturePath;
-            this.TestBrowserSets = string.IsNullOrEmpty(this.TestBrowserSets) ? "default,currentDesktop" : this.TestBrowserSets;
+            this.TestBrowserSets = string.IsNullOrEmpty(this.TestBrowserSets) ? "default" : this.TestBrowserSets;
             this.CurrentBranch = string.IsNullOrEmpty(this.CurrentBranch) ? "v0" : this.CurrentBranch;
             this.TestRunnerMode = string.IsNullOrEmpty(this.TestRunnerMode) ? "appfirst" : this.TestRunnerMode;
             this.TestSwarmTags = string.IsNullOrEmpty(this.TestSwarmTags) ? "devcomplete" : this.TestSwarmTags;
             this.DeployProjectLocation = string.IsNullOrEmpty(this.DeployProjectLocation) ? "deploy\\deployLocal.ps1" : this.DeployProjectLocation;
             this.CurrentRelease = string.IsNullOrEmpty(this.CurrentRelease) ? "v0.0.0" : this.CurrentRelease;
             this.TestSubmissionScript = string.IsNullOrEmpty(this.TestSubmissionScript) ? "deploy\\testSwarm.ps1" : this.TestSubmissionScript;
+            this.LocalAppUrlTemplate = string.IsNullOrEmpty(this.LocalAppUrlTemplate)
+               ? "http://tv-{MachineName}.bbdev1.com/Client/{BuildLabel}"
+               : this.LocalAppUrlTemplate;
+            this.LocalTestUrlTemplate = string.IsNullOrEmpty(this.LocalTestUrlTemplate)
+                ? (this.LocalAppUrlTemplate + "/Test/Index.html?runnerMode={RunnerMode}&tags={Tags}")
+                : this.LocalTestUrlTemplate;
         }
     }
 }

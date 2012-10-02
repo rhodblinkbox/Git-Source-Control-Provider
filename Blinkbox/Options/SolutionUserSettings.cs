@@ -85,6 +85,18 @@ namespace GitScc.Blinkbox.Options
         public string LocalTestUrlTemplate { get; set; }
 
         /// <summary>
+        /// Gets or sets the test browser sets.
+        /// </summary>
+        /// <value>The test browser sets.</value>
+        public string TestBrowserSets { get; set; }
+
+        /// <summary>
+        /// Gets or sets the test runner mode.
+        /// </summary>
+        /// <value>The test runner mode.</value>
+        public string TestRunnerMode { get; set; }
+
+        /// <summary>
         /// Gets or sets the last deployment.
         /// </summary>
         /// <value>The last deployment.</value>
@@ -96,14 +108,28 @@ namespace GitScc.Blinkbox.Options
         protected override void Init()
         {
             this.TestSwarmPassword = string.IsNullOrEmpty(this.TestSwarmPassword) ? "1234$abcd" : this.TestSwarmPassword;
-            this.TestSwarmTags = string.IsNullOrEmpty(this.TestSwarmTags) ? SolutionSettings.Current.TestSwarmTags : this.TestSwarmTags;
             this.TestSwarmUsername = string.IsNullOrEmpty(this.TestSwarmUsername) ? Environment.UserName : this.TestSwarmUsername;
             this.SubmitTestsOnDeploy = this.SubmitTestsOnDeploy ?? true;
-            this.LocalAppUrlTemplate = string.IsNullOrEmpty(this.LocalAppUrlTemplate)
-                ? "http://tv-{MachineName}.bbdev1.com/Client/{BuildLabel}"
+
+            // An update to the solution settings should override the user settings. 
+            this.TestSwarmTags = string.IsNullOrEmpty(this.TestSwarmTags) 
+                ? SolutionSettings.Current.TestSwarmTags 
+                : this.TestSwarmTags;
+
+            this.TestBrowserSets = string.IsNullOrEmpty(this.TestBrowserSets) 
+                ? SolutionSettings.Current.TestBrowserSets
+                : this.TestBrowserSets;
+
+            this.TestRunnerMode = string.IsNullOrEmpty(this.TestRunnerMode) 
+                ? SolutionSettings.Current.TestRunnerMode
+                : this.TestRunnerMode;
+
+            this.LocalAppUrlTemplate = string.IsNullOrEmpty(this.LocalAppUrlTemplate) 
+                ? SolutionSettings.Current.LocalAppUrlTemplate
                 : this.LocalAppUrlTemplate;
+
             this.LocalTestUrlTemplate = string.IsNullOrEmpty(this.LocalTestUrlTemplate) 
-                ? (this.LocalAppUrlTemplate + "/Test/Index.html?runnerMode={RunnerMode}&tags={Tags}")
+                ? SolutionSettings.Current.LocalTestUrlTemplate
                 : this.LocalTestUrlTemplate;
         }
     }

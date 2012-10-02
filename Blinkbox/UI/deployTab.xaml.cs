@@ -9,6 +9,9 @@
 
 namespace GitScc.Blinkbox.UI
 {
+    using System;
+    using System.Collections.Generic;
+
     using GitScc.Blinkbox.Options;
 
     /// <summary>
@@ -106,7 +109,21 @@ namespace GitScc.Blinkbox.UI
                 return;
             }
 
-            var url = sender == AppLink ? SolutionUserSettings.Current.LastDeployment.AppUrl : SolutionUserSettings.Current.LastDeployment.TestRunUrl;
+            var replacements = new Dictionary<string, string>
+            {
+                { "MachineName", Environment.MachineName },
+                { "BuildLabel", SolutionUserSettings.Current.LastDeployment.BuildLabel },
+                { "Tags", SolutionUserSettings.Current.TestSwarmTags },
+                { "RunnerMode", SolutionSettings.Current.TestRunnerMode },
+            };
+
+            var url = sender == AppLink ? SolutionUserSettings.Current.LocalAppUrlTemplate : SolutionUserSettings.Current.LocalTestUrlTemplate;
+            
+            foreach (var replacement in replacements)
+            {
+                url = url.Replace("{" + replacement.Key + "}", replacement.Value);
+            }
+
             BasicSccProvider.LaunchBrowser(url);
         }
     }

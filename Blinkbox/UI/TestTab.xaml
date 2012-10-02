@@ -4,8 +4,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:this="GitScc.Blinkbox.UI.TestTab" 
-             mc:Ignorable="d" 
+    xmlns:UI="clr-namespace:GitScc.Blinkbox.UI"
+    mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800">
     
     <Control.Resources>
@@ -60,8 +60,7 @@
 
         <TextBox Name="testSwarmUsername" Grid.Row="1" Grid.Column="1" 
                              Text="{Binding solutionUserSettings.TestSwarmUsername, Mode=TwoWay}" />
-        <TextBox Name="testSwarmPassword" Grid.Row="2" Grid.Column="1" 
-                             Text="{Binding solutionUserSettings.TestSwarmPassword}" />
+        <PasswordBox Name="testSwarmPassword" Grid.Row="2" Grid.Column="1" />
         <TextBox Name="testSwarmTags" Grid.Row="3" Grid.Column="1" 
                              Text="{Binding Path=solutionUserSettings.TestSwarmTags, Mode=TwoWay}" />
         <TextBox Name="testSwarmUrl" Grid.Row="4" Grid.Column="1" 
@@ -69,9 +68,9 @@
         <TextBox Name="featurePath" Grid.Row="5" Grid.Column="1" 
                              Text="{Binding Path=solutionSettings.FeaturePath, Mode=TwoWay}" />
         <TextBox Name="browserSets" Grid.Row="6" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestBrowserSets, Mode=TwoWay}" />
+                             Text="{Binding Path=solutionUserSettings.TestBrowserSets, Mode=TwoWay}" />
         <TextBox Name="runnerMode" Grid.Row="7" Grid.Column="1" 
-                             Text="{Binding Path=solutionSettings.TestRunnerMode, Mode=TwoWay}" />
+                             Text="{Binding Path=solutionUserSettings.TestRunnerMode, Mode=TwoWay}" />
         <TextBox Name="testSubmissionScript" Grid.Row="8" Grid.Column="1" 
                              Text="{Binding Path=solutionSettings.TestSubmissionScript, Mode=TwoWay}" />
 

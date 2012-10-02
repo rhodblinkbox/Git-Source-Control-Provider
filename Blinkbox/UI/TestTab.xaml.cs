@@ -33,13 +33,22 @@ namespace GitScc.Blinkbox.UI
             var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
             if (sccProvider != null)
             {
-                sccProvider.OnSolutionOpen += (s, a) =>
-                {
-                    // Refresh data context to trigger update
-                    grid.DataContext = null;
-                    grid.DataContext = this;
-                };
+                sccProvider.OnSolutionOpen += (s, a) => this.RefreshBindings();
             }
+
+            // PasswordBoxs dont support databinding - do it manually. 
+            testSwarmPassword.PasswordChanged += (s, e) => { solutionUserSettings.TestSwarmPassword = ((PasswordBox)s).Password; };
+        }
+
+        /// <summary>
+        /// Refreshes the data context bindings to update the UI.
+        /// </summary>
+        public void RefreshBindings()
+        {
+            // TODO: proper way to do this?
+            grid.DataContext = null;
+            grid.DataContext = this;
+            testSwarmPassword.Password = this.solutionUserSettings.TestSwarmPassword;
         }
 
         /// <summary>
@@ -86,5 +95,6 @@ namespace GitScc.Blinkbox.UI
         {
             BasicSccProvider.LaunchBrowser(SolutionSettings.Current.TestSwarmUrl + "/user/" + SolutionUserSettings.Current.TestSwarmUsername);
         }
+
     }
 }
