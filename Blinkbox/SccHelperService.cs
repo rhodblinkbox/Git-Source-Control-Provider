@@ -165,7 +165,7 @@ namespace GitScc.Blinkbox
         {
             if (System.IO.File.Exists(GitSccOptions.Current.TortoiseGitPath))
             {
-                var command = string.Format("diff /path:{0}", fileName);
+                var command = string.Format("diff /path:\"{0}\"", fileName);
 
                 if (!string.IsNullOrEmpty(endRevision))
                 {
@@ -268,6 +268,7 @@ namespace GitScc.Blinkbox
         public string GetCurrentBranch()
         {
             string branch = null;
+
             if (this.Tracker != null)
             {
                 branch = this.sccProvider.CleanBranchName(this.Tracker.CurrentBranch);

@@ -51,7 +51,7 @@
         </Grid>
 
         <Grid Grid.Column="2" Grid.Row="1" Background="White">
-            <avalonEdit:TextEditor x:Name="ReviewDiff" FontFamily="Consolas" FontSize="10pt" MouseDoubleClick="Review_MouseDoubleClick"/>
+            <avalonEdit:TextEditor x:Name="ReviewDiff" FontFamily="Consolas" FontSize="10pt" MouseDoubleClick="Diff_MouseDoubleClick"/>
         </Grid>
 
     </Grid>

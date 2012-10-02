@@ -279,6 +279,65 @@ namespace GitScc.Blinkbox.UI
         }
 
         /// <summary>
+        /// Opens the file in VS.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Windows.Input.MouseButtonEventArgs"/> instance containing the event data.</param>
+        private void Diff_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Open the file in VS
+            var reviewItem = this.GetSelectedReviewItem();
+           
+            if (reviewItem != null && !string.IsNullOrEmpty(reviewItem.FileName))
+            {
+                var fileName = System.IO.Path.Combine(BBPendingChanges.GetTracker().GitWorkingDirectory, reviewItem.FileName);
+                this.OpenFile(fileName);
+            }
+        }
+
+        /// <summary>
+        /// Opens a file in VS.
+        /// </summary>
+        /// <param name="fileName">
+        /// The file name.
+        /// </param>
+        private void OpenFile(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return;
+            }
+
+            fileName = fileName.Replace("/", "\\");
+            var dte = BasicSccProvider.GetServiceEx<EnvDTE.DTE>();
+            bool opened = false;
+            var projects = (Array)dte.ActiveSolutionProjects;
+
+            foreach (dynamic project in projects)
+            {
+                foreach (dynamic item in project.ProjectItems)
+                {
+                    if (string.Compare(item.FileNames[0], fileName, true) == 0)
+                    {
+                        dynamic wnd = item.Open(EnvDTE.Constants.vsViewKindPrimary);
+                        wnd.Activate();
+                        opened = true;
+                        break;
+                    }
+                }
+                if (opened)
+                {
+                    break;
+                }
+            }
+
+            if (!opened)
+            {
+                dte.ItemOperations.OpenFile(fileName);
+            }
+        }
+
+        /// <summary>
         /// Gets the selected review item.
         /// </summary>
         /// <returns>the selected item.</returns>
