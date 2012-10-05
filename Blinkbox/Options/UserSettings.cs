@@ -61,6 +61,12 @@ namespace GitScc.Blinkbox.Options
         public string GitTfsLocation { get; set; }
 
         /// <summary>
+        /// Gets or sets the location of the current release manifest file.
+        /// </summary>
+        /// <value>the location of the current release manifest file.</value>
+        public string ReleaseManifestLocation { get; set; }
+
+        /// <summary>
         /// Inits this instance.
         /// </summary>
         protected override void Init()
@@ -69,6 +75,7 @@ namespace GitScc.Blinkbox.Options
             this.OpenUrlsInVS = this.OpenUrlsInVS ?? false;
             this.OpenUrlsAfterDeploy = this.OpenUrlsAfterDeploy ?? true;
             this.GitTfsLocation = string.IsNullOrEmpty(this.GitTfsLocation) ? "C:\\Program Files (x86)\\Git-tfs\\git-tfs.exe" : this.GitTfsLocation;
+            this.ReleaseManifestLocation = string.IsNullOrEmpty(this.ReleaseManifestLocation) ? "P:\\Software\\git\\BBGitSourceControl\\extension.vsixmanifest" : this.ReleaseManifestLocation;
         }
     }
 }

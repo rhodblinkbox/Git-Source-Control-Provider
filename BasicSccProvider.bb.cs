@@ -15,6 +15,8 @@ namespace GitScc
     using System.ComponentModel.Design;
     using System.IO;
     using System.Linq;
+    using System.Xml;
+    using System.Xml.Linq;
 
     using GitScc.Blinkbox;
     using GitScc.Blinkbox.Data;
@@ -32,6 +34,11 @@ namespace GitScc
     /// </summary>
     public partial class BasicSccProvider
     {
+        /// <summary>
+        /// The current version.
+        /// </summary>
+        private Version installedVersion = new Version(0, 9, 6, 112);
+        
         /// <summary>
         /// list of commands which are disabled during review
         /// </summary>
@@ -152,6 +159,14 @@ namespace GitScc
             RegisterService(this.developmentService);
 
             this.deploymentService = new DeploymentService(this);
+
+            this.developmentService.RunAsync(
+                () =>
+                    { 
+                        System.Threading.Thread.Sleep(10000);
+                        this.CheckForNewVersion();
+                    },
+                "Check for new version");
         }
 
         /// <summary>
@@ -407,6 +422,33 @@ namespace GitScc
             catch (Exception e)
             {
                 NotificationService.DisplayException(e, "Deploy failed");
+            }
+        }
+
+        /// <summary>
+        /// Checks for new version.
+        /// </summary>
+        private void CheckForNewVersion()
+        {
+            try
+            {
+                if (File.Exists(UserSettings.Current.ReleaseManifestLocation))
+                {
+                    var doc = XDocument.Load(UserSettings.Current.ReleaseManifestLocation);
+                    var element = doc.Descendants("Identifier").First().Descendants("Version").First();
+                    var version = new Version(element.Value);
+
+                    if (this.installedVersion < version)
+                    {
+                        NotificationService.DisplayError(
+                            "Please upgrade to the latest version", 
+                            string.Format("version {0} is available at {1}", version, UserSettings.Current.ReleaseManifestLocation));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                    
             }
         }
     }
