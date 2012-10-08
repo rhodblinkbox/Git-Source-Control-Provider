@@ -49,11 +49,10 @@
 
         <Label Content="Deploy project name:" Grid.Row="1"  />
         <Label Content="Submit test on deploy:" Grid.Row="2"  />
-        <Label Content="open urls after deploy:" Grid.Row="3"  />
-        <Label Content="Current Branch:" Grid.Row="4"  />
-        <Label Content="Current Release:" Grid.Row="5"  />
-        <Label Content="Local App Url" Grid.Row="6"  />
-        <Label Content="Local Test Url:" Grid.Row="7"  />
+        <Label Content="Current Branch:" Grid.Row="3"  />
+        <Label Content="Current Release:" Grid.Row="4"  />
+        <Label Content="Local App Url" Grid.Row="5"  />
+        <Label Content="Local Test Url:" Grid.Row="6"  />
 
         <TextBox Name="deployProjectName" Grid.Row="1" Grid.Column="1" 
                              Text="{Binding Path=solutionSettings.DeployProjectLocation, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="0,1,124,1" />
@@ -61,19 +60,16 @@
         <CheckBox Name="submitTestsOnDeploy" Grid.Row="2" Grid.Column="1"
                              IsChecked="{Binding Path=solutionUserSettings.SubmitTestsOnDeploy, Mode=TwoWay}" Margin="0,0,63,0" />
 
-        <CheckBox Name="openUrlsAfterDeploy" Grid.Row="3" Grid.Column="1" 
-                             IsChecked="{Binding Path=userSettings.OpenUrlsAfterDeploy, Mode=TwoWay}" Margin="0,0,63,0" />
-
-        <TextBox Name="deployBranchName" Grid.Row="4" Grid.Column="1" 
+        <TextBox Name="deployBranchName" Grid.Row="3" Grid.Column="1" 
                              Text="{Binding Path=solutionSettings.CurrentBranch, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="0,1,124,1" />
 
-        <TextBox Name="deployRelease" Grid.Row="5" Grid.Column="1" 
+        <TextBox Name="deployRelease" Grid.Row="4" Grid.Column="1" 
                              Text="{Binding Path=solutionSettings.CurrentRelease, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="0,1,124,1" />
 
-        <TextBox Name="deployLocalAppUrltemplate" Grid.Row="6" Grid.Column="1" 
+        <TextBox Name="deployLocalAppUrltemplate" Grid.Row="5" Grid.Column="1" 
                              Text="{Binding Path=solutionUserSettings.LocalAppUrlTemplate, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="0,1,124,1" />
 
-        <TextBox Name="deployLocalTestUrltemplate" Grid.Row="7" Grid.Column="1" 
+        <TextBox Name="deployLocalTestUrltemplate" Grid.Row="6" Grid.Column="1" 
                              Text="{Binding Path=solutionUserSettings.LocalTestUrlTemplate, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="0,1,124,1" />
 
         <TextBlock Grid.Column="1"  Margin="10,5,0,0">

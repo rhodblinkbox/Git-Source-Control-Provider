@@ -13,14 +13,17 @@ namespace GitScc
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.Design;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Windows;
     using System.Xml;
     using System.Xml.Linq;
 
     using GitScc.Blinkbox;
     using GitScc.Blinkbox.Data;
     using GitScc.Blinkbox.Options;
+    using GitScc.Blinkbox.UI;
 
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.OLE.Interop;
@@ -137,6 +140,30 @@ namespace GitScc
         public T GetService<T>()
         {
             return (T)base.GetService(typeof(T));
+        }
+
+        /// <summary>
+        /// Checks for new version.
+        /// </summary>
+        public void InstallNewVersion()
+        {
+            try
+            {
+                var currentVersion = this.GetCurrentVersion();
+                var availableVersion = this.GetAvailableVersion();
+
+                if (currentVersion < availableVersion && availableVersion > UserSettings.Current.LastVersionPrompt)
+                {
+                    var process = new Process { StartInfo = new ProcessStartInfo(Path.Combine(UserSettings.Current.ReleaseLocation, "BBGitSourceControl.vsix")) };
+
+                    // Install the new version
+                    process.Start();
+                }
+            }
+            catch (Exception e)
+            {
+                NotificationService.DisplayException(e, "Install failed", "Please install manually");  
+            }
         }
 
         /// <summary>
@@ -448,9 +475,11 @@ namespace GitScc
         private Version GetAvailableVersion()
         {
             var version = new Version();
-            if (File.Exists(UserSettings.Current.ReleaseManifestLocation))
+            var releaseManifest = Path.Combine(UserSettings.Current.ReleaseLocation, "extension.vsixmanifest");
+
+            if (File.Exists(releaseManifest))
             {
-                var doc = XDocument.Load(UserSettings.Current.ReleaseManifestLocation);
+                var doc = XDocument.Load(releaseManifest);
 
                 if (doc.Root == null)
                 {
@@ -482,20 +511,28 @@ namespace GitScc
                 var currentVersion = this.GetCurrentVersion();
                 var availableVersion = this.GetAvailableVersion();
 
-                if (currentVersion < availableVersion && availableVersion > UserSettings.Current.LastVersionPrompt)
+                var settingsTab = this.GetService<SettingsTab>();
+                if (settingsTab != null)
                 {
-                    // If a new version is available, and we havent prompted yet...
-                    NotificationService.DisplayError(
-                        "Please upgrade to the latest version",
-                        string.Format("Version {0} is available at {1}", availableVersion, Path.GetFullPath(UserSettings.Current.ReleaseManifestLocation)));
+                    Action action = () =>
+                        {
+                            settingsTab.CurrentVersionText = "Current Version: " + currentVersion;
 
-                    UserSettings.Current.LastVersionPrompt = availableVersion;
-                    UserSettings.Current.Save();
+                            if (currentVersion < availableVersion)
+                            {
+                                settingsTab.InstallText = "Install version " + availableVersion;
+                                settingsTab.Focus();
+                            }
+
+                            settingsTab.RefreshBindings();
+                        };
+
+                    settingsTab.Dispatcher.Invoke(action);
                 }
             }
             catch (Exception e)
             {
-                 // No Action   
+                // No Action   
             }
         }
     }

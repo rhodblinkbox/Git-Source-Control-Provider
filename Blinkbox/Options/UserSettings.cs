@@ -49,12 +49,6 @@ namespace GitScc.Blinkbox.Options
         public bool? OpenUrlsInVS { get; set; }
 
         /// <summary>
-        /// Gets or sets the open urls after deploy.
-        /// </summary>
-        /// <value>The open urls after deploy.</value>
-        public bool? OpenUrlsAfterDeploy { get; set; }
-
-        /// <summary>
         /// Gets or sets the location of git-tfs.
         /// </summary>
         /// <value>the location of git-tfs.</value>
@@ -64,7 +58,7 @@ namespace GitScc.Blinkbox.Options
         /// Gets or sets the location of the current release manifest file.
         /// </summary>
         /// <value>the location of the current release manifest file.</value>
-        public string ReleaseManifestLocation { get; set; }
+        public string ReleaseLocation { get; set; }
 
         /// <summary>
         /// Gets or sets the location of the current release manifest file.
@@ -79,9 +73,8 @@ namespace GitScc.Blinkbox.Options
         {
             this.PreviewGetLatest = this.PreviewGetLatest ?? false;
             this.OpenUrlsInVS = this.OpenUrlsInVS ?? false;
-            this.OpenUrlsAfterDeploy = this.OpenUrlsAfterDeploy ?? true;
             this.GitTfsLocation = string.IsNullOrEmpty(this.GitTfsLocation) ? "C:\\Program Files (x86)\\Git-tfs\\git-tfs.exe" : this.GitTfsLocation;
-            this.ReleaseManifestLocation = string.IsNullOrEmpty(this.ReleaseManifestLocation) ? "P:\\Software\\git\\BBGitSourceControl\\extension.vsixmanifest" : this.ReleaseManifestLocation;
+            this.ReleaseLocation = string.IsNullOrEmpty(this.ReleaseLocation) ? "P:\\Software\\git\\BBGitSourceControl\\" : this.ReleaseLocation;
             this.LastVersionPrompt = this.LastVersionPrompt ?? new Version();
         }
     }

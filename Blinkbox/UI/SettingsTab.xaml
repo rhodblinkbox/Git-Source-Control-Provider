@@ -28,6 +28,11 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="96*" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="332*" />
+        </Grid.ColumnDefinitions>
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                 <GradientStop Color="#FFC5E8F8" Offset="1" />
@@ -39,18 +44,26 @@
             <Hyperlink Name="SaveButton" Click="SaveButton_Click">Save</Hyperlink>
         </TextBlock>
 
+        <TextBlock Grid.Column="2" Text="{Binding Path=CurrentVersionText}" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" />
+
+        <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="200,0,0,0">
+            <Hyperlink Name="InstallButton" Click="InstallButton_Click">
+                <TextBlock Text="{Binding Path=InstallText}" />
+            </Hyperlink>
+        </TextBlock>
+
         <Label Content="Open urls in VS:" Grid.Row="1"  />
         <Label Content="Preview Get Latest:" Grid.Row="2"  />
         <Label Content="Git Tfs Location:" Grid.Row="3" VerticalAlignment="Center"  />
         <Label Content="TortoiseGit location:" Grid.Row="4" VerticalAlignment="Center"  />
 
-        <CheckBox Name="openUrlsInVs" Grid.Row="1" IsChecked="{Binding Path=userSettings.OpenUrlsInVS, Mode=TwoWay}" Margin="130,0,325,0" />
+        <CheckBox Name="openUrlsInVs" Grid.Row="1" IsChecked="{Binding Path=userSettings.OpenUrlsInVS, Mode=TwoWay}" Grid.Column="2" />
 
-        <CheckBox Name="previewGetLatest" Grid.Row="2" IsChecked="{Binding Path=userSettings.PreviewGetLatest, Mode=TwoWay}" Margin="130,0,325,0" />
+        <CheckBox Name="previewGetLatest" Grid.Row="2" IsChecked="{Binding Path=userSettings.PreviewGetLatest, Mode=TwoWay}" Grid.Column="2" />
 
-        <TextBox Name="gitTfsLocationLabel" Grid.Row="3" Text="{Binding Path=userSettings.GitTfsLocation, Mode=TwoWay}" Margin="130,1,0,1" />
+        <TextBox Name="gitTfsLocationLabel" Grid.Row="3" Text="{Binding Path=userSettings.GitTfsLocation, Mode=TwoWay}" Grid.Column="2" />
         
-        <TextBox Name="tortoiseGitLocationLabel" Grid.Row="4" Text="{Binding Path=sccSettings.TortoiseGitPath, Mode=TwoWay}" Margin="130,1,0,1" />
+        <TextBox Name="tortoiseGitLocationLabel" Grid.Row="4" Text="{Binding Path=sccSettings.TortoiseGitPath, Mode=TwoWay}" Grid.Column="2" />
         
     </Grid>
 </UserControl>

@@ -9,4 +9,6 @@
   <DeployProjectLocation>deploy\deployLocal.ps1</DeployProjectLocation>
   <CurrentRelease>v0.0.0</CurrentRelease>
   <TestSubmissionScript>deploy\testSwarm.ps1</TestSubmissionScript>
+  <LocalAppUrlTemplate>http://tv-{MachineName}.bbdev1.com/Client/{BuildLabel}</LocalAppUrlTemplate>
+  <LocalTestUrlTemplate>http://tv-{MachineName}.bbdev1.com/Client/{BuildLabel}/Test/Index.html?runnerMode={RunnerMode}&amp;tags={Tags}</LocalTestUrlTemplate>
 </SolutionSettings>

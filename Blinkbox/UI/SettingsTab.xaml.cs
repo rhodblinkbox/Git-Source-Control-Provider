@@ -31,16 +31,21 @@ namespace GitScc.Blinkbox.UI
 
             // Register this component as a service so that we can use it externally. 
             BasicSccProvider.RegisterService(this);
-            var sccProvider = BasicSccProvider.GetServiceEx<SccProviderService>();
-            if (sccProvider != null)
+            var sccProviderService = BasicSccProvider.GetServiceEx<SccProviderService>();
+            if (sccProviderService != null)
             {
-                sccProvider.OnSolutionOpen += (s, a) =>
-                {
-                    // Refresh data context to trigger update
-                    grid.DataContext = null;
-                    grid.DataContext = this;
-                };
+                sccProviderService.OnSolutionOpen += (s, a) => this.RefreshBindings();
             }
+        }
+
+        /// <summary>
+        /// Refreshes the data context bindings to update the UI.
+        /// </summary>
+        public void RefreshBindings()
+        {
+            // TODO: proper way to do this?
+            grid.DataContext = null;
+            grid.DataContext = this;
         }
 
         /// <summary>
@@ -92,6 +97,16 @@ namespace GitScc.Blinkbox.UI
         }
 
         /// <summary>
+        /// Gets or sets the text for the current version.
+        /// </summary>
+        public string CurrentVersionText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text for the install link.
+        /// </summary>
+        public string InstallText { get; set; }
+
+        /// <summary>
         /// Handles the Click event of the SaveButton control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -102,6 +117,24 @@ namespace GitScc.Blinkbox.UI
             SolutionUserSettings.Current.Save();
             UserSettings.Current.Save();
             GitSccOptions.Current.SaveConfig();
+        }
+
+        /// <summary>
+        /// installs the latest version of the app.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The event args.
+        /// </param>
+        private void InstallButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            var sccService = BasicSccProvider.GetServiceEx<BasicSccProvider>();
+            if (sccService != null)
+            {
+                sccService.InstallNewVersion();
+            }
         }
     }
 }

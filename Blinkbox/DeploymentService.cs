@@ -258,14 +258,11 @@ namespace GitScc.Blinkbox
                 // msbuild appends v2-dev onto the front. 
                 deployment.BuildLabel = "v2-dev-" + deployment.BuildLabel;
 
-                if (UserSettings.Current.OpenUrlsAfterDeploy.GetValueOrDefault())
+                // Launch urls in browser
+                this.notificationService.AddMessage("Launch urls...");
+                foreach (var launchItem in launchUrls)
                 {
-                    // Launch urls in browser
-                    this.notificationService.AddMessage("Launch urls...");
-                    foreach (var launchItem in launchUrls)
-                    {
-                        BasicSccProvider.LaunchBrowser(launchItem.EvaluatedInclude);
-                    }
+                    BasicSccProvider.LaunchBrowser(launchItem.EvaluatedInclude);
                 }
 
                 // Clean up project to prevent caching.
