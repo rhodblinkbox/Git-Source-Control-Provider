@@ -35,11 +35,6 @@ namespace GitScc
     public partial class BasicSccProvider
     {
         /// <summary>
-        /// The current version.
-        /// </summary>
-        private Version installedVersion = new Version(0, 9, 6, 112);
-        
-        /// <summary>
         /// list of commands which are disabled during review
         /// </summary>
         private static readonly List<uint> DisabledCommandsDuringReview = new List<uint>
@@ -426,29 +421,77 @@ namespace GitScc
         }
 
         /// <summary>
+        /// Gets the available version by checking the install directory.
+        /// </summary>
+        /// <returns>
+        /// The current Version.
+        /// </returns>
+        private Version GetCurrentVersion()
+        {
+            // http://blogs.msdn.com/b/visualstudio/archive/2010/02/19/how-vsix-extensions-are-discovered-and-loaded-in-vs-2010.aspx
+            var installDirectory = new DirectoryInfo(this.UserLocalDataPath + "\\Extensions\\blinkbox\\BB Git Source Control");
+            var version = installDirectory.EnumerateDirectories().Select(d => d.Name).OrderByDescending(x => x).FirstOrDefault();
+            if (version != null)
+            {
+                return new Version(version);
+            }
+
+            return new Version();
+        }
+
+        /// <summary>
+        /// Gets the available version.
+        /// </summary>
+        /// <returns>
+        /// The available System.Version.
+        /// </returns>
+        private Version GetAvailableVersion()
+        {
+            var version = new Version();
+            if (File.Exists(UserSettings.Current.ReleaseManifestLocation))
+            {
+                var doc = XDocument.Load(UserSettings.Current.ReleaseManifestLocation);
+
+                if (doc.Root == null)
+                {
+                    return version;
+                }
+
+                var xmlns = doc.Root.Name.Namespace;
+
+                var versionElement = doc.Elements(XName.Get("Vsix", xmlns.NamespaceName))
+                    .Elements(XName.Get("Identifier", xmlns.NamespaceName))
+                    .Elements(XName.Get("Version", xmlns.NamespaceName)).FirstOrDefault();
+
+                if (versionElement != null)
+                {
+                    return new Version(versionElement.Value);
+                }
+            }
+
+            return new Version();
+        }
+
+        /// <summary>
         /// Checks for new version.
         /// </summary>
         private void CheckForNewVersion()
         {
             try
             {
-                if (File.Exists(UserSettings.Current.ReleaseManifestLocation))
-                {
-                    var doc = XDocument.Load(UserSettings.Current.ReleaseManifestLocation);
-                    var element = doc.Descendants("Identifier").First().Descendants("Version").First();
-                    var version = new Version(element.Value);
+                var currentVersion = this.GetCurrentVersion();
+                var availableVersion = this.GetAvailableVersion();
 
-                    if (this.installedVersion < version)
-                    {
-                        NotificationService.DisplayError(
-                            "Please upgrade to the latest version", 
-                            string.Format("version {0} is available at {1}", version, UserSettings.Current.ReleaseManifestLocation));
-                    }
+                if (currentVersion < availableVersion)
+                {
+                    NotificationService.DisplayError(
+                        "Please upgrade to the latest version",
+                        string.Format("Version {0} is available at {1}", availableVersion, Path.GetFullPath(UserSettings.Current.ReleaseManifestLocation)));
                 }
             }
             catch (Exception e)
             {
-                    
+                 // No Action   
             }
         }
     }
