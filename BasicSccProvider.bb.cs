@@ -482,11 +482,15 @@ namespace GitScc
                 var currentVersion = this.GetCurrentVersion();
                 var availableVersion = this.GetAvailableVersion();
 
-                if (currentVersion < availableVersion)
+                if (currentVersion < availableVersion && availableVersion > UserSettings.Current.LastVersionPrompt)
                 {
+                    // If a new version is available, and we havent prompted yet...
                     NotificationService.DisplayError(
                         "Please upgrade to the latest version",
                         string.Format("Version {0} is available at {1}", availableVersion, Path.GetFullPath(UserSettings.Current.ReleaseManifestLocation)));
+
+                    UserSettings.Current.LastVersionPrompt = availableVersion;
+                    UserSettings.Current.Save();
                 }
             }
             catch (Exception e)
