@@ -22,6 +22,11 @@ namespace GitScc
         public const int SubmitTestButtonId = 0x118;
 
         /// <summary>
+        /// Identifies the SubmitTest command.
+        /// </summary>
+        public const int UnitTestButtonId = 0x119;
+
+        /// <summary>
         /// Identifies the ToolsMenu command.
         /// </summary>
         public const int ToolsMenu = 0x401;

@@ -276,6 +276,14 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
+        /// Executes unit tests.
+        /// </summary>
+        public void RunUnitTests()
+        {
+            // TODO: test framework not yet specified. 
+        }
+
+        /// <summary>
         /// Checks whether the working directory has any unchanged files or is in the middle of a merge. 
         /// </summary>
         /// <returns>true if successful</returns>

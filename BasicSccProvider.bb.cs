@@ -263,6 +263,13 @@ namespace GitScc
 
             commands.Add(new GitTfsCommand
             {
+                Name = "Unit Tests",
+                CommandId = CommandId.UnitTestButtonId,
+                Handler = () => this.developmentService.RunUnitTests()
+            });
+
+            commands.Add(new GitTfsCommand
+            {
                 Name = "Deploy",
                 CommandId = CommandId.BlinkboxDeployId,
                 Handler = this.DeployCurrentVersion
@@ -340,6 +347,7 @@ namespace GitScc
                 case CommandId.GitTfsReviewButtonId:
                 case CommandId.GitTfsCancelReviewButtonId:
                 case CommandId.SubmitTestButtonId:
+                case CommandId.UnitTestButtonId:
                 case CommandId.ToolsMenu:
                 case CommandId.ToolsMenuGroup:
 
