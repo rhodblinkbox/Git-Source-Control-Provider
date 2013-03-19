@@ -36,6 +36,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="96*" />
         </Grid.RowDefinitions>
         <Grid.Background>
@@ -54,9 +55,10 @@
         <Label Content="TestSwarm tags:" Grid.Row="3" />
         <Label Content="TestSwarm Url:" Grid.Row="4" />
         <Label Content="Feature Files:" Grid.Row="5" />
-        <Label Content="Browser Sets:" Grid.Row="6" />
-        <Label Content="Runner mode:" Grid.Row="7" />
-        <Label Content="Test submission script:" Grid.Row="8" />
+        <Label Content="Feature Files sub path:" Grid.Row="6" />
+        <Label Content="Browser Sets:" Grid.Row="7" />
+        <Label Content="Runner mode:" Grid.Row="8" />
+        <Label Content="Test submission script:" Grid.Row="9" />
 
         <TextBox Name="testSwarmUsername" Grid.Row="1" Grid.Column="1" 
                              Text="{Binding solutionUserSettings.TestSwarmUsername, Mode=TwoWay}" />
@@ -67,11 +69,13 @@
                              Text="{Binding solutionSettings.TestSwarmUrl, Mode=TwoWay}" />
         <TextBox Name="featurePath" Grid.Row="5" Grid.Column="1" 
                              Text="{Binding Path=solutionSettings.FeaturePath, Mode=TwoWay}" />
-        <TextBox Name="browserSets" Grid.Row="6" Grid.Column="1" 
+        <TextBox Name="featureSubPath" Grid.Row="6" Grid.Column="1" 
+                             Text="{Binding Path=solutionUserSettings.FeatureSubPath, Mode=TwoWay}" />
+        <TextBox Name="browserSets" Grid.Row="7" Grid.Column="1" 
                              Text="{Binding Path=solutionUserSettings.TestBrowserSets, Mode=TwoWay}" />
-        <TextBox Name="runnerMode" Grid.Row="7" Grid.Column="1" 
+        <TextBox Name="runnerMode" Grid.Row="8" Grid.Column="1" 
                              Text="{Binding Path=solutionUserSettings.TestRunnerMode, Mode=TwoWay}" />
-        <TextBox Name="testSubmissionScript" Grid.Row="8" Grid.Column="1" 
+        <TextBox Name="testSubmissionScript" Grid.Row="9" Grid.Column="1" 
                              Text="{Binding Path=solutionSettings.TestSubmissionScript, Mode=TwoWay}" />
 
         <TextBlock Grid.Column="1" Padding="10,10,0,10">

@@ -103,6 +103,17 @@ namespace GitScc.Blinkbox.Options
         public Deployment LastDeployment { get; set; }
 
         /// <summary>
+        /// Gets or sets the sub-path for feature files.
+        /// </summary>
+        /// <value>The sub-path for feature files.</value>
+        public string FeatureSubPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the OpenUrlsOnDeploy option.
+        /// </summary>
+        public bool OpenUrlsOnDeploy { get; set; }
+
+        /// <summary>
         /// Inits this instance.
         /// </summary>
         protected override void Init()

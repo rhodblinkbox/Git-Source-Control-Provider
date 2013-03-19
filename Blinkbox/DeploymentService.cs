@@ -118,6 +118,11 @@ namespace GitScc.Blinkbox
                     SolutionUserSettings.Current.LastDeployment = deployment;
                     SolutionUserSettings.Current.Save();
 
+                    if (SolutionUserSettings.Current.OpenUrlsOnDeploy)
+                    {
+                        this.OpenUrls(deployment);
+                    }
+
                     if (SolutionUserSettings.Current.SubmitTestsOnDeploy.GetValueOrDefault())
                     {
                         // Submit tests to testswarm
@@ -163,6 +168,7 @@ namespace GitScc.Blinkbox
                         {
                             { "version", lastDeployment.BuildLabel },
                             { "featuresDirectory", featureDirectory },
+                            { "featureSubPath", SolutionUserSettings.Current.FeatureSubPath },
                             { "branch", SolutionSettings.Current.CurrentBranch },
                             { "userName", SolutionUserSettings.Current.TestSwarmUsername },
                             { "password", SolutionUserSettings.Current.TestSwarmPassword },
@@ -271,6 +277,25 @@ namespace GitScc.Blinkbox
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Launches the test urls.
+        /// </summary>
+        /// <param name="deployment">
+        /// The deployment.
+        /// </param>
+        private void OpenUrls(Deployment deployment)
+        {
+            try
+            {
+                BasicSccProvider.LaunchBrowser(deployment.AppUrl);
+                BasicSccProvider.LaunchBrowser(deployment.TestRunUrl);
+            }
+            catch (Exception e)
+            {
+                NotificationService.DisplayException(e, "Couldnt launch url");
+            }
         }
 
         /// <summary>

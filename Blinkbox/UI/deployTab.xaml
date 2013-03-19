@@ -34,6 +34,7 @@
             <RowDefinition Height="29" />
             <RowDefinition Height="29" />
             <RowDefinition Height="29" />
+            <RowDefinition Height="29" />
             <RowDefinition Height="250*" />
         </Grid.RowDefinitions>
         <Grid.Background>
@@ -53,6 +54,7 @@
         <Label Content="Current Release:" Grid.Row="4"  />
         <Label Content="Local App Url" Grid.Row="5"  />
         <Label Content="Local Test Url:" Grid.Row="6"  />
+        <Label Content="Open Urls after deploy:" Grid.Row="7"  />
 
         <TextBox Name="deployProjectName" Grid.Row="1" Grid.Column="1" 
                              Text="{Binding Path=solutionSettings.DeployProjectLocation, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="0,1,124,1" />
@@ -71,6 +73,9 @@
 
         <TextBox Name="deployLocalTestUrltemplate" Grid.Row="6" Grid.Column="1" 
                              Text="{Binding Path=solutionUserSettings.LocalTestUrlTemplate, Mode=TwoWay}" Grid.ColumnSpan="2" Margin="0,1,124,1" />
+
+        <CheckBox Name="openUrlsOnDeploy" Grid.Row="7" Grid.Column="1"
+                             IsChecked="{Binding Path=solutionUserSettings.OpenUrlsOnDeploy, Mode=TwoWay}" Margin="0,0,63,0" />
 
         <TextBlock Grid.Column="1"  Margin="10,5,0,0">
             <Hyperlink Click="Deploylink_Click" Name="AppLink">
