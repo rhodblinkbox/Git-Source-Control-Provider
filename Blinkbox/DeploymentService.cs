@@ -82,6 +82,7 @@ namespace GitScc.Blinkbox
                                 };
 
                             this.RunPowershell<object>(scriptName, powershellArgs);
+
                             return true;
                         }
                         catch (Exception ex)
@@ -127,6 +128,11 @@ namespace GitScc.Blinkbox
                     {
                         // Submit tests to testswarm
                         this.SubmitTests();
+                    }
+
+                    if (SolutionUserSettings.Current.NotifyOnDeploy)
+                    {
+                        NotificationService.DisplayMessage("Deployment complete", deployment.BuildLabel + " deployment complete");
                     }
                 };
 

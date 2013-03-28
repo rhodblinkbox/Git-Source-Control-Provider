@@ -73,6 +73,18 @@ namespace GitScc.Blinkbox
         }
 
         /// <summary>
+        /// Displays a message in a message box.
+        /// </summary>
+        /// <param name="title">The title.</param>
+        /// <param name="message">The message.</param>
+        public static void DisplayMessage(string title, string message)
+        {
+            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+            Trace.WriteLine(title);
+            Trace.WriteLine(message);
+        }
+
+        /// <summary>
         /// Displays an error in a message box.
         /// </summary>
         /// <param name="title">The title.</param>

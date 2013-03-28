@@ -114,6 +114,12 @@ namespace GitScc.Blinkbox.Options
         public bool OpenUrlsOnDeploy { get; set; }
 
         /// <summary>
+        /// Gets or sets the notify on deploy setting.
+        /// </summary>
+        /// <value>The notify on deploy setting.</value>
+        public bool NotifyOnDeploy { get; set; }
+
+        /// <summary>
         /// Inits this instance.
         /// </summary>
         protected override void Init()
